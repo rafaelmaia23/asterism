@@ -512,7 +512,8 @@ Acima de 10 slides, mostre 5 pontos mais um contador `03 / 12` em mono.
 rodapé volta a ser apenas progresso. Repetir a seta seria instruir alguém que já sabe.
 
 **Rodapé fixo** — presente em todos os slides exceto capa e final. Alinhado à base,
-dentro do padding: logo de 32px, `@handle` em `slide-meta` `ink-400`, constelação à direita.
+dentro do padding: `MaiahubGlyph` a 32px, `@handle` em `slide-meta` `ink-400`,
+constelação à direita.
 
 **Callout** — `border-left: 4px`, raio 0, fundo tingido no tom 950 correspondente,
 padding 24px. Variantes: `info` (azure), `atencao` (sun), `positivo` (pacifika),
@@ -537,9 +538,18 @@ Todo template ocupa 1080×1350 com padding de 80px em todos os lados, o que dá 
 largura útil de **920px**. Nada de logo ou CTA a menos de 60px da borda.
 
 O rodapé ocupa a última faixa, com a linha de base do conteúdo alinhada a 80px do
-fundo. Composição: logo de 32px, gap 20px, handle em `slide-meta` `ink-400` à esquerda;
-constelação à direita. A capa é exceção — não tem logo nem handle, só constelação e
-chevron.
+fundo. Composição: `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` à
+esquerda; constelação à direita. A capa é exceção — não tem logo nem handle, só
+constelação e chevron.
+
+A peça é a **glyph**, escolhida por comparação visual das três só-símbolo a 32px sobre a
+superfície do slide. A escolha contraria a faixa de 16–24px que a documentação da marca
+dá à glyph, e é deliberada: a 32px sobre `ink-950`, o traço mais grosso e os pontos
+maiores da correção ótica é justamente o que mantém a peça legível — a `MaiahubMark`,
+apesar de estar dentro da própria faixa, some no rodapé escuro. Ver `maiahub-logo.md`.
+
+A assinatura e o wordmark estão descartados para este uso: os dois trazem "maiahub"
+escrito, que competiria com o `@handle` do deck no mesmo canto.
 
 Todo texto é alinhado à esquerda. Toda quebra de linha é natural: não existe campo de
 quebra manual, porque quebra manual congela o layout e some com a razão de os templates

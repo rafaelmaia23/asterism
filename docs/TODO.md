@@ -1,6 +1,6 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões pendentes resolvidas · Etapa 1 aguardando início
+> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 pronta para começar**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. Etapas 1 e 2 estão expandidas; as demais têm apenas
 > objetivo e entrega, e são quebradas em tarefas quando chegarem.
@@ -85,8 +85,8 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 | 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1: cada marcador isolado, marcadores adjacentes, marcador não fechado, `**a *b* c**` tratado como literal no marcador externo, string vazia, texto sem marcador. Devolve AST, **nunca** HTML |
 | 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
 | 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
-| 2.4 | Componentes recorrentes da §10.5 — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa |
-| 2.4a | Escolher por teste visual a peça de logo do rodapé | Ver experimento 1 abaixo. Decidido, a §11.0 do design system é atualizada junto |
+| 2.4 | Componentes recorrentes da §10.5 — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa; rodapé com `MaiahubGlyph` a 32px, gap 20px, handle |
+| 2.4a | Remover as quatro peças de logo não usadas | Decidido: o rodapé usa `MaiahubGlyph` a 32px. Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
 | 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 é atualizada junto |
 | 2.5 | Fundo aplicado a partir de `meta.background` — `plain` ou `grid` | `grid` desenha linhas de 2px a cada 60px; nenhum template de código ou imagem recebe grid. Conferir no preview **e** no PDF exportado: são os dois lados da compensação de `--slide-scale` |
 | 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
@@ -154,27 +154,22 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 
 ## A resolver por experimento
 
-As cinco decisões que estavam pendentes foram respondidas e registradas na §16 do
-documento de contexto, decisões 13 a 17. Sobraram dois pontos que não se resolvem no
-papel — precisam dos dois lados renderizados lado a lado.
+As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
+contexto, decisões 13 a 18. Sobrou **um** ponto, que não se resolve no papel — precisa dos
+três lados renderizados e comparados. Ele não bloqueia o início da Etapa 1: aparece só na
+tarefa 2.4b.
 
-### Experimento 1 — a peça de logo do rodapé · tarefa 2.4a
+### ~~Experimento 1 — a peça de logo do rodapé~~ · resolvido
 
-**Metade já decidida:** o rodapé é só-símbolo, sem nome escrito. O `MaiahubSignature` e o
-`MaiahubWordmark` estão descartados — a §11.0 já reserva o texto do rodapé para o
-`@handle` do deck, e a assinatura traria "maiahub" para competir com ele no mesmo canto.
+`MaiahubGlyph` a 32px, escolhida comparando as três peças só-símbolo lado a lado sobre a
+superfície do slide. A glyph está acima da faixa de 16–24px que a documentação da marca
+dá a ela, e o desvio é consciente — a correção ótica dela é justamente o que a mantém
+legível sobre `ink-950`, enquanto a `MaiahubMark`, apesar de estar dentro da própria
+faixa, some ali.
 
-Sobra escolher entre as três peças só-símbolo, a 32px, que é a medida da §11.0:
-
-| Peça | Faixa documentada | A 32px |
-|---|---|---|
-| `MaiahubMark` | mín. 24px | dentro da faixa |
-| `MaiahubGlyph` | 16–24px | acima da faixa; é o mesmo M deformado de propósito para tamanhos pequenos, com traço mais grosso e sem o vértice central |
-| `MaiahubSeal` | mín. 40px | abaixo do mínimo; é um selo circular, não o M solto |
-
-Pela documentação a `Mark` é a única das três dentro da faixa a 32px. As três estão lado
-a lado na página de tema para conferência. Decidido, as duas peças perdedoras e as duas
-já descartadas saem do projeto — cinco peças para um uso só é peso morto.
+Registrado na §11.0 e na §10.5 do design system, na decisão 18 da §16 do documento de
+contexto, e em `maiahub-logo.md`. A remoção das quatro peças perdedoras virou a tarefa
+2.4a.
 
 ### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b
 

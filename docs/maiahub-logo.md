@@ -26,6 +26,22 @@ justamente o argumento do projeto se chamar *asterism*.
 Na prática: os componentes usam `fill-azure-radiance-400` onde o original usava
 `fill-star-400`. Nada mais muda.
 
+### A glyph no rodapé do slide, a 32px
+
+O rodapé dos slides usa a `MaiahubGlyph` a 32px, acima da faixa de 16–24px que esta
+documentação dá a ela. É desvio consciente, decidido comparando as três peças só-símbolo
+lado a lado a 32px sobre `ink-950`.
+
+O motivo é o mesmo que justifica a glyph existir. Ela quebra a proporção de propósito —
+traço mais grosso, pontos maiores, vértice central removido — para não sumir em tamanho
+pequeno. Acontece que 32px **sobre fundo quase preto, dentro de um slide de 1080px que
+depois é reduzido para caber num feed**, é opticamente um tamanho pequeno, mesmo não
+sendo pequeno em pixels. A `MaiahubMark`, que a faixa apontaria como correta, é a que
+some ali.
+
+A regra da faixa continua valendo para interface comum. Este caso é a exceção, e está
+registrada aqui para não parecer descuido.
+
 ## Componentes
 
 | Componente | Papel | Tamanho mínimo |
@@ -33,7 +49,7 @@ Na prática: os componentes usam `fill-azure-radiance-400` onde o original usava
 | `MaiahubWordmark` | Institucional. Home, open graph, hero. | 200px de largura |
 | `MaiahubMark` | Versão curta. Ícone, marca d'água. | 24px de altura |
 | `MaiahubSeal` | Avatar, contextos circulares. | 40px |
-| `MaiahubGlyph` | Versão simplificada para miniaturas. | 16px |
+| `MaiahubGlyph` | Versão simplificada para miniaturas. **No asterism, também o rodapé do slide, a 32px** — ver abaixo. | 16px |
 | `MaiahubSignature` | Uso corrido em texto. Rodapé, cabeçalho. | 120px de largura |
 
 ## Uso
