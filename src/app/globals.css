@@ -229,7 +229,21 @@
   --slide-gap-item: 48px;
   --slide-pad-code: 32px;
   --slide-radius: 12px;
+
+  /* Grid de fundo. A espessura é medida no slide de 1080px; ver §4.3 do design
+     system para a cadeia de escalas que leva a 2px em vez de 1px.
+
+     `--slide-scale` é declarada por quem exibe o slide reduzido — o SlideFrame —
+     com o mesmo fator passado ao `transform`. `calc(1px / k)` devolve a
+     espessura que, depois de escalada, dá exatamente um pixel de dispositivo,
+     e o `max()` faz a compensação entrar só quando ela é necessária. Sem isso a
+     linha some no preview: a 0.28 de escala, 2px viram 0,56 pixel e o navegador
+     não pinta. Mesma ideia do `vector-effect: non-scaling-stroke` do SVG, feita
+     com variável porque a exportação precisa do oposto — lá a escala é 1 e vale
+     a espessura de spec. */
   --slide-grid-size: 60px;
+  --slide-grid-line-w: 2px;
+  --slide-scale: 1;
 
   --text-slide-display: 96px;
   --text-slide-title: 72px;
@@ -289,12 +303,24 @@
 /* O grid de fundo dos templates que declaram fundo: "grid".
    Nunca em slides de codigo ou com imagem. */
 @utility slide-grid {
-  /* 1px, não 0.5px: meio pixel arredonda para 0 ou 1 pixel de dispositivo
-     conforme a posição da linha, e parte delas simplesmente não é pintada.
-     Ver §4.3 do design system. */
+  /* Declarada aqui, e não no `:root`, de propósito. Custom property resolve os
+     `var()` do próprio valor no elemento onde é declarada — se isto morasse no
+     `:root`, `--slide-scale` resolveria como 1 ali e os descendentes herdariam
+     o resultado já pronto. Sobrescrever a escala no wrapper não teria efeito. */
+  --slide-grid-line-render: max(
+    var(--slide-grid-line-w),
+    calc(1px / var(--slide-scale, 1))
+  );
   background-image:
-    linear-gradient(var(--color-slide-grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-slide-grid-line) 1px, transparent 1px);
+    linear-gradient(
+      var(--color-slide-grid-line) var(--slide-grid-line-render),
+      transparent var(--slide-grid-line-render)
+    ),
+    linear-gradient(
+      90deg,
+      var(--color-slide-grid-line) var(--slide-grid-line-render),
+      transparent var(--slide-grid-line-render)
+    );
   background-size: var(--slide-grid-size) var(--slide-grid-size);
 }
 

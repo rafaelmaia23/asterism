@@ -258,6 +258,16 @@ O template renderiza sempre em **1080×1350 px reais**. O preview aplica
 Consequências: nenhuma media query, nenhuma matemática responsiva, e o preview é
 literalmente o mesmo DOM que será exportado.
 
+### O wrapper declara a escala
+
+O wrapper também declara `--slide-scale` com o mesmo `k` que passou ao `transform`.
+Detalhes que dependem de espessura de traço — o grid de fundo, hoje; bordas de 1px,
+amanhã — compensam a partir dessa variável, senão desaparecem no preview. A exportação
+renderiza com `k = 1` e recebe os valores de spec sem saber que a compensação existe.
+
+É a única divergência deliberada entre preview e exportação, e ela existe para preservar
+a aparência, não para quebrá-la.
+
 ### Guard de transbordo
 
 Slide tem altura fixa, então texto longo transborda — é a falha número um deste tipo
@@ -427,6 +437,6 @@ sem retoque em nenhum outro programa.
 | 12 | `format` como dado desde a v1 | `1080×1350` hardcoded | Meia hora agora contra reescrever dez templates depois |
 | 13 | Vocabulário de campos único, em inglês | `titulo` na capa e `heading` no miolo | Migração de conteúdo na troca de layout exige a mesma chave para o mesmo papel; o id fica gravado no JSON do deck e mudar depois custaria migração de dados |
 | 14 | Kicker é campo digitado | Derivar de `meta.pillar` com o índice | Liberdade de escrever qualquer coisa vence a consistência automática; o preço é reordenar não reescrever o índice |
-| 15 | Grid com linha de 1px | 0.5px calibrado para a rasterização 2× | Meio pixel arredonda para 0 ou 1 na tela e parte das linhas some; o preview é escalado por `transform`, onde o problema é pior |
+| 15 | Grid com linha de 2px, compensada no preview | 0.5px calibrado para a rasterização 2× | A calibragem valia só para o bitmap: o slide quase nunca é visto a 1:1, e abaixo de 1080px de largura uma linha de 1px cai abaixo de um pixel e some do post publicado. 2px sobrevive ao downscale; e como nenhuma espessura fixa sobrevive a uma redução arbitrária, o preview declara `--slide-scale` e a espessura efetiva vira `max(base, 1px / k)`. Ver §4.3 do design system |
 | 16 | Estrela da logo em `azure-400` | Rampa `star-*` própria, em OKLCH | Evita uma sexta rampa de azul quase idêntica à existente e tira OKLCH do canvas; a estrela passa a ser a mesma cor da constelação de progresso |
 | 17 | Variantes do shadcn adaptadas à §2.4 | Aceitar o preset como vem | Um padrão de cor só, no editor e no carrossel |

@@ -234,22 +234,71 @@ Nunca em slides de código ou com imagem: o grid compete com o conteúdo.
 ```css
 --grid-size: 60px; /* 18px na web */
 --grid-line: #1e293b; /* ink-800 */
+--grid-line-w: 2px; /* medida no slide de 1080 */
 
 background-image:
-  linear-gradient(var(--grid-line) 1px, transparent 1px),
-  linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  linear-gradient(var(--grid-line) var(--grid-line-w), transparent var(--grid-line-w)),
+  linear-gradient(
+    90deg,
+    var(--grid-line) var(--grid-line-w),
+    transparent var(--grid-line-w)
+  );
 background-size: var(--grid-size) var(--grid-size);
 ```
 
 A intensidade é fixa. Não varie entre slides do mesmo carrossel.
 
-A linha é de **1px inteiro**. A v2.0 deste documento especificava 0.5px, calibrado
-para a rasterização a 2×, onde meio pixel vira exatamente um pixel de dispositivo.
-Na tela isso não sobrevive: meio pixel arredonda para 0 ou 1 conforme a posição, e
-parte das linhas não é pintada — o grid aparece com células de larguras diferentes.
-Como o preview é escalado por `transform`, o problema é pior ali do que numa página
-comum. Com 1px a linha nunca some, e na exportação a 2× ela vira 2px num bitmap de
-2160px, proporcionalmente idêntica ao que 1px em 1080 aparenta.
+#### Por que 2px
+
+A v2.0 deste documento especificava 0.5px, calibrado para a rasterização a 2×, onde meio
+pixel vira exatamente um pixel de dispositivo. A calibragem estava certa para o bitmap e
+errada para todo o resto, porque o slide quase nunca é visto a 1:1. A cadeia inteira,
+com linha de `L` px medida no slide de 1080:
+
+| Onde | Escala | Linha resultante |
+| ------------------------------- | ----- | ---------------- |
+| Slide a 1:1 | 1× | `L` px |
+| Bitmap exportado | 2× | `2L` px |
+| PDF exibido num feed a ~700px de largura | ÷3 | `0,65L` px |
+| Preview do editor | ~0,3× | `0,3L` px |
+
+Com `L = 1` a linha cai abaixo de um pixel em toda linha da tabela que não seja a
+primeira — some no artefato publicado, que é o único lugar que de fato importa. Com
+`L = 2` ela sobrevive ao downscale do feed. A 1:1 são 2px a cada 60px em `ink-800` sobre
+`ink-950`: cobertura de 3,3%, ainda textura e não desenho.
+
+#### Compensação no preview
+
+Nenhuma espessura fixa sobrevive a uma redução arbitrária, então o preview compensa. Quem
+exibe o slide reduzido declara a escala numa variável, e a espessura efetiva vira:
+
+```css
+/* no wrapper que escala: o mesmo k passado ao transform */
+--slide-scale: 0.28;
+
+/* no proprio elemento que desenha o grid, nunca no :root */
+--grid-line-render: max(var(--grid-line-w), calc(1px / var(--slide-scale, 1)));
+```
+
+`calc(1px / k)` devolve a espessura que, **depois** de escalada, dá exatamente um pixel
+de dispositivo. O `max()` faz a compensação entrar só quando é necessária: em `k = 1`, o
+caso da exportação, o valor de spec passa intocado.
+
+A declaração de `--grid-line-render` tem de ficar **no elemento que desenha o grid**, não
+no `:root`. Uma custom property resolve os `var()` do próprio valor no elemento onde é
+declarada; morando no `:root` ela resolveria `--slide-scale` como 1 ali, e os descendentes
+herdariam o resultado já pronto — sobrescrever a escala no wrapper não teria efeito
+nenhum.
+
+| `k` | `1px / k` | `max(2px, …)` | Depois da escala |
+| ---- | --------- | ------------- | ---------------- |
+| 1 | 1px | **2px** | 2px — valor de spec |
+| 0,5 | 2px | **2px** | 1px |
+| 0,28 | 3,57px | **3,57px** | 1px |
+
+É a mesma ideia do `vector-effect: non-scaling-stroke` do SVG. Feita com variável em vez
+da propriedade nativa porque o caminho de exportação precisa do comportamento oposto: lá
+a escala é 1 e vale a espessura de spec, não uma hairline de dispositivo.
 
 ---
 

@@ -50,6 +50,32 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+/** O slide em 1080x1350 reduzido, como o canvas do editor vai exibi-lo. */
+function ScaledSlide({ scale }: { scale: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="font-mono text-[12px] text-ink-500">scale({scale})</p>
+      <div
+        className="overflow-hidden rounded-md border"
+        style={{ width: 1080 * scale, height: 1350 * scale }}
+      >
+        <div
+          className="slide-grid bg-slide-bg"
+          style={{
+            width: "var(--slide-w)",
+            height: "var(--slide-h)",
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            // Same k as the transform. Without it the line is scaled down to a
+            // fraction of a device pixel and the browser drops it.
+            "--slide-scale": scale,
+          } as React.CSSProperties}
+        />
+      </div>
+    </div>
+  );
+}
+
 function LogoRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-3">
@@ -170,23 +196,17 @@ export default function ThemeCheck() {
         <div className="slide-grid h-48 rounded-md border bg-slide-bg" />
 
         <p className="text-[14px] text-ink-400">
-          O mesmo grid no contexto real: um quadro de 1080×1350 reduzido por{" "}
+          O mesmo grid no contexto real: quadros de 1080×1350 reduzidos por{" "}
           <code className="text-[13px]">transform: scale()</code>, que é como o canvas
-          vai exibir o slide.
+          vai exibir o slide. Os dois devem mostrar o grid, com a linha aparentando a
+          mesma espessura e as células do mesmo tamanho — é a compensação de{" "}
+          <code className="text-[13px]">--slide-scale</code> funcionando. O quadro a 0.5
+          está aqui porque é onde o <code className="text-[13px]">max()</code> troca de
+          braço.
         </p>
-        <div
-          className="overflow-hidden rounded-md border"
-          style={{ width: 1080 * 0.28, height: 1350 * 0.28 }}
-        >
-          <div
-            className="slide-grid bg-slide-bg"
-            style={{
-              width: "var(--slide-w)",
-              height: "var(--slide-h)",
-              transform: "scale(0.28)",
-              transformOrigin: "top left",
-            }}
-          />
+        <div className="flex flex-wrap items-start gap-8">
+          <ScaledSlide scale={0.28} />
+          <ScaledSlide scale={0.5} />
         </div>
       </Section>
 
@@ -218,6 +238,20 @@ export default function ThemeCheck() {
             <MaiahubGlyph className="size-4" />
             <MaiahubGlyph className="size-6" />
             <MaiahubGlyph className="size-12" />
+          </LogoRow>
+          <LogoRow label="a 32px, a medida que a §11.0 pede para o rodapé do slide">
+            <div className="flex flex-col items-center gap-2 rounded-md bg-slide-surface p-4">
+              <MaiahubMark className="h-8 w-auto" />
+              <span className="font-mono text-[11px] text-ink-500">Mark · mín 24px</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 rounded-md bg-slide-surface p-4">
+              <MaiahubGlyph className="size-8" />
+              <span className="font-mono text-[11px] text-ink-500">Glyph · 16–24px</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 rounded-md bg-slide-surface p-4">
+              <MaiahubSeal className="size-8" />
+              <span className="font-mono text-[11px] text-ink-500">Seal · mín 40px</span>
+            </div>
           </LogoRow>
           <LogoRow label="mono — estrela em currentColor, para o PDF">
             <MaiahubMark mono className="h-16 w-auto" />

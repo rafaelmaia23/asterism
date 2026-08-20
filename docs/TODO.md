@@ -57,12 +57,12 @@ com Oxanium e o grid de fundo visíveis no arquivo — não no preview, no arqui
 | 1.5 | Registry de templates — `register`, `get`, `list` | Testes antes: registrar e recuperar, `list` preserva ordem de registro, `get` de id desconhecido lança |
 | 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` do §11.1 validam contra o próprio schema, verificado em teste. `kicker` é campo digitado, não derivado — decisão 14 |
 | 1.7 | `cover-statement`: `index.tsx` com as regiões do §11.1, texto literal | Kicker em 80–148, título ancorado à **base** da região 300–1160; título de uma linha e de quatro linhas pousam na mesma altura |
-| 1.8 | `SlideFrame` — raiz de tamanho fixo que injeta `--slide-w`/`--slide-h` a partir de `deck.format` | Nenhum template hardcoda 1080 ou 1350; mudar `format` muda o quadro |
-| 1.9 | Canvas central com `transform: scale(k)` e `transform-origin: top left` num wrapper de tamanho fixo | O slide cabe na viewport sem media query; nenhuma matemática responsiva dentro do template |
+| 1.8 | `SlideFrame` — raiz de tamanho fixo que injeta `--slide-w`/`--slide-h` a partir de `deck.format`, e `--slide-scale` a partir da prop de escala | Nenhum template hardcoda 1080 ou 1350; mudar `format` muda o quadro. O `SlideFrame` é o **único** dono de `--slide-scale` — é o único que sabe em que tamanho o slide está sendo exibido |
+| 1.9 | Canvas central com `transform: scale(k)` e `transform-origin: top left` num wrapper de tamanho fixo | O slide cabe na viewport sem media query; nenhuma matemática responsiva dentro do template. O mesmo `k` do `transform` vai para `--slide-scale`, senão o grid de fundo some no preview |
 | 1.10 | Store zustand mínimo — deck, slide ativo, `setField` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
 | 1.11 | Inspector: formulário derivado dos descritores, tipos `text` e `textarea`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector |
 | 1.12 | Lista lateral de slides — índice, rótulo do template, seleção | Clicar troca o slide ativo. Somente leitura: sem arraste, sem duplicar, sem remover |
-| 1.13 | `rasterize(source, escala)` sobre `modern-screenshot`, escala 2 | Devolve um `Frame` de 2160×2700 com as fontes inlinadas — conferir que o bitmap não saiu em Arial |
+| 1.13 | `rasterize(source, escala)` sobre `modern-screenshot`, escala 2 | Devolve um `Frame` de 2160×2700 com as fontes inlinadas — conferir que o bitmap não saiu em Arial. Captura o `SlideFrame` com `--slide-scale: 1`, nunca o nó de dentro do wrapper escalado, senão a compensação de espessura do preview vaza para o arquivo exportado |
 | 1.14 | Registry de alvos de exportação + alvo `pdf` com jsPDF, uma página por slide | `ExportResult` devolve lista de arquivos mesmo com um só; o alvo não conhece nenhum template |
 | 1.15 | Botão de exportação na barra superior | Clicar baixa o PDF; o botão não sabe quais alvos existem, só consulta o registry |
 | 1.16 | Remover a página de verificação do tema | `src/app/page.tsx` passa a ser o editor |
@@ -88,7 +88,7 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 | 2.4 | Componentes recorrentes da §10.5 — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa |
 | 2.4a | Escolher por teste visual a peça de logo do rodapé | Ver experimento 1 abaixo. Decidido, a §11.0 do design system é atualizada junto |
 | 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 é atualizada junto |
-| 2.5 | Fundo aplicado a partir de `meta.fundo` — `plain` ou `grid` | `grid` desenha linhas de 0.5px a cada 60px; nenhum template de código ou imagem recebe grid |
+| 2.5 | Fundo aplicado a partir de `meta.background` — `plain` ou `grid` | `grid` desenha linhas de 2px a cada 60px; nenhum template de código ou imagem recebe grid. Conferir no preview **e** no PDF exportado: são os dois lados da compensação de `--slide-scale` |
 | 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
 | 2.7 | Inspector: tipos `select` e `toggle`, na seção de opções | Opções ficam visualmente separadas dos campos de conteúdo |
 | 2.8 | `text-bullets` completo — regiões da §11.2, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
@@ -160,19 +160,21 @@ papel — precisam dos dois lados renderizados lado a lado.
 
 ### Experimento 1 — a peça de logo do rodapé · tarefa 2.4a
 
-A §11.0 descreve o rodapé como duas coisas: "logo de 32px, gap 20px, handle em
-`slide-meta` `ink-400`". O `MaiahubSignature` já é marca, divisória e nome numa peça só
-— e o nome que ele carrega é "maiahub", não o `@handle` do deck.
+**Metade já decidida:** o rodapé é só-símbolo, sem nome escrito. O `MaiahubSignature` e o
+`MaiahubWordmark` estão descartados — a §11.0 já reserva o texto do rodapé para o
+`@handle` do deck, e a assinatura traria "maiahub" para competir com ele no mesmo canto.
 
-Os dois caminhos:
+Sobra escolher entre as três peças só-símbolo, a 32px, que é a medida da §11.0:
 
-- **`MaiahubMark` + handle**, como a §11.0 diz. O rodapé fica com o handle do deck, que
-  é o que a pessoa procura para seguir. A marca aparece como símbolo, sem repetir texto.
-- **`MaiahubSignature`**, que traz a marca escrita. Mais institucional, mas ou o handle
-  some do rodapé ou o slide passa a ter dois nomes competindo no mesmo canto.
+| Peça | Faixa documentada | A 32px |
+|---|---|---|
+| `MaiahubMark` | mín. 24px | dentro da faixa |
+| `MaiahubGlyph` | 16–24px | acima da faixa; é o mesmo M deformado de propósito para tamanhos pequenos, com traço mais grosso e sem o vértice central |
+| `MaiahubSeal` | mín. 40px | abaixo do mínimo; é um selo circular, não o M solto |
 
-Renderizar os dois num slide real, a 32px, e decidir olhando. O que perder é removido do
-projeto — cinco peças de logo para um uso só é peso morto.
+Pela documentação a `Mark` é a única das três dentro da faixa a 32px. As três estão lado
+a lado na página de tema para conferência. Decidido, as duas peças perdedoras e as duas
+já descartadas saem do projeto — cinco peças para um uso só é peso morto.
 
 ### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b
 
