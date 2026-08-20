@@ -32,7 +32,8 @@ Ficam em `docs/`, escritos em português. Cada um tem uma autoridade:
 | `asterism-context.md` | Arquitetura, modelo de dados, escopo, decisões registradas |
 | `observatorio-design-system.md` | Qualquer questão visual; é quem regenera o `theme.css` |
 | `theme.css` | Nada — é artefato derivado do documento acima |
-| `TODO.md` | Estado da execução: etapas, tarefas, decisões pendentes |
+| `TODO.md` | Estado da execução: etapas, tarefas, experimentos em aberto |
+| `maiahub-logo.md` | As peças de logo e como foram adaptadas ao Observatório |
 
 Em conflito entre um documento e o código, o documento vence.
 
@@ -43,10 +44,11 @@ marcadores `BEGIN/END Observatório`. Mudou um, muda o outro.
 
 ```
 docs/                 documentos de referência, em português
-src/app/              App Router — layout, globals.css, rotas
-src/components/ui/    componentes shadcn (gerados; editar só com motivo)
-src/fonts/            as três famílias em arquivo local + licenças OFL
-src/lib/              utilidades compartilhadas
+src/app/                App Router — layout, globals.css, rotas
+src/components/ui/      componentes shadcn (gerados; auditar contra a §2.4)
+src/components/maiahub/ as cinco peças de logo
+src/fonts/              as três famílias em arquivo local + licenças OFL
+src/lib/                utilidades compartilhadas
 ```
 
 Cada domínio do problema vira uma pasta autocontida, com fronteira clara e sem

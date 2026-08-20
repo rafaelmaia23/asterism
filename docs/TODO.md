@@ -1,6 +1,6 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · Etapa 1 aguardando início
+> **Status** bootstrap concluído · decisões pendentes resolvidas · Etapa 1 aguardando início
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. Etapas 1 e 2 estão expandidas; as demais têm apenas
 > objetivo e entrega, e são quebradas em tarefas quando chegarem.
@@ -26,6 +26,13 @@ Concluída. Next.js 16 com App Router, Tailwind v4 e shadcn/ui sobre Base UI; te
 Observatório aplicado e verificado; as três fontes como arquivos locais; git com `main`
 e `dev`; `CLAUDE.md`; este arquivo.
 
+A verificação visual pegou dois bugs, corrigidos: a escala `ink` sem cor, por
+tree-shaking de token do Tailwind, e o grid de fundo com linhas somindo, por causa do
+meio pixel. Ver decisões 15 e as armadilhas da §13 do documento de contexto.
+
+Os componentes de logo maiahub entraram em `src/components/maiahub/`, com a estrela
+mapeada para `azure-400`. Documentação em `docs/maiahub-logo.md`.
+
 ---
 
 ## Etapa 1 — MVP, prova de conceito
@@ -48,7 +55,7 @@ com Oxanium e o grid de fundo visíveis no arquivo — não no preview, no arqui
 | 1.3 | Factories `createDeck` e `createSlide` | Testes escritos antes passam: id único, `version: 1`, `format` 1080×1350, slide criado com os defaults do template |
 | 1.4 | Tipos `TemplateDef` e `Field` em `src/templates/types.ts` — o descritor declarativo da §8 | Os sete tipos de `Field` compilam; `TemplateDef` é genérico em `F` e `O` |
 | 1.5 | Registry de templates — `register`, `get`, `list` | Testes antes: registrar e recuperar, `list` preserva ordem de registro, `get` de id desconhecido lança |
-| 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` do §11.1 validam contra o próprio schema, verificado em teste |
+| 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` do §11.1 validam contra o próprio schema, verificado em teste. `kicker` é campo digitado, não derivado — decisão 14 |
 | 1.7 | `cover-statement`: `index.tsx` com as regiões do §11.1, texto literal | Kicker em 80–148, título ancorado à **base** da região 300–1160; título de uma linha e de quatro linhas pousam na mesma altura |
 | 1.8 | `SlideFrame` — raiz de tamanho fixo que injeta `--slide-w`/`--slide-h` a partir de `deck.format` | Nenhum template hardcoda 1080 ou 1350; mudar `format` muda o quadro |
 | 1.9 | Canvas central com `transform: scale(k)` e `transform-origin: top left` num wrapper de tamanho fixo | O slide cabe na viewport sem media query; nenhuma matemática responsiva dentro do template |
@@ -78,14 +85,16 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 | 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1: cada marcador isolado, marcadores adjacentes, marcador não fechado, `**a *b* c**` tratado como literal no marcador externo, string vazia, texto sem marcador. Devolve AST, **nunca** HTML |
 | 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
 | 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
-| 2.4 | Componentes recorrentes da §10.5 — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa. **Bloqueada pelas decisões 3 e 4** |
+| 2.4 | Componentes recorrentes da §10.5 — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa |
+| 2.4a | Escolher por teste visual a peça de logo do rodapé | Ver experimento 1 abaixo. Decidido, a §11.0 do design system é atualizada junto |
+| 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 é atualizada junto |
 | 2.5 | Fundo aplicado a partir de `meta.fundo` — `plain` ou `grid` | `grid` desenha linhas de 0.5px a cada 60px; nenhum template de código ou imagem recebe grid |
-| 2.6 | Inspector: tipo de campo `lista`, com `maxItens` e `maxPorItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
+| 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
 | 2.7 | Inspector: tipos `select` e `toggle`, na seção de opções | Opções ficam visualmente separadas dos campos de conteúdo |
-| 2.8 | `text-bullets` completo — regiões da §11.2, marcador travessão, opção `ancoragem` | `centro` distribui os itens no miolo, `topo` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
-| 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `mostrarSeta` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa |
-| 2.10 | `migrarCampos(de, para, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. **Bloqueada pela decisão 1** |
-| 2.11 | Seletor de layout no topo do inspector, usando `migrarCampos` | Trocar o layout preserva o que já foi digitado e reseta as opções |
+| 2.8 | `text-bullets` completo — regiões da §11.2, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
+| 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa |
+| 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 torna a migração uma interseção de chaves, sem tabela de equivalência |
+| 2.11 | Seletor de layout no topo do inspector, usando `migrateFields` | Trocar o layout preserva o que já foi digitado e reseta as opções |
 | 2.12 | `persist` do zustand em localStorage | Recarregar a página não perde o deck |
 
 > A tarefa 2.12 é antecipada da Fase 3 do §15. Motivo: o próprio §15 afirma que a Fase 1
@@ -106,6 +115,12 @@ por `ResizeObserver`, marcando o slide como inválido no canvas e na lista later
 
 O guard não é polimento opcional: slide tem altura fixa e texto longo transborda: é a
 falha número um deste tipo de ferramenta.
+
+**Mais uma tarefa nesta etapa:** alinhar as variantes do shadcn à §2.4 do design system.
+O preset `nova` desenha o botão destrutivo como fundo tingido a 10%, e o padrão do
+sistema é tom 400 de preenchimento com tom 950 de texto. A decisão já está tomada — o
+Observatório vence, decisão 17 — e fica para cá porque com três componentes instalados
+seria ajustar no escuro. Auditar todas as variantes na mesma passada.
 
 ---
 
@@ -137,67 +152,37 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 
 ---
 
-## Decisões pendentes
+## A resolver por experimento
 
-Nenhuma foi assumida. Cada uma bloqueia a tarefa indicada.
+As cinco decisões que estavam pendentes foram respondidas e registradas na §16 do
+documento de contexto, decisões 13 a 17. Sobraram dois pontos que não se resolvem no
+papel — precisam dos dois lados renderizados lado a lado.
 
-### 1. Conflito no vocabulário de campos — *bloqueia 2.10*
+### Experimento 1 — a peça de logo do rodapé · tarefa 2.4a
 
-A §6 do documento de contexto define o vocabulário canônico como `kicker`, `heading`,
-`corpo`, `itens`, `imagem`, `legenda`, `codigo`/`arquivo`/`lang`, e diz que templates
-diferentes devem usar as mesmas chaves para papéis equivalentes. Mas as specs da §11.1 e
-da §11.3 do design system usam `titulo`, `lead` e `cta`, que não estão no vocabulário.
+A §11.0 descreve o rodapé como duas coisas: "logo de 32px, gap 20px, handle em
+`slide-meta` `ink-400`". O `MaiahubSignature` já é marca, divisória e nome numa peça só
+— e o nome que ele carrega é "maiahub", não o `@handle` do deck.
 
-Na prática: o título de `cover-statement` está em `titulo` e o de `text-bullets` em
-`heading`, então trocar o layout apagaria o que a pessoa escreveu — exatamente o
-problema que a separação `fields`/`options` existe para resolver, e o "pior momento
-possível de uso da ferramenta" nas palavras do §6.
+Os dois caminhos:
 
-**Recomendação.** Renomear `titulo` → `heading` em `cover-statement` e `final-cta`, e
-acrescentar `lead` e `cta` ao vocabulário canônico, já que não têm equivalente. Atualiza
-os dois documentos no mesmo commit.
+- **`MaiahubMark` + handle**, como a §11.0 diz. O rodapé fica com o handle do deck, que
+  é o que a pessoa procura para seguir. A marca aparece como símbolo, sem repetir texto.
+- **`MaiahubSignature`**, que traz a marca escrita. Mais institucional, mas ou o handle
+  some do rodapé ou o slide passa a ter dois nomes competindo no mesmo canto.
 
-**Alternativa.** Manter as chaves como estão e escrever uma tabela de equivalência dentro
-de `migrarCampos`. Ganha em não mexer nos documentos, perde em ter duas fontes de verdade
-sobre o mesmo assunto e em precisar manter a tabela a cada template novo.
+Renderizar os dois num slide real, a 32px, e decidir olhando. O que perder é removido do
+projeto — cinco peças de logo para um uso só é peso morto.
 
-### 2. Origem do kicker — *afeta 1.6 e 2.4*
+### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b
 
-A §10.5 descreve o kicker no formato `pilar/ · índice`, o que sugere derivação de
-`deck.meta.pilar` e da posição do slide. A §11.1 o define como campo `text` digitado à
-mão, limite 12 caracteres. Os dois não podem valer ao mesmo tempo.
+A §10.5 diz "5 pontos mais um contador `03 / 12`" e não diz quais cinco. Três leituras:
 
-Derivar dá consistência automática em todo o deck e um campo a menos no inspector, mas
-tira a liberdade de escrever qualquer outra coisa ali. Digitar dá liberdade ao custo de
-a pessoa ter de acertar o índice à mão em cada slide — e de errar quando reordenar.
+- **Cinco primeiros.** Simples, mas para de comunicar progresso a partir do sexto slide.
+- **Janela deslizante** em torno do atual. É a leitura mais provável, e colide com a
+  regra de que "o atual é simplesmente o último aceso" — numa janela deslizante o último
+  aceso é sempre o mesmo ponto, e a constelação vira decoração.
+- **Amostragem espalhada** pelo deck, tipo 1, 4, 7, 10, 12. Mantém a noção de progresso e
+  perde a de contagem, que o contador ao lado já cobre.
 
-Sem resposta, a tarefa 1.6 implementa como campo digitado, por ser o que a spec do
-template diz, e a mudança para derivado fica barata.
-
-### 3. Logo do rodapé — *bloqueia 2.4*
-
-A §11.0 exige "logo de 32px" no rodapé de todo slide que não seja capa ou final. Não
-existe arquivo, nem especificação de forma, nem menção a ele em nenhuma outra seção.
-
-É um símbolo do asterismo? Um monograma? O rodapé pode existir sem logo, só com handle e
-constelação?
-
-### 4. Constelação acima de 10 slides — *bloqueia parte de 2.4*
-
-A §10.5 diz que acima de 10 slides a constelação mostra "5 pontos mais um contador
-`03 / 12`". Falta definir **quais** cinco: os cinco primeiros, uma janela deslizante em
-torno do slide atual, ou uma amostragem espalhada pelo deck.
-
-Janela deslizante é a leitura mais provável, mas colide com a regra de que "o atual é
-simplesmente o último aceso" — numa janela deslizante o último aceso é sempre o mesmo
-ponto, e a constelação para de comunicar progresso.
-
-### 5. Variantes do shadcn contra a §2.4 — *afeta a Etapa 3*
-
-O preset `nova` do shadcn desenha o botão destrutivo como `bg-destructive/10` com texto
-`destructive` — fundo tingido, não o padrão uniforme "tom 400 como preenchimento, tom 950
-como texto" da §2.4. Divergência de baixa gravidade, no chrome do editor e não no
-carrossel, mas é divergência.
-
-Adaptar as variantes ao Observatório é trabalho de uma tarefa própria. Fica registrado
-para não passar despercebido, sem bloquear nada.
+Montar as três com um deck de 12 slides e escolher.
