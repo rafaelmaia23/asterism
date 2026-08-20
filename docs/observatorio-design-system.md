@@ -236,12 +236,20 @@ Nunca em slides de código ou com imagem: o grid compete com o conteúdo.
 --grid-line: #1e293b; /* ink-800 */
 
 background-image:
-  linear-gradient(var(--grid-line) 0.5px, transparent 0.5px),
-  linear-gradient(90deg, var(--grid-line) 0.5px, transparent 0.5px);
+  linear-gradient(var(--grid-line) 1px, transparent 1px),
+  linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
 background-size: var(--grid-size) var(--grid-size);
 ```
 
 A intensidade é fixa. Não varie entre slides do mesmo carrossel.
+
+A linha é de **1px inteiro**. A v2.0 deste documento especificava 0.5px, calibrado
+para a rasterização a 2×, onde meio pixel vira exatamente um pixel de dispositivo.
+Na tela isso não sobrevive: meio pixel arredonda para 0 ou 1 conforme a posição, e
+parte das linhas não é pintada — o grid aparece com células de larguras diferentes.
+Como o preview é escalado por `transform`, o problema é pior ali do que numa página
+comum. Com 1px a linha nunca some, e na exportação a 2× ela vira 2px num bitmap de
+2160px, proporcionalmente idêntica ao que 1px em 1080 aparenta.
 
 ---
 

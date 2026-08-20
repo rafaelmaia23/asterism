@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  MaiahubGlyph,
+  MaiahubMark,
+  MaiahubSeal,
+  MaiahubSignature,
+  MaiahubWordmark,
+} from "@/components/maiahub";
 
 /**
  * Temporary theme verification page.
@@ -9,18 +16,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
  * bootstrap. It is disposable — task 1.16 removes it.
  */
 
+// Classes literais, nao `bg-ink-${step}`: Tailwind resolve as classes lendo o
+// source, entao um nome montado em runtime nunca gera a utility.
 const INK = [
-  "50",
-  "100",
-  "200",
-  "300",
-  "400",
-  "500",
-  "600",
-  "700",
-  "800",
-  "900",
-  "950",
+  { step: "50", bg: "bg-ink-50", fg: "text-ink-950" },
+  { step: "100", bg: "bg-ink-100", fg: "text-ink-950" },
+  { step: "200", bg: "bg-ink-200", fg: "text-ink-950" },
+  { step: "300", bg: "bg-ink-300", fg: "text-ink-950" },
+  { step: "400", bg: "bg-ink-400", fg: "text-ink-950" },
+  { step: "500", bg: "bg-ink-500", fg: "text-ink-50" },
+  { step: "600", bg: "bg-ink-600", fg: "text-ink-50" },
+  { step: "700", bg: "bg-ink-700", fg: "text-ink-50" },
+  { step: "800", bg: "bg-ink-800", fg: "text-ink-50" },
+  { step: "900", bg: "bg-ink-900", fg: "text-ink-50" },
+  { step: "950", bg: "bg-ink-950", fg: "text-ink-50" },
 ];
 
 const ROLES = [
@@ -38,6 +47,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </h2>
       {children}
     </section>
+  );
+}
+
+function LogoRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="font-mono text-[12px] text-ink-500">{label}</p>
+      <div className="flex flex-wrap items-end gap-8">{children}</div>
+    </div>
   );
 }
 
@@ -69,20 +87,12 @@ export default function ThemeCheck() {
 
       <Section title="Escala neutra — ink">
         <div className="flex overflow-hidden rounded-md border">
-          {INK.map((step) => (
+          {INK.map((s) => (
             <div
-              key={step}
-              className="flex h-20 flex-1 items-end justify-center pb-1"
-              style={{ backgroundColor: `var(--color-ink-${step})` }}
+              key={s.step}
+              className={`${s.bg} flex h-20 flex-1 items-end justify-center pb-1`}
             >
-              <span
-                className="font-mono text-[10px]"
-                style={{
-                  color: Number(step) >= 500 ? "var(--color-ink-100)" : "var(--color-ink-950)",
-                }}
-              >
-                {step}
-              </span>
+              <span className={`${s.fg} font-mono text-[10px]`}>{s.step}</span>
             </div>
           ))}
         </div>
@@ -153,7 +163,68 @@ export default function ThemeCheck() {
       </Section>
 
       <Section title="Grid de fundo — utilitário slide-grid">
+        <p className="text-[14px] text-ink-400">
+          Células de 60px, linha de 1px. Confira com zoom em 100%, 150% e 200%: as
+          células devem continuar do mesmo tamanho e nenhuma linha pode sumir.
+        </p>
         <div className="slide-grid h-48 rounded-md border bg-slide-bg" />
+
+        <p className="text-[14px] text-ink-400">
+          O mesmo grid no contexto real: um quadro de 1080×1350 reduzido por{" "}
+          <code className="text-[13px]">transform: scale()</code>, que é como o canvas
+          vai exibir o slide.
+        </p>
+        <div
+          className="overflow-hidden rounded-md border"
+          style={{ width: 1080 * 0.28, height: 1350 * 0.28 }}
+        >
+          <div
+            className="slide-grid bg-slide-bg"
+            style={{
+              width: "var(--slide-w)",
+              height: "var(--slide-h)",
+              transform: "scale(0.28)",
+              transformOrigin: "top left",
+            }}
+          />
+        </div>
+      </Section>
+
+      <Section title="Logo maiahub — estrela em azure-400">
+        <p className="text-[14px] text-ink-400">
+          A estrela usa a mesma cor do kicker acima. Compare os dois: devem ser
+          idênticos.
+        </p>
+
+        <div className="flex flex-col gap-8 rounded-md border bg-card p-6">
+          <LogoRow label="MaiahubWordmark · mín. 200px de largura">
+            <MaiahubWordmark className="h-10 w-auto" />
+          </LogoRow>
+          <LogoRow label="MaiahubSignature · rodapé, cabeçalho">
+            <MaiahubSignature />
+            <MaiahubSignature bare />
+            <MaiahubSignature className="[&_svg]:h-8" />
+          </LogoRow>
+          <LogoRow label="MaiahubMark · mín. 24px de altura">
+            <MaiahubMark className="h-6 w-auto" />
+            <MaiahubMark className="h-8 w-auto" />
+            <MaiahubMark className="h-16 w-auto" />
+          </LogoRow>
+          <LogoRow label="MaiahubSeal · mín. 40px">
+            <MaiahubSeal className="size-10" />
+            <MaiahubSeal className="size-16" />
+          </LogoRow>
+          <LogoRow label="MaiahubGlyph · mín. 16px">
+            <MaiahubGlyph className="size-4" />
+            <MaiahubGlyph className="size-6" />
+            <MaiahubGlyph className="size-12" />
+          </LogoRow>
+          <LogoRow label="mono — estrela em currentColor, para o PDF">
+            <MaiahubMark mono className="h-16 w-auto" />
+            <MaiahubMark mono className="h-16 w-auto text-azure-radiance-400" />
+            <MaiahubGlyph mono className="size-12 text-ink-400" />
+          </LogoRow>
+        </div>
       </Section>
     </main>
   );

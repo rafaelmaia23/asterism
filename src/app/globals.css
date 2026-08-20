@@ -14,17 +14,23 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+
 /* =============================================================
    BEGIN Observatório — espelho de docs/theme.css
    ============================================================= */
-
 
 /* ---------------------------------------------------------------
    Escalas de cor
    Disponíveis como utilitários: bg-azure-radiance-400, text-ink-100, etc.
    --------------------------------------------------------------- */
 
-@theme {
+/* `static` pelo mesmo motivo do bloco da superfície carrossel: a §2.1 promete
+   que os degraus fora dos papéis semânticos ficam disponíveis para quando
+   aparecer uma situação. Sem `static` o Tailwind faz tree-shaking dos que
+   nenhuma classe referencia, e `var(--color-ink-700)` num estilo inline
+   resolve para nada. */
+
+@theme static {
   --color-azure-radiance-50: #eff6ff;
   --color-azure-radiance-100: #dbeafe;
   --color-azure-radiance-200: #bfdbfe;
@@ -283,13 +289,12 @@
 /* O grid de fundo dos templates que declaram fundo: "grid".
    Nunca em slides de codigo ou com imagem. */
 @utility slide-grid {
+  /* 1px, não 0.5px: meio pixel arredonda para 0 ou 1 pixel de dispositivo
+     conforme a posição da linha, e parte delas simplesmente não é pintada.
+     Ver §4.3 do design system. */
   background-image:
-    linear-gradient(var(--color-slide-grid-line) 0.5px, transparent 0.5px),
-    linear-gradient(
-      90deg,
-      var(--color-slide-grid-line) 0.5px,
-      transparent 0.5px
-    );
+    linear-gradient(var(--color-slide-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-slide-grid-line) 1px, transparent 1px);
   background-size: var(--slide-grid-size) var(--slide-grid-size);
 }
 
