@@ -1,0 +1,298 @@
+/* asterism — folha de estilo global.
+   Instalação do shadcn/ui em volta do tema do Observatório.
+
+   O bloco entre os marcadores BEGIN/END é cópia literal de `docs/theme.css`,
+   que é o artefato derivado de `docs/observatorio-design-system.md`. Ao mudar
+   um token, mude nos dois — o documento vence, sempre.
+
+   Não há tema claro. A classe `dark` no <html> existe apenas para que os
+   utilitários `dark:` dentro dos componentes shadcn resolvam de forma coerente;
+   os tokens vivem em `:root` e não há bloco `.dark` para manter. */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+/* =============================================================
+   BEGIN Observatório — espelho de docs/theme.css
+   ============================================================= */
+
+
+/* ---------------------------------------------------------------
+   Escalas de cor
+   Disponíveis como utilitários: bg-azure-radiance-400, text-ink-100, etc.
+   --------------------------------------------------------------- */
+
+@theme {
+  --color-azure-radiance-50: #eff6ff;
+  --color-azure-radiance-100: #dbeafe;
+  --color-azure-radiance-200: #bfdbfe;
+  --color-azure-radiance-300: #93c5fd;
+  --color-azure-radiance-400: #60a5fa;
+  --color-azure-radiance-500: #3b82f6;
+  --color-azure-radiance-600: #2563eb;
+  --color-azure-radiance-700: #1d4ed8;
+  --color-azure-radiance-800: #1e40af;
+  --color-azure-radiance-900: #1e3a8a;
+  --color-azure-radiance-950: #172554;
+
+  --color-sun-50: #fff9eb;
+  --color-sun-100: #fdeec8;
+  --color-sun-200: #fada8d;
+  --color-sun-300: #f8c251;
+  --color-sun-400: #f6a823;
+  --color-sun-500: #f08810;
+  --color-sun-600: #d4640b;
+  --color-sun-700: #b0450d;
+  --color-sun-800: #8f3511;
+  --color-sun-900: #762c11;
+  --color-sun-950: #441504;
+
+  --color-crown-of-thorns-50: #fef2f2;
+  --color-crown-of-thorns-100: #fee2e2;
+  --color-crown-of-thorns-200: #fecaca;
+  --color-crown-of-thorns-300: #fba6a6;
+  --color-crown-of-thorns-400: #f77272;
+  --color-crown-of-thorns-500: #ee4545;
+  --color-crown-of-thorns-600: #db2727;
+  --color-crown-of-thorns-700: #b81d1d;
+  --color-crown-of-thorns-800: #981c1c;
+  --color-crown-of-thorns-900: #7c1d1d;
+  --color-crown-of-thorns-950: #450a0a;
+
+  --color-pacifika-50: #fbfce9;
+  --color-pacifika-100: #f3f7d0;
+  --color-pacifika-200: #e7efa7;
+  --color-pacifika-300: #d4e373;
+  --color-pacifika-400: #bfd447;
+  --color-pacifika-500: #a1b929;
+  --color-pacifika-600: #7e931d;
+  --color-pacifika-700: #697c1d;
+  --color-pacifika-800: #4d5a1a;
+  --color-pacifika-900: #414c1b;
+  --color-pacifika-950: #222a09;
+
+  --color-ink-50: #f8fafc;
+  --color-ink-100: #f1f5f9;
+  --color-ink-200: #e2e8f0;
+  --color-ink-300: #cbd5e1;
+  --color-ink-400: #94a3b8;
+  --color-ink-500: #64748b;
+  --color-ink-600: #475569;
+  --color-ink-700: #334155;
+  --color-ink-800: #1e293b;
+  --color-ink-900: #0f172a;
+  --color-ink-950: #020617;
+
+  /* Papéis fora do vocabulário shadcn */
+  --color-success: #bfd447;
+  --color-success-foreground: #222a09;
+  --color-warning: #f6a823;
+  --color-warning-foreground: #441504;
+
+  /* Tipografia.
+     As três famílias são carregadas por `next/font/local` em `src/fonts/`,
+     que gera um nome de família ofuscado e o expõe por CSS variable. Por isso
+     o nome literal ("Oxanium") não pode aparecer aqui — ver §12 do design
+     system: fonte de CDN não é inlinada na rasterização e o PDF sai em Arial. */
+  --font-display: var(--font-oxanium), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Movimento */
+  --ease-out-obs: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ---------------------------------------------------------------
+   Tokens semânticos shadcn/ui
+   --------------------------------------------------------------- */
+
+:root {
+  --background: #020617;
+  --foreground: #f1f5f9;
+
+  --card: #0f172a;
+  --card-foreground: #f1f5f9;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+
+  --primary: #60a5fa;
+  --primary-foreground: #172554;
+
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+
+  /* superfície de hover de menu e seleção, NÃO a cor de marca */
+  --accent: #1e293b;
+  --accent-foreground: #f1f5f9;
+
+  --destructive: #f77272;
+  --destructive-foreground: #450a0a;
+
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #3b82f6;
+
+  --chart-1: #60a5fa;
+  --chart-2: #f6a823;
+  --chart-3: #bfd447;
+  --chart-4: #f77272;
+  --chart-5: #bfdbfe;
+
+  /* O shadcn exige os tokens de sidebar mesmo sem o componente instalado.
+     Derivados da escada de superfícies do §2.2 — a sidebar é `card`. */
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #172554;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #3b82f6;
+
+  --radius: 0.375rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-heading: var(--font-display);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+}
+
+/* ---------------------------------------------------------------
+   Superfície carrossel — canvas 1080x1350
+   Consumida pelos templates do asterism.
+   --------------------------------------------------------------- */
+
+/* `static` porque estes tokens são lidos por `var()` dentro dos templates, não
+   só por utilitários. Sem isso o Tailwind faz tree-shaking dos que nenhuma
+   classe referencia e `var(--slide-pad)` resolve para nada em produção. */
+
+@theme static {
+  --slide-w: 1080px;
+  --slide-h: 1350px;
+
+  --color-slide-bg: #020617;
+  --color-slide-surface: #0f172a;
+  --color-slide-raised: #1e293b;
+  --color-slide-border: #1e293b;
+  --color-slide-grid-line: #1e293b;
+
+  --slide-pad: 80px;
+  --slide-safe: 60px;
+  --slide-gap-block: 64px;
+  --slide-gap-item: 48px;
+  --slide-pad-code: 32px;
+  --slide-radius: 12px;
+  --slide-grid-size: 60px;
+
+  --text-slide-display: 96px;
+  --text-slide-title: 72px;
+  --text-slide-heading: 56px;
+  --text-slide-lead: 44px;
+  --text-slide-body: 40px;
+  --text-slide-caption: 32px;
+  --text-slide-code: 34px;
+  --text-slide-meta: 28px;
+}
+
+/* ---------------------------------------------------------------
+   Base
+   --------------------------------------------------------------- */
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: #172554;
+    color: #f1f5f9;
+  }
+}
+
+/* O grid de fundo dos templates que declaram fundo: "grid".
+   Nunca em slides de codigo ou com imagem. */
+@utility slide-grid {
+  background-image:
+    linear-gradient(var(--color-slide-grid-line) 0.5px, transparent 0.5px),
+    linear-gradient(
+      90deg,
+      var(--color-slide-grid-line) 0.5px,
+      transparent 0.5px
+    );
+  background-size: var(--slide-grid-size) var(--slide-grid-size);
+}
+
+/* =============================================================
+   END Observatório
+   ============================================================= */
