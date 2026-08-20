@@ -197,7 +197,7 @@ Medida de linha entre **45 e 75 caracteres** na web; no carrossel, entre 28 e 42
 que na prática significa que o texto raramente ocupa a largura total do slide.
 
 Um único nível de ênfase por bloco. Alinhamento sempre à esquerda — nada centralizado,
-com a exceção do template `texto-impacto`, que é uma frase isolada.
+com a exceção do template `text-impact`, que é uma frase isolada.
 
 ---
 
@@ -228,7 +228,7 @@ grupos `8`; entre seções `16` ou `24`.
 
 ### 4.3 Grid de fundo
 
-Presente apenas nos templates que declaram `fundo: "grid"` — capas e slide final.
+Presente apenas nos templates que declaram `background: "grid"` — capas e slide final.
 Nunca em slides de código ou com imagem: o grid compete com o conteúdo.
 
 ```css
@@ -354,6 +354,13 @@ O shadcn tem um vocabulário próprio e **duas armadilhas de nomenclatura**:
 | `--radius`                 | `0.375rem`                                        | 6px         |
 | `--chart-1` … `--chart-5`  | `#60a5fa` `#f6a823` `#bfd447` `#f77272` `#bfdbfe` | —           |
 
+**As variantes geradas pelo shadcn são adaptadas a este documento, não o contrário.**
+Os presets do CLI trazem escolhas próprias que nem sempre batem com a §2.4 — o preset
+`nova`, por exemplo, desenha o botão destrutivo como fundo tingido a 10% com texto na
+própria cor, em vez do padrão uniforme "tom 400 de preenchimento, tom 950 de texto".
+Toda instalação de componente novo precisa dessa conferência, senão a divergência volta
+sem ninguém notar.
+
 Fora do vocabulário shadcn, como cores de tema do Tailwind:
 
 | Token                        | Valor     |
@@ -429,6 +436,11 @@ Gerado a partir destes tokens, não importado pronto — senão o bloco de códi
 **Kicker** — canto superior esquerdo, `slide-meta`, `azure-400`.
 Formato `pilar/ · índice`, por exemplo `api/ · 04`.
 
+O formato é **convenção, não derivação**. O kicker é um campo de texto digitado à mão,
+não é montado a partir de `deck.meta.pillar` com a posição do slide. Derivar daria
+consistência automática ao custo de não poder escrever outra coisa ali, e a liberdade
+venceu. A contrapartida é que reordenar slides não reescreve o índice sozinho.
+
 **Constelação de progresso** — rodapé direito. Um ponto por slide, 12px de diâmetro,
 gap 12px, alinhada à direita dentro do padding.
 
@@ -464,8 +476,8 @@ padding 24px. Variantes: `info` (azure), `atencao` (sun), `positivo` (pacifika),
 Dez templates organizados por função narrativa. Estrutura de deck:
 `capa → contexto → desenvolvimento (n) → payoff → cta`, alvo de 8 a 12 slides.
 
-`capa-declaracao` · `contexto` · `texto-topicos` · `texto-impacto` · `codigo-janela` ·
-`codigo-anotado` · `comparacao-2col` · `split-vertical` · `imagem-legenda` · `final-cta`
+`cover-statement` · `context` · `text-bullets` · `text-impact` · `code-window` ·
+`code-annotated` · `compare-2col` · `split-vertical` · `image-caption` · `final-cta`
 
 Especificados abaixo: os três da Fase 1 do `asterism`. Os demais seguem o mesmo formato
 quando forem implementados.
@@ -490,9 +502,9 @@ de fato, medindo altura real.
 
 ---
 
-### 11.1 `capa-declaracao`
+### 11.1 `cover-statement`
 
-**Função** gancho · **Fundo** `grid` · **Grupo** capa
+**Função** gancho · **Fundo** `grid` · **Grupo** `cover`
 
 Único slide sem rodapé de identidade. O título é a única coisa que importa e nada
 compete com ele.
@@ -521,16 +533,16 @@ carrossel teria um ritmo diferente e a série perderia identidade.
 
 #### Campos
 
-| Chave    | Tipo       | Limite | Marcação | Descrição                       |
-| -------- | ---------- | ------ | -------- | ------------------------------- |
-| `kicker` | `text`     | 12     | não      | Pilar e índice, ex. `api/ · 04` |
-| `titulo` | `textarea` | 70     | sim      | Declaração ou pergunta          |
+| Chave     | Tipo       | Limite | Marcação | Descrição                       |
+| --------- | ---------- | ------ | -------- | ------------------------------- |
+| `kicker`  | `text`     | 12     | não      | Pilar e índice, ex. `api/ · 04` |
+| `heading` | `textarea` | 70     | sim      | Declaração ou pergunta          |
 
 #### Opções
 
-| Chave            | Tipo     | Padrão | Efeito                |
-| ---------------- | -------- | ------ | --------------------- |
-| `mostrarChevron` | `toggle` | `true` | Afordância de deslize |
+| Chave         | Tipo     | Padrão | Efeito                |
+| ------------- | -------- | ------ | --------------------- |
+| `showChevron` | `toggle` | `true` | Afordância de deslize |
 
 #### Comportamento
 
@@ -547,16 +559,16 @@ demais em 96px e não deve ser usado em título.
 
 ```ts
 defaults: {
-  fields:  { kicker: "log/ · 01", titulo: "Um título que declara algo em vez de prometer" },
-  options: { mostrarChevron: true },
+  fields:  { kicker: "log/ · 01", heading: "Um título que declara algo em vez de prometer" },
+  options: { showChevron: true },
 }
 ```
 
 ---
 
-### 11.2 `texto-topicos`
+### 11.2 `text-bullets`
 
-**Função** desenvolvimento · **Fundo** `plain` · **Grupo** conteúdo
+**Função** desenvolvimento · **Fundo** `plain` · **Grupo** `content`
 
 O template mais usado de um carrossel. Cabeçalho no topo, itens no miolo, rodapé fixo.
 
@@ -586,18 +598,18 @@ travessão em JetBrains Mono puxa para o registro de terminal, que é o do siste
 | Chave     | Tipo       | Limite                      | Marcação | Descrição          |
 | --------- | ---------- | --------------------------- | -------- | ------------------ |
 | `heading` | `textarea` | 60                          | não      | Cabeçalho do slide |
-| `itens`   | `lista`    | 4 itens, 80 caracteres cada | sim      | Tópicos            |
+| `items`   | `list`     | 4 itens, 80 caracteres cada | sim      | Tópicos            |
 
 #### Opções
 
-| Chave       | Tipo     | Padrão   | Efeito                                                                        |
-| ----------- | -------- | -------- | ----------------------------------------------------------------------------- |
-| `ancoragem` | `select` | `centro` | `centro` distribui os itens no miolo; `topo` encosta logo abaixo do cabeçalho |
+| Chave    | Tipo     | Padrão   | Efeito                                                                        |
+| -------- | -------- | -------- | ----------------------------------------------------------------------------- |
+| `anchor` | `select` | `center` | `center` distribui os itens no miolo; `top` encosta logo abaixo do cabeçalho |
 
 #### Comportamento
 
 **Três itens é o alvo, quatro é o teto.** Com dois itens o slide fica vazio e o conteúdo
-pede `texto-impacto`; com cinco, transborda e o conteúdo pede dois slides.
+pede `text-impact`; com cinco, transborda e o conteúdo pede dois slides.
 
 **Item longo** — 40px em 888px de largura útil comporta cerca de 44 caracteres por linha.
 O limite de 80 dá até duas linhas por item. Três linhas ainda cabem se houver apenas
@@ -610,9 +622,9 @@ marca-texto no mesmo slide competem entre si e anulam a hierarquia. Escolha um.
 defaults: {
   fields: {
     heading: "Três coisas que eu mudaria",
-    itens: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
+    items: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
   },
-  options: { ancoragem: "centro" },
+  options: { anchor: "center" },
 }
 ```
 
@@ -620,7 +632,7 @@ defaults: {
 
 ### 11.3 `final-cta`
 
-**Função** fechamento · **Fundo** `grid` · **Grupo** final
+**Função** fechamento · **Fundo** `grid` · **Grupo** `final`
 
 O bloco de conteúdo é ancorado à base, espelhando a capa — a série abre e fecha com o
 mesmo gesto tipográfico. A constelação aparece inteira acesa.
@@ -648,17 +660,17 @@ algo com aparência de botão promete uma interação que não existe.
 
 #### Campos
 
-| Chave    | Tipo       | Limite | Marcação | Descrição             |
-| -------- | ---------- | ------ | -------- | --------------------- |
-| `titulo` | `textarea` | 55     | sim      | Fecho                 |
-| `lead`   | `textarea` | 90     | não      | Complemento, opcional |
-| `cta`    | `text`     | 40     | não      | Destino ou ação       |
+| Chave     | Tipo       | Limite | Marcação | Descrição             |
+| --------- | ---------- | ------ | -------- | --------------------- |
+| `heading` | `textarea` | 55     | sim      | Fecho                 |
+| `lead`    | `textarea` | 90     | não      | Complemento, opcional |
+| `cta`     | `text`     | 40     | não      | Destino ou ação       |
 
 #### Opções
 
-| Chave         | Tipo     | Padrão | Efeito             |
-| ------------- | -------- | ------ | ------------------ |
-| `mostrarSeta` | `toggle` | `true` | Prefixo `→` no CTA |
+| Chave       | Tipo     | Padrão | Efeito             |
+| ----------- | -------- | ------ | ------------------ |
+| `showArrow` | `toggle` | `true` | Prefixo `→` no CTA |
 
 #### Comportamento
 
@@ -674,11 +686,11 @@ slide por definição.
 ```ts
 defaults: {
   fields: {
-    titulo: "Escrevo sobre os erros antes dos acertos.",
+    heading: "Escrevo sobre os erros antes dos acertos.",
     lead: "Backend, infra e o que aprendo quebrando os dois.",
     cta: "blog.maiahub.com.br",
   },
-  options: { mostrarSeta: true },
+  options: { showArrow: true },
 }
 ```
 

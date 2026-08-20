@@ -48,8 +48,8 @@ com Oxanium e o grid de fundo visíveis no arquivo — não no preview, no arqui
 | 1.3 | Factories `createDeck` e `createSlide` | Testes escritos antes passam: id único, `version: 1`, `format` 1080×1350, slide criado com os defaults do template |
 | 1.4 | Tipos `TemplateDef` e `Field` em `src/templates/types.ts` — o descritor declarativo da §8 | Os sete tipos de `Field` compilam; `TemplateDef` é genérico em `F` e `O` |
 | 1.5 | Registry de templates — `register`, `get`, `list` | Testes antes: registrar e recuperar, `list` preserva ordem de registro, `get` de id desconhecido lança |
-| 1.6 | `capa-declaracao`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` do §11.1 validam contra o próprio schema, verificado em teste |
-| 1.7 | `capa-declaracao`: `index.tsx` com as regiões do §11.1, texto literal | Kicker em 80–148, título ancorado à **base** da região 300–1160; título de uma linha e de quatro linhas pousam na mesma altura |
+| 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` do §11.1 validam contra o próprio schema, verificado em teste |
+| 1.7 | `cover-statement`: `index.tsx` com as regiões do §11.1, texto literal | Kicker em 80–148, título ancorado à **base** da região 300–1160; título de uma linha e de quatro linhas pousam na mesma altura |
 | 1.8 | `SlideFrame` — raiz de tamanho fixo que injeta `--slide-w`/`--slide-h` a partir de `deck.format` | Nenhum template hardcoda 1080 ou 1350; mudar `format` muda o quadro |
 | 1.9 | Canvas central com `transform: scale(k)` e `transform-origin: top left` num wrapper de tamanho fixo | O slide cabe na viewport sem media query; nenhuma matemática responsiva dentro do template |
 | 1.10 | Store zustand mínimo — deck, slide ativo, `setField` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
@@ -77,12 +77,12 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 |---|---|---|
 | 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1: cada marcador isolado, marcadores adjacentes, marcador não fechado, `**a *b* c**` tratado como literal no marcador externo, string vazia, texto sem marcador. Devolve AST, **nunca** HTML |
 | 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
-| 2.3 | `capa-declaracao` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
+| 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
 | 2.4 | Componentes recorrentes da §10.5 — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa. **Bloqueada pelas decisões 3 e 4** |
 | 2.5 | Fundo aplicado a partir de `meta.fundo` — `plain` ou `grid` | `grid` desenha linhas de 0.5px a cada 60px; nenhum template de código ou imagem recebe grid |
 | 2.6 | Inspector: tipo de campo `lista`, com `maxItens` e `maxPorItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
 | 2.7 | Inspector: tipos `select` e `toggle`, na seção de opções | Opções ficam visualmente separadas dos campos de conteúdo |
-| 2.8 | `texto-topicos` completo — regiões da §11.2, marcador travessão, opção `ancoragem` | `centro` distribui os itens no miolo, `topo` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
+| 2.8 | `text-bullets` completo — regiões da §11.2, marcador travessão, opção `ancoragem` | `centro` distribui os itens no miolo, `topo` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
 | 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `mostrarSeta` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa |
 | 2.10 | `migrarCampos(de, para, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. **Bloqueada pela decisão 1** |
 | 2.11 | Seletor de layout no topo do inspector, usando `migrarCampos` | Trocar o layout preserva o que já foi digitado e reseta as opções |
@@ -99,8 +99,8 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 **Objetivo.** Fechar a biblioteca de dez templates e tornar a ferramenta confiável para
 conteúdo denso. Corresponde à Fase 2 do §15.
 
-**Entrega.** Os sete templates restantes — `contexto`, `texto-impacto`, `codigo-janela`,
-`codigo-anotado`, `comparacao-2col`, `split-vertical`, `imagem-legenda`. Bloco de código
+**Entrega.** Os sete templates restantes — `context`, `text-impact`, `code-window`,
+`code-annotated`, `compare-2col`, `split-vertical`, `image-caption`. Bloco de código
 com shiki e tema derivado dos tokens da §10.4, não importado pronto. Guard de transbordo
 por `ResizeObserver`, marcando o slide como inválido no canvas e na lista lateral.
 
@@ -148,12 +148,12 @@ A §6 do documento de contexto define o vocabulário canônico como `kicker`, `h
 diferentes devem usar as mesmas chaves para papéis equivalentes. Mas as specs da §11.1 e
 da §11.3 do design system usam `titulo`, `lead` e `cta`, que não estão no vocabulário.
 
-Na prática: o título de `capa-declaracao` está em `titulo` e o de `texto-topicos` em
+Na prática: o título de `cover-statement` está em `titulo` e o de `text-bullets` em
 `heading`, então trocar o layout apagaria o que a pessoa escreveu — exatamente o
 problema que a separação `fields`/`options` existe para resolver, e o "pior momento
 possível de uso da ferramenta" nas palavras do §6.
 
-**Recomendação.** Renomear `titulo` → `heading` em `capa-declaracao` e `final-cta`, e
+**Recomendação.** Renomear `titulo` → `heading` em `cover-statement` e `final-cta`, e
 acrescentar `lead` e `cta` ao vocabulário canônico, já que não têm equivalente. Atualiza
 os dois documentos no mesmo commit.
 

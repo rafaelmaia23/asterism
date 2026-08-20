@@ -92,11 +92,11 @@ type ImageId = string
 type Deck = {
   version: 1
   id: string
-  titulo: string
+  title: string
   format: { w: 1080; h: 1350 }   // dado, não constante — ver §12
   meta: {
     handle: string               // "@rafael", vai no rodapé
-    pilar: "api" | "forge" | "log"
+    pillar: "api" | "forge" | "log"
   }
   slides: Slide[]
   assets: Record<ImageId, string>  // base64, apenas no arquivo exportado
@@ -124,15 +124,24 @@ Templates diferentes devem usar as **mesmas chaves** para papéis equivalentes:
 | Chave | Papel |
 |---|---|
 | `kicker` | Etiqueta superior (`api/ · 04`) |
-| `heading` | Título do slide |
-| `corpo` | Texto corrido principal |
-| `itens` | Lista de tópicos |
-| `imagem` | Referência de asset |
-| `legenda` | Texto auxiliar de imagem |
-| `codigo` / `arquivo` / `lang` | Bloco de código |
+| `heading` | Título do slide — vale para capa, conteúdo e fechamento |
+| `lead` | Complemento do `heading`, um degrau abaixo na hierarquia |
+| `body` | Texto corrido principal |
+| `items` | Lista de tópicos |
+| `image` | Referência de asset |
+| `caption` | Texto auxiliar de imagem |
+| `code` / `file` / `lang` | Bloco de código |
+| `cta` | Destino ou ação, no fechamento |
 
-Assim, trocar `texto-topicos` por `texto-impacto` preserva o que a pessoa já digitou.
+Assim, trocar `text-bullets` por `text-impact` preserva o que a pessoa já digitou.
 Sem isso, a troca de layout apaga trabalho — o pior momento possível de uso da ferramenta.
+
+O título de um slide é **sempre** `heading`, em qualquer template. A tentação de chamá-lo
+de `titulo` na capa e de `heading` no miolo custa exatamente a migração que esta tabela
+existe para garantir.
+
+As chaves são em inglês, como todo identificador do projeto. O texto dos documentos
+continua em português.
 
 ## 7. Marcação inline
 
@@ -181,9 +190,9 @@ precisa disso.
 Cada template é uma pasta autocontida:
 
 ```
-src/templates/capa-declaracao/
+src/templates/cover-statement/
   index.tsx     componente; recebe props tipadas, renderiza 1080×1350
-  meta.ts       { id, label, grupo, fundo, defaults }
+  meta.ts       { id, label, group, background, defaults }
   fields.ts     descritores de fields e options + schema zod
 ```
 
@@ -191,13 +200,13 @@ src/templates/capa-declaracao/
 type TemplateDef<F = any, O = any> = {
   id: TemplateId
   label: string
-  grupo: "capa" | "conteudo" | "codigo" | "midia" | "final"
-  fundo: "plain" | "grid"
+  group: "cover" | "content" | "code" | "media" | "final"
+  background: "plain" | "grid"
   fields: Field[]
   options: Field[]
   schema: ZodType<{ fields: F; options: O }>
   defaults: { fields: F; options: O }
-  Component: React.FC<{ fields: F; options: O; deck: DeckMeta; indice: number; total: number }>
+  Component: React.FC<{ fields: F; options: O; deck: DeckMeta; index: number; total: number }>
 }
 ```
 
@@ -205,13 +214,13 @@ O `Field` é um descritor declarativo — não uma derivação automática do zo
 
 ```ts
 type Field =
-  | { key: string; tipo: "text";     label: string; max?: number; placeholder?: string; md?: boolean }
-  | { key: string; tipo: "textarea"; label: string; max?: number; md?: boolean; linhas?: number }
-  | { key: string; tipo: "lista";    label: string; maxItens: number; maxPorItem?: number; md?: boolean }
-  | { key: string; tipo: "imagem";   label: string; proporcao?: string }
-  | { key: string; tipo: "codigo";   label: string; maxLinhas: number }
-  | { key: string; tipo: "select";   label: string; opcoes: { valor: string; label: string }[] }
-  | { key: string; tipo: "toggle";   label: string }
+  | { key: string; type: "text";     label: string; max?: number; placeholder?: string; md?: boolean }
+  | { key: string; type: "textarea"; label: string; max?: number; md?: boolean; rows?: number }
+  | { key: string; type: "list";     label: string; maxItems: number; maxPerItem?: number; md?: boolean }
+  | { key: string; type: "image";    label: string; ratio?: string }
+  | { key: string; type: "code";     label: string; maxLines: number }
+  | { key: string; type: "select";   label: string; options: { value: string; label: string }[] }
+  | { key: string; type: "toggle";   label: string }
 ```
 
 **O zod valida, o descritor desenha.** Gerar formulário automaticamente a partir do
@@ -227,15 +236,15 @@ Definidos previamente por **função narrativa**, não por estética:
 
 | # | Id | Função | Fundo |
 |---|---|---|---|
-| 1 | `capa-declaracao` | Gancho | `grid` |
-| 2 | `contexto` | Segurar o leitor | `plain` |
-| 3 | `texto-topicos` | Desenvolvimento | `plain` |
-| 4 | `texto-impacto` | Respiro | `grid` |
-| 5 | `codigo-janela` | Código puro | `plain` |
-| 6 | `codigo-anotado` | Código com explicação | `plain` |
-| 7 | `comparacao-2col` | Antes/depois | `plain` |
+| 1 | `cover-statement` | Gancho | `grid` |
+| 2 | `context` | Segurar o leitor | `plain` |
+| 3 | `text-bullets` | Desenvolvimento | `plain` |
+| 4 | `text-impact` | Respiro | `grid` |
+| 5 | `code-window` | Código puro | `plain` |
+| 6 | `code-annotated` | Código com explicação | `plain` |
+| 7 | `compare-2col` | Antes/depois | `plain` |
 | 8 | `split-vertical` | Texto + imagem | `plain` |
-| 9 | `imagem-legenda` | Imagem dominante | `plain` |
+| 9 | `image-caption` | Imagem dominante | `plain` |
 | 10 | `final-cta` | Fechamento | `grid` |
 
 Estrutura de um deck: `capa → contexto → desenvolvimento (n) → payoff → cta`,
@@ -330,9 +339,9 @@ fizerem sentido.
 
 | Camada | Escolha |
 |---|---|
-| Framework | Next.js (App Router), `output: 'export'` |
+| Framework | Next.js 16 (App Router, Turbopack), `output: 'export'` |
 | Estilo | Tailwind CSS v4, config CSS-first, tokens do Observatório |
-| Componentes | shadcn/ui (variante Base UI) |
+| Componentes | shadcn/ui v4 sobre Base UI (`@base-ui/react`), preset `nova` |
 | Ícones | lucide-react |
 | Estado | zustand + persist + zundo |
 | Validação | zod |
@@ -342,11 +351,13 @@ fizerem sentido.
 | PDF | jsPDF |
 | Reordenação | @dnd-kit/sortable |
 | Assets | idb-keyval |
-| Testes | Vitest — parser e migração de campos |
+| Testes | Vitest, com `@testing-library/react` e `happy-dom` |
 | Deploy | Vercel (estático); Nginx Proxy Manager na Forge se crescer |
 
 O tema do shiki precisa sair dos tokens do projeto. Um tema pronto faz o bloco de
 código ser a única coisa do carrossel que não parece sua.
+
+`supertest` não entra: é cliente HTTP para testar servidor, e não há servidor.
 
 ### Três armadilhas conhecidas
 
@@ -362,6 +373,12 @@ na captura e o arquivo exportado sai em Arial.
 **Tamanho do arquivo.** PNG 2× sobre fundo escuro chapado comprime bem; dez slides
 devem ficar bem abaixo de 3 MB. Se um deck com fotos estourar, o alvo PDF cai para
 JPEG 0.92 apenas nos slides com imagem.
+
+**Tailwind faz tree-shaking de token.** Variável declarada em `@theme` que nenhuma classe
+referencia não chega ao CSS final, e `var(--color-ink-700)` num estilo inline resolve
+para nada — silenciosamente, sem erro de build. Por isso as rampas de cor e o bloco da
+superfície carrossel são declarados como `@theme static`. Só o mapeamento semântico do
+shadcn, em `@theme inline`, pode ser podado sem prejuízo.
 
 ## 14. Interface
 
@@ -379,7 +396,7 @@ Três colunas, sem invenção:
 
 | Fase | Escopo | Estimativa |
 |---|---|---|
-| **1 — Fatia vertical** | Tipos, registry, parser inline, canvas escalado, inspector, **3 templates** (`capa-declaracao`, `texto-topicos`, `final-cta`), alvo PDF | 6–8 h |
+| **1 — Fatia vertical** | Tipos, registry, parser inline, canvas escalado, inspector, **3 templates** (`cover-statement`, `text-bullets`, `final-cta`), alvo PDF | 6–8 h |
 | **2 — Biblioteca** | Os outros 7 templates, shiki com tema próprio, guard de transbordo | 4–6 h |
 | **3 — Editor** | dnd-kit, duplicar/remover, undo/redo, múltiplos decks, import/export JSON, imagens no IndexedDB | 4–5 h |
 | **4 — Produto** | Atalhos de teclado, estados vazios, README com GIF, deploy | 3 h |
@@ -408,3 +425,8 @@ sem retoque em nenhum outro programa.
 | 10 | Marcadores não aninham | Parser recursivo | Simplifica o tokenizer; nenhum slide precisa |
 | 11 | Tokens em hex sRGB no canvas | OKLCH em todo lugar | Suporte irregular a `oklch()` na serialização de captura |
 | 12 | `format` como dado desde a v1 | `1080×1350` hardcoded | Meia hora agora contra reescrever dez templates depois |
+| 13 | Vocabulário de campos único, em inglês | `titulo` na capa e `heading` no miolo | Migração de conteúdo na troca de layout exige a mesma chave para o mesmo papel; o id fica gravado no JSON do deck e mudar depois custaria migração de dados |
+| 14 | Kicker é campo digitado | Derivar de `meta.pillar` com o índice | Liberdade de escrever qualquer coisa vence a consistência automática; o preço é reordenar não reescrever o índice |
+| 15 | Grid com linha de 1px | 0.5px calibrado para a rasterização 2× | Meio pixel arredonda para 0 ou 1 na tela e parte das linhas some; o preview é escalado por `transform`, onde o problema é pior |
+| 16 | Estrela da logo em `azure-400` | Rampa `star-*` própria, em OKLCH | Evita uma sexta rampa de azul quase idêntica à existente e tira OKLCH do canvas; a estrela passa a ser a mesma cor da constelação de progresso |
+| 17 | Variantes do shadcn adaptadas à §2.4 | Aceitar o preset como vem | Um padrão de cor só, no editor e no carrossel |
