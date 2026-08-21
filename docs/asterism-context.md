@@ -353,6 +353,18 @@ multiplicados pela escala, e saem do tamanho medido no nó, nunca de `1080` escr
 o formato é dado, §12. Os módulos moram em `src/export/`: `types.ts` para os quatro tipos
 acima e `rasterize.ts` para o estágio 1, sobre `modern-screenshot`.
 
+### De onde vêm os nós
+
+`withExportStage(deck, uso)`, em `src/export/stage.tsx`. Monta o deck inteiro num
+container `fixed` fora da tela — fora de fluxo, nunca `display: none`, que não teria
+layout para capturar —, espera `document.fonts.ready`, entrega um `RenderSource` por
+slide e desmonta, inclusive quando o uso falha. Os slides são montados **sem escala**: o
+default do `SlideFrame` é 1, o tamanho de spec. Ver a decisão 20.
+
+O nó capturado é a raiz do slide, e quem o expõe é o próprio `SlideFrame`, por um
+`canvasRef` opcional que o `SlideView` repassa. O quadro externo fica de fora junto com a
+sua borda de 1px — decisão 23.
+
 ### Alvos
 
 - **v1** — `pdf` (1080×1350 pt, uma página por slide)
