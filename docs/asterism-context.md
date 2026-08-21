@@ -88,27 +88,45 @@ mesmo DOM. Divergência entre os dois é impossível por construção, não por 
 ```ts
 type SlideId = string
 type ImageId = string
+type TemplateId = string       // opaco: o deck não conhece a biblioteca de templates
+
+type FieldValue = string | string[]   // list guarda array; o resto, string
+type OptionValue = string | boolean   // select guarda string; toggle, booleano
+
+type Pillar = "api" | "forge" | "log"
+type DeckMeta = {
+  handle: string               // "@rafael", vai no rodapé
+  pillar: Pillar
+}
 
 type Deck = {
   version: 1
   id: string
   title: string
-  format: { w: 1080; h: 1350 }   // dado, não constante — ver §12
-  meta: {
-    handle: string               // "@rafael", vai no rodapé
-    pillar: "api" | "forge" | "log"
-  }
+  format: { w: number; h: number }  // dado, não constante — ver §12
+  meta: DeckMeta
   slides: Slide[]
   assets: Record<ImageId, string>  // base64, apenas no arquivo exportado
+}
+
+type SlideDefaults = {
+  fields: Record<string, FieldValue>    // conteúdo
+  options: Record<string, OptionValue>  // apresentação
 }
 
 type Slide = {
   id: SlideId
   template: TemplateId
-  fields: Record<string, FieldValue>    // conteúdo
-  options: Record<string, OptionValue>  // apresentação
-}
+} & SlideDefaults
 ```
+
+`TemplateId` é `string` e não a união dos dez ids porque a seta de dependência é
+`templates → deck`: o modelo de dados não conhece a biblioteca, e acrescentar um
+template não o edita. Id desconhecido é erro de runtime, lançado pelo registry.
+
+`SlideDefaults` existe para `createSlide` receber os defaults do template **como
+argumento** — `src/deck` não importa `src/templates`. O `TemplateDef` da §8 é atribuível
+a essa forma.
 
 ### Por que `fields` e `options` são separados
 

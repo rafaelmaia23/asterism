@@ -45,6 +45,7 @@ marcadores `BEGIN/END Observatório`. Mudou um, muda o outro.
 ```
 docs/                 documentos de referência, em português
 src/app/                App Router — layout, globals.css, rotas
+src/deck/               modelo de dados do deck e suas factories
 src/components/ui/      componentes shadcn (gerados; auditar contra a §2.4)
 src/components/maiahub/ as cinco peças de logo
 src/fonts/              as três famílias em arquivo local + licenças OFL
