@@ -544,6 +544,12 @@ Não existe prenúncio do próximo. Um significado por cor.
 
 Acima de 10 slides, mostre 5 pontos mais um contador `03 / 12` em mono.
 
+> **Pendente.** Quais cinco pontos é o experimento 2, que se resolve na tarefa 2.4b —
+> as três leituras precisam ser montadas com um deck de 12 slides e comparadas. Até lá o
+> `Constellation` implementado desenha um ponto por slide em qualquer contagem: doze
+> slides são doze pontos, sem janela e sem contador. Esta seção é atualizada junto com a
+> 2.4b.
+
 **Afordância de deslize** — chevron duplo (Lucide `chevrons-right`), 40px, traço 2.25,
 `azure-400`, à direita da constelação com gap de 20px.
 

@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **1A concluída; a próxima
-> sessão é a 1B**
+> **Status** bootstrap concluído · decisões resolvidas · **1B concluída; a próxima
+> sessão é a 1C**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. A Etapa 1 tem um nível a mais — **sub-etapa**, uma por
 > sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -92,9 +92,9 @@ defaults em `createSlide` é profunda — `structuredClone` — senão dois slid
 template compartilhariam o array de um campo `list`. A §6 do documento de contexto foi
 atualizada junto.
 
-### 1B — registry e o primeiro template · ~1,5 h
+### 1B — registry e o primeiro template ✅
 
-Instala `zod`.
+Instalou `zod` 4.4.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
@@ -106,6 +106,30 @@ Instala `zod`.
 
 `src/templates/index.ts` é o único lugar que importa e registra template. A conferência
 visual do componente é da 1C — aqui ele só precisa compilar.
+
+Resolvido na sessão:
+
+- **As peças recorrentes do rodapé foram extraídas já**, antecipando parte da 2.4:
+  `Kicker`, `Constellation` e `Chevron` moram em `src/templates/shared/`. O `Footer` de
+  identidade não veio junto: a capa é justamente o template que não o tem, e seria a
+  única peça sem consumidor. Nomes em inglês, como manda o CLAUDE.md.
+- **A constelação acima de dez slides não recebe tratamento** nesta etapa: desenha um
+  ponto por slide em qualquer contagem, sem janela e sem contador. O recorte da §10.5 do
+  design system continua sendo o experimento 2, na 2.4b, e a seção recebeu a nota do que
+  está implementado até lá.
+- **`register` com id repetido lança**, simétrico ao `get` de id desconhecido: quem
+  registra é um módulo só, que roda uma vez, então id duplicado é erro de programação e
+  não estado de runtime. O registry é uma factory `createRegistry()` com uma instância
+  módulo-nível exportada — os testes criam a sua e não precisam de um `clear()` que só
+  existiria para eles.
+- `meta.ts` guarda os cinco campos que a §8 do documento de contexto lhe dá; o
+  `TemplateDef` completo é montado no `index.tsx`, que é quem tem o `Component`.
+- O critério de pronto da 1.7 — uma linha e quatro linhas pousando na mesma altura — não
+  é verificável em `happy-dom`, que não faz layout. O teste do template é smoke; a
+  âncora se confere olhando, na 1C.
+- A §8 do documento de contexto ganhou os limites de `F` e `O`, que são o que torna
+  `defaults` atribuível ao `SlideDefaults` da §6, e a nota de por que o registry guarda
+  `TemplateDef<any, any>`.
 
 ### 1C — quadro, canvas e shell · ~1 h
 
@@ -166,7 +190,7 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 | 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7 do documento de contexto, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1: cada marcador isolado, marcadores adjacentes, marcador não fechado, `**a *b* c**` tratado como literal no marcador externo, string vazia, texto sem marcador. Devolve AST, **nunca** HTML |
 | 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 do design system | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
 | 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
-| 2.4 | Componentes recorrentes da §10.5 do design system — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa; rodapé com `MaiahubGlyph` a 32px, gap 20px, handle |
+| 2.4 | Componentes recorrentes da §10.5 do design system — falta o `Footer`; `Kicker`, `Constellation` e `Chevron` vieram na 1B | Rodapé com `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` e constelação à direita, em todo template menos capa e final |
 | 2.4a | Remover as quatro peças de logo não usadas | Decidido: o rodapé usa `MaiahubGlyph` a 32px. Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
 | 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 do design system é atualizada junto |
 | 2.5 | Conferir o fundo dos dois templates novos — a aplicação a partir de `meta.background` veio na 1C | `text-bullets` é `plain` e `final-cta` é `grid`; nenhum template de código ou imagem recebe grid |
