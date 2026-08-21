@@ -33,6 +33,8 @@ register({
   Component: () => null,
 } satisfies TemplateDef);
 
+const SLIDE_ID = "id-que-nao-pode-vazar";
+
 function makeDeck(): Deck {
   return {
     version: 1,
@@ -42,7 +44,7 @@ function makeDeck(): Deck {
     meta: { handle: "@rafael", pillar: "log" },
     slides: [
       {
-        id: "s1",
+        id: SLIDE_ID,
         template: "fake-template",
         fields: { kicker: "log/ · 01", heading: "Um título", items: ["a", "b"] },
         options: { showChevron: true },
@@ -54,8 +56,8 @@ function makeDeck(): Deck {
 
 function renderInspector() {
   const store = createEditorStore(makeDeck());
-  render(<Inspector store={store} />);
-  return store;
+  const { container } = render(<Inspector store={store} />);
+  return { store, container };
 }
 
 describe("Inspector", () => {
@@ -75,7 +77,7 @@ describe("Inspector", () => {
   });
 
   test("digitar num campo escreve no store e volta para o controle", () => {
-    const store = renderInspector();
+    const { store } = renderInspector();
 
     fireEvent.change(screen.getByLabelText("Título"), { target: { value: "Outro" } });
 
@@ -83,8 +85,19 @@ describe("Inspector", () => {
     expect(screen.getByLabelText<HTMLTextAreaElement>("Título").value).toBe("Outro");
   });
 
+  /**
+   * O deck é criado uma vez na pré-renderização estática e outra no navegador, e os ids
+   * saem de `crypto.randomUUID()` — então id de dado em atributo do DOM diverge entre os
+   * dois e o React não remenda atributo. Identificador de formulário sai de `useId`.
+   */
+  test("nenhum id de dado chega ao DOM", () => {
+    const { container } = renderInspector();
+
+    expect(container.innerHTML).not.toContain(SLIDE_ID);
+  });
+
   test("o toggle escreve em options, não em fields", () => {
-    const store = renderInspector();
+    const { store } = renderInspector();
 
     fireEvent.click(screen.getByLabelText("Chevron"));
 
@@ -104,7 +117,7 @@ describe("Inspector", () => {
    * de transbordo, medindo altura real, e ele nem existe ainda.
    */
   test("passar do limite tinge o contador e não trava a digitação", () => {
-    const store = renderInspector();
+    const { store } = renderInspector();
     const longo = "x".repeat(28);
 
     fireEvent.change(screen.getByLabelText("Título"), { target: { value: longo } });

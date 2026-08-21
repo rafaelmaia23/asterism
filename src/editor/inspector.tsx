@@ -18,6 +18,7 @@
  * atravessando de um caso para o outro.
  */
 
+import { useId } from "react";
 import type { StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
 import type { FieldValue, OptionValue } from "@/deck/types";
@@ -56,18 +57,26 @@ function Counter({ field, value }: { field: Field; value: string }) {
   );
 }
 
+/**
+ * O `id` do par label/controle sai do `useId`, e **não** de `slide.id`.
+ *
+ * O deck é criado uma vez na pré-renderização estática, no Node, e outra no navegador; os
+ * ids vêm de `crypto.randomUUID()` e são diferentes nas duas. Id de dado em atributo do
+ * DOM viraria divergência de hidratação, que o React não remenda por ser atributo. O
+ * `useId` é gerado pela posição na árvore e por isso casa dos dois lados.
+ *
+ * A regra vale para o projeto inteiro, não só aqui — ver a §13 do documento de contexto.
+ */
 function FieldRow({
   field,
-  slideId,
   value,
   onChange,
 }: {
   field: Field;
-  slideId: string;
   value: FieldValue | OptionValue | undefined;
   onChange: (value: FieldValue | OptionValue) => void;
 }) {
-  const id = `${slideId}-${field.key}`;
+  const id = useId();
   const text = typeof value === "string" ? value : "";
 
   if (field.type === "toggle") {
@@ -146,7 +155,6 @@ export function Inspector({ store = editorStore }: InspectorProps) {
           <FieldRow
             key={field.key}
             field={field}
-            slideId={slide.id}
             value={slide.fields[field.key]}
             onChange={(value) => setField(slide.id, field.key, value as FieldValue)}
           />
@@ -159,7 +167,6 @@ export function Inspector({ store = editorStore }: InspectorProps) {
             <FieldRow
               key={option.key}
               field={option}
-              slideId={slide.id}
               value={slide.options[option.key]}
               onChange={(value) => setOption(slide.id, option.key, value as OptionValue)}
             />

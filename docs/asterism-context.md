@@ -462,6 +462,15 @@ absoluto não contribui para o tamanho do pai. A segunda sozinha já fecha a por
 que vai valer também para o palco de exportação da §10, que monta o deck inteiro fora da
 tela.
 
+**Id de dado não vira atributo do DOM.** O deck é criado duas vezes — uma na
+pré-renderização estática, no Node, e outra no navegador — e os ids saem de
+`crypto.randomUUID()`, então os dois lados discordam. Id de slide em `id`, `htmlFor`,
+`aria-labelledby` ou `data-*` é divergência de hidratação garantida, e o React não remenda
+atributo: ele avisa no console e segue com o valor do cliente. Identificador de formulário
+sai de `useId`, que o React gera pela posição na árvore e por isso casa dos dois lados.
+Aconteceu na 1D, no inspector. Vale para o palco de exportação da 1E e para a lista de
+arraste da Etapa 4, que também vão querer marcar nós.
+
 ## 14. Interface
 
 Três colunas, sem invenção:
@@ -527,4 +536,4 @@ sem retoque em nenhum outro programa.
 | 21 | Página do PDF em pt, 1080×1350 | Unidade `px` casada com a medida do canvas | Confirma a §10. O bitmap é 2160×2700 nos dois casos, então a diferença é só o número que o visualizador mostra; e a unidade `px` do jsPDF depende de uma conversão de 96 dpi que não vale a pena carregar |
 | 22 | Escala do canvas por auto-fit na fatia vertical | Seletor de zoom desde a primeira etapa | O que a etapa precisa provar é que `--slide-scale` acompanha o `transform`; um seletor entra quando houver barra onde colocá-lo |
 | 23 | Área de trabalho em `ink-900` **e** moldura de 1px `ink-700` no quadro externo, fora do `transform` | Só a inversão de superfície, sem borda, como a §2.2 previa; ou só a borda, com a área no mesmo `ink-950` do slide | A primeira versão da 1C pôs slide e área no mesmo tom e separou por hairline `ink-800`: reprovou olhando, não dava para saber onde termina a página. A inversão da §2.2 do design system resolve o grosso, e a borda dá o contorno que faltava — em `ink-700`, porque o 800 cai entre os dois tons e some. Na raiz do slide a borda encolheria com a escala e viajaria dentro do nó capturado, contra a §9; no quadro externo ela vale 1px em qualquer `k` e a exportação nunca a vê |
-| 24 | Store como factory mais singleton, em `src/editor/store.ts` | Provider de contexto com o store criado no componente, como o guia do zustand para Next prescreve | O provider se paga quando há dois decks vivos ao mesmo tempo, que é a tela de listagem da Etapa 4. Até lá ele é cerimônia: a factory já dá ao teste um store isolado por deck de fixture, sem reset global, e o singleton dá à aplicação o único deck que ela tem. Os ids do deck semente nunca chegam ao DOM, então a pré-renderização estática não gera divergência de hidratação |
+| 24 | Store como factory mais singleton, em `src/editor/store.ts` | Provider de contexto com o store criado no componente, como o guia do zustand para Next prescreve | O provider se paga quando há dois decks vivos ao mesmo tempo, que é a tela de listagem da Etapa 4. Até lá ele é cerimônia: a factory já dá ao teste um store isolado por deck de fixture, sem reset global, e o singleton dá à aplicação o único deck que ela tem. O preço é que o deck é criado duas vezes, uma na pré-renderização estática e outra no cliente, com ids diferentes: manter esses ids fora do DOM deixa de ser consequência do desenho e passa a ser condição que o código sustenta — ver a armadilha na §13 |

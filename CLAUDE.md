@@ -119,6 +119,10 @@ Fonte de CDN não é inlinada na captura e o PDF sai em Arial.
 classe referencia não chega ao CSS final. O bloco da superfície carrossel é
 `@theme static` justamente por ser lido via `var()` dentro dos templates.
 
+**Id de dado não vira atributo do DOM.** O deck nasce uma vez na pré-renderização estática
+e outra no navegador, com `crypto.randomUUID()` nos dois — id de slide em `id`, `htmlFor`
+ou `data-*` é divergência de hidratação. Identificador de formulário sai de `useId`.
+
 **Elemento medido por `ResizeObserver` não pode ser dimensionado pelo que ele contém.**
 O que se mede fica preso a algo de fora — altura de viewport, não altura mínima — e o que
 a medida desenha fica fora do fluxo. Caso contrário a escala se realimenta e o slide
