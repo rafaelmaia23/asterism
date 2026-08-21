@@ -121,7 +121,9 @@ Resolvido na sessão:
   registra é um módulo só, que roda uma vez, então id duplicado é erro de programação e
   não estado de runtime. O registry é uma factory `createRegistry()` com uma instância
   módulo-nível exportada — os testes criam a sua e não precisam de um `clear()` que só
-  existiria para eles.
+  existiria para eles. **Menos em desenvolvimento**, onde registrar de novo substitui:
+  ajuste da 1D, porque ali o segundo registro é o HMR reavaliando `templates/index.ts` sem
+  reavaliar o registry, e lançar derrubava o `next dev` a cada edição.
 - `meta.ts` guarda os cinco campos que a §8 do documento de contexto lhe dá; o
   `TemplateDef` completo é montado no `index.tsx`, que é quem tem o `Component`.
 - O critério de pronto da 1.7 — uma linha e quatro linhas pousando na mesma altura — não

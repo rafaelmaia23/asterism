@@ -61,4 +61,44 @@ describe("registry", () => {
 
     expect(() => register(stub("cover-statement"))).toThrow(/cover-statement/);
   });
+
+  /**
+   * Em desenvolvimento, registrar de novo é o HMR reavaliando `templates/index.ts` sem
+   * reavaliar este módulo — recarga, não erro de programação. Lançar ali derrubava o
+   * `next dev` a cada edição na cadeia que chega até o registry, e substituir é também o
+   * comportamento útil: editar um template e ver a edição sem reiniciar o servidor.
+   */
+  test("em desenvolvimento, registrar de novo substitui o descritor", () => {
+    const anterior = process.env.NODE_ENV;
+    // `NODE_ENV` é somente-leitura no tipo do Node, e o teste precisa justamente trocá-lo.
+    (process.env as Record<string, string>).NODE_ENV = "development";
+
+    try {
+      const { register, get, list } = createRegistry();
+      register(stub("cover-statement"));
+      const novo = stub("cover-statement");
+
+      expect(() => register(novo)).not.toThrow();
+      expect(get("cover-statement")).toBe(novo);
+      expect(list()).toHaveLength(1);
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = anterior as string;
+    }
+  });
+
+  test("a substituição em desenvolvimento preserva a posição na lista", () => {
+    const anterior = process.env.NODE_ENV;
+    (process.env as Record<string, string>).NODE_ENV = "development";
+
+    try {
+      const { register, list } = createRegistry();
+      register(stub("cover-statement"));
+      register(stub("text-bullets"));
+      register(stub("cover-statement"));
+
+      expect(list().map((def) => def.id)).toEqual(["cover-statement", "text-bullets"]);
+    } finally {
+      (process.env as Record<string, string>).NODE_ENV = anterior as string;
+    }
+  });
 });

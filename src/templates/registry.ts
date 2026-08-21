@@ -25,7 +25,13 @@ export function createRegistry(): Registry {
       // Id duplicado é erro de programação, não estado de runtime: quem registra é um
       // módulo só, que roda uma vez. Sobrescrever em silêncio faria o template perdido
       // sumir da lista longe da causa.
-      if (templates.has(def.id)) {
+      //
+      // Menos em desenvolvimento, onde registrar de novo é o HMR reavaliando
+      // `templates/index.ts` sem reavaliar este módulo. Ali não há erro nenhum, e lançar
+      // derrubava o `next dev` a cada edição na cadeia que chega até aqui. Substituir é
+      // também o que se quer: editar um template e ver a edição sem reiniciar. `Map.set`
+      // numa chave existente preserva a posição, então a ordem da biblioteca não muda.
+      if (templates.has(def.id) && process.env.NODE_ENV !== "development") {
         throw new Error(`Template já registrado: ${def.id}`);
       }
       templates.set(def.id, def);
