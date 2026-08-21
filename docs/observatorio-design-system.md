@@ -30,7 +30,7 @@ uso, que é o que não cabe em CSS.
 | 4.3       | Grid de fundo e a compensação de `--slide-scale`        | Mexer no fundo ou na escala do preview | `slide-grid.tsx` + `@utility slide-grid` |
 | 5–8       | Forma, ícones, movimento, estados                       | Componente novo no editor              | `--radius` e afins             |
 | 9         | Mapeamento shadcn e as duas armadilhas de nome          | Instalar componente shadcn novo        | `globals.css`, `@theme inline` |
-| 10.1–10.4 | Superfícies, marcadores inline, bloco de código, shiki  | Parser, `<Inline>`, bloco de código    | só a 10.1                      |
+| 10.1–10.4 | Superfícies, marcadores inline, bloco de código, shiki  | Parser, `<Inline>`, bloco de código    | 10.1 e 10.2 (`inline.tsx`)     |
 | 10.5      | Kicker, constelação, chevron, rodapé, callout           | Peças recorrentes dos slides           | —                              |
 | 11        | Layout, campos e comportamento de cada template         | Implementar um template                | `observatorio-templates.md`    |
 | 12–13     | Fontes, licenças, artefatos do sistema                  | Raramente                              | —                              |
@@ -236,6 +236,11 @@ cinco propriedades. O template escreve `slide-display` e nunca recompõe famíli
 peso e tracking — decisão 19 da §16 do documento de contexto. Só o tamanho vira token
 automático (`--text-slide-*`), e é justamente por isso que a utility existe: as outras
 quatro propriedades não têm onde morar senão repetidas em cada template.
+
+Cada utility também **publica o próprio peso** em `--slide-font-weight` antes de
+aplicá-lo. Não é para ser lido pelos templates: existe para o marcador `**forte**` da
+§10.2 saber em que bloco caiu e nunca sair mais leve que o texto em volta. Custom
+property herda; o `<Inline>` não precisa receber nada de quem o chamou.
 
 A caixa alta de `slide-meta` é da escala, não do conteúdo. O kicker é guardado como
 `api/ · 04` e sai em versal na renderização; o dado no deck não muda.
@@ -514,7 +519,7 @@ Os sete marcadores do subset de marcação, e como cada um renderiza:
 
 | Marcador         | Token                   | Render                                              |
 | ---------------- | ----------------------- | --------------------------------------------------- |
-| `**forte**`      | —                       | Peso 600, mesma cor                                 |
+| `**forte**`      | —                       | Peso 600, **nunca abaixo do herdado**; mesma cor    |
 | `*ênfase*`       | —                       | Itálico, mesma cor                                  |
 | `~~riscado~~`    | `ink-500`               | `line-through`, cor reduzida                        |
 | `++sublinhado++` | —                       | `underline`, offset 0.15em, espessura 2px           |
@@ -523,6 +528,17 @@ Os sete marcadores do subset de marcação, e como cada um renderiza:
 | `[[destaque]]`   | `azure-400`             | Só cor                                              |
 
 `==marca==` é o único lugar do carrossel onde o âmbar aparece em texto. Um por slide.
+
+**O peso 600 do forte é piso, não valor** — decisão 34. Sobre a Sora 400 do corpo de
+texto ele sobe para 600 e funciona; sobre a Oxanium 700 de um título, um 600 fixo deixaria
+o trecho marcado mais **leve** que a frase em volta, que é o oposto do que o marcador
+significa — e contradiria a §11.1 dos templates, que diz que `**forte**` não tem efeito
+visível em título. Em código é `max(600, var(--slide-font-weight, 400))`, na utility
+`slide-strong`, contra o peso que a escala da §3.3 publicou.
+
+`==marca==` e `` `código` `` carregam fundo, então também carregam
+`box-decoration-break: clone`: quando o trecho quebra de linha, cada pedaço fecha o próprio
+fundo com o padding lateral. Sem isso o padding apareceria só nas duas pontas do trecho.
 
 ### 10.3 Bloco de código
 

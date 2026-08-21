@@ -203,6 +203,26 @@ Marcadores não aninham. `**texto com *itálico* dentro**` é tratado como texto
 no marcador externo. Simplifica o tokenizer de forma significativa e nenhum slide
 precisa disso.
 
+### O que não vira marcador
+
+Três regras de resolução, todas com a mesma resposta — **vira texto literal**:
+
+| Caso                    | Exemplo         | Resultado                       |
+| ----------------------- | --------------- | ------------------------------- |
+| Marcador não fechado    | `**sem fim`     | `[{ t: "text", v: "**sem fim" }]` |
+| Conteúdo vazio          | `****`, `[[]]`  | um nó de texto com os quatro caracteres |
+| Marcador dentro de outro | `**a *b* c**`  | `strong` com `v: "a *b* c"`     |
+
+Nada de erro, nada de nó vazio: o que não fecha é o que a pessoa digitou. Num editor em
+que o canvas mostra o resultado a cada tecla, o texto literal já é o aviso — enquanto se
+digita `**forte**`, o estado intermediário `**forte` existe em toda edição.
+
+**Não existe regra de limite de palavra** — decisão 33. `micro**serviços**` marca, e
+`2*3*4` vira `2`, `3` em ênfase e `4`. O tokenizer não olha o caractere anterior.
+
+Nós de texto vizinhos são colapsados em um só: uma sequência de rejeições devolve um nó,
+não um por caractere.
+
 ## 8. Templates
 
 Cada template é uma pasta autocontida:
@@ -596,3 +616,5 @@ sem retoque em nenhum outro programa.
 | 30 | `addSlide` e `removeSlide` antecipados da Etapa 4 para a Etapa 2 | Deixar os dois na Etapa 4 e fechar a Etapa 2 editando um deck semente já com 8 a 12 slides; ou antecipar só o `addSlide` | O "pronto quando" da Etapa 2 é um carrossel de 8 a 12 slides composto com os três templates, e o store da 1D só tem `selectSlide`, `setField` e `setOption`: não existe caminho para acrescentar um slide sequer, então o critério da própria etapa é inalcançável sem isso. Um deck semente grande faria o "compor" da etapa virar ficção — o número de slides ficaria congelado até a Etapa 4. E `addSlide` sozinho seria pior que os dois juntos: um clique errado deixaria um slide órfão sem saída, justo na etapa em que se compõe pela primeira vez. Arraste, duplicar e undo continuam na Etapa 4, que é onde a lista lateral vira ferramenta de verdade |
 | 31 | A reidratação do `persist` valida e descarta **slide a slide** | Reiniciar do deck semente a qualquer falha; ou confiar no que está no localStorage, sem validação | O que está salvo deixa de bater com o código quando um template some, muda de chave ou de tipo — e num projeto de um usuário só o autor dessa divergência é sempre o commit anterior. Tudo-ou-nada apaga o carrossel inteiro por causa de um slide, que é a perda de trabalho no pior momento possível; confiar sem validar deixa o `get()` do registry lançar dentro do render e abre a ferramenta em tela branca, com o erro só no console. Validar a forma do deck e derrubar apenas os slides que não passam preserva o resto e nunca apaga a tela. O zod já está instalado e cada template já carrega o próprio schema, então o custo é da ordem de vinte linhas |
 | 32 | O guard de transbordo continua na Etapa 3 | Antecipar um guard mínimo para a Etapa 2, que é quando o primeiro carrossel real é composto | Foi considerado porque a Etapa 2 termina compondo 8 a 12 slides de conteúdo de verdade, que é exatamente quando texto longo transborda. Fica onde está: na Etapa 2 o aviso é o contador de caractere, que já existe e já fica âmbar ao passar do limite, mais o próprio canvas — quem compõe está olhando cada slide enquanto digita. Antecipar traria `ResizeObserver` medindo **dentro** do slide, que é o laço de medição da §13, e essa é a tarefa mais delicada da Etapa 3: não é trabalho para fazer de passagem no fim de outra etapa |
+| 33 | O parser não conhece limite de palavra: marcador vale em qualquer posição | Exigir espaço, início ou pontuação antes do abridor e depois do fechador, como o `*` do CommonMark | É uma regra a menos para lembrar na hora de digitar e uma exceção a menos no tokenizer, que passa a ter uma só pergunta por posição: abriu e fechou com conteúdo? Casos legítimos em português dependem disso — `micro**serviços**`, plural colado ao fechador, sufixo depois de `[[destaque]]` — e a regra do CommonMark os recusaria sem nada na tela explicando por quê. A contrapartida é `2*3*4` virar ênfase sem que ninguém tenha pedido; é aceitável porque o canvas mostra o resultado a cada tecla, e porque um asterisco solto entre dígitos é raro em texto de carrossel |
+| 34 | O peso de `**forte**` é `max(600, --slide-font-weight)`, lido por herança da utility de escala | Aplicar os 600 fixos que a §10.2 escreve; ou usar `font-weight: bolder`; ou o template informar o peso base ao `<Inline>` | Os documentos se contradiziam: a §10.2 dá 600 ao marcador e a §11.1 dos templates diz que ele "não tem efeito visível" no título em Oxanium 700 — com 600 fixo o trecho marcado sairia **mais leve** que a frase, que é o oposto do que o marcador significa, e a marcação passaria a depender do template em que o texto caiu. `bolder` não resolve: é relativo por degrau, levaria a Sora 400 a 700 em vez de 600 e a Oxanium 700 a 900, fora do eixo declarado da família. Passar o peso por prop faria o `<Inline>` conhecer template, quebrando a §5 — o parser e o renderer de marcação não sabem o que existe adiante. Herança de custom property resolve sem nenhum dos três preços: cada `@utility slide-*` publica o próprio peso, o marcador lê com `max()`, e as duas seções passam a ser verdadeiras ao mesmo tempo |
