@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { createSeedDeck } from "@/editor/seed";
+import { parseInline } from "@/markup/parse";
 import { get } from "@/templates";
 
 describe("createSeedDeck", () => {
@@ -26,8 +27,12 @@ describe("createSeedDeck", () => {
   });
 
   test("os títulos vão de uma linha a quatro, para conferir a âncora de base", () => {
-    const [curto, , longo] = createSeedDeck().slides.map(
-      (slide) => String(slide.fields.heading).length,
+    // O que ocupa linha é o texto renderizado, não a marcação: os colchetes de
+    // `[[destaque]]` não chegam ao canvas e não podem contar aqui.
+    const [curto, , longo] = createSeedDeck().slides.map((slide) =>
+      parseInline(String(slide.fields.heading))
+        .map((node) => node.v)
+        .join("").length,
     );
 
     // ~19 caracteres por linha em 96px sobre 920px de largura útil — §11.1 dos templates.

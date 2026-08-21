@@ -20,10 +20,16 @@ import { get } from "@/templates";
 
 const COVER = "cover-statement";
 
+/**
+ * Cada título traz um `[[destaque]]`, que é a marcação da §7 do documento de contexto
+ * chegando pronta na primeira tela: abrir a ferramenta já mostra o que ela faz, sem
+ * ninguém precisar digitar nada. O comprimento que a §11.1 dos templates limita é o do
+ * texto **renderizado** — 15, 39 e 63 caracteres —, não o da string com os colchetes.
+ */
 const HEADINGS = [
-  "Ninguém lê docs",
-  "O cache mentiu sobre o que ele guardava",
-  "Três semanas de investigação para encontrar um bug de uma linha",
+  "Ninguém [[lê docs]]",
+  "O cache [[mentiu]] sobre o que ele guardava",
+  "Três semanas de investigação para encontrar um [[bug de uma linha]]",
 ];
 
 export function createSeedDeck(): Deck {

@@ -10,6 +10,10 @@
  *   Título   300 – 1160  `slide-display`, ancorado à BASE da região
  *   Rodapé   1240 – 1270 constelação + chevron, à direita
  *
+ * O título passa pelo `<Inline>`, e é o único campo do template que aceita marcação — o
+ * kicker é literal. Na prática só `[[destaque]]` se usa aqui: `**forte**` não tem efeito
+ * sobre Oxanium 700 e `==marca==` fica pesada demais em 96px. §11.1 dos templates.
+ *
  * A âncora do título na base é a decisão estrutural do template: com uma linha ou com
  * quatro, a última linha pousa sempre na mesma altura, e a série mantém o ritmo. As
  * laterais saem de `--slide-pad`, nunca de 920px escrito à mão; a altura total do quadro
@@ -17,6 +21,7 @@
  * o lê de `meta.background`.
  */
 
+import { Inline } from "@/markup/inline";
 import {
   coverStatementSchema,
   fields,
@@ -43,8 +48,9 @@ function CoverStatement({
       </div>
 
       <div className="absolute top-[300px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[860px] items-end">
-        {/* Texto literal: o `<Inline>` que interpreta `[[destaque]]` é da tarefa 2.3. */}
-        <p className="slide-display text-ink-100">{content.heading}</p>
+        <p className="slide-display text-ink-100">
+          <Inline>{content.heading}</Inline>
+        </p>
       </div>
 
       <div className="absolute top-[1240px] right-[var(--slide-pad)] flex h-[30px] items-center gap-[20px]">

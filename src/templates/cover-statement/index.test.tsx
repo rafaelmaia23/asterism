@@ -43,6 +43,28 @@ describe("cover-statement", () => {
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(8);
   });
 
+  test("o título é interpretado como marcação — `[[destaque]]` vira accent", () => {
+    const { container } = renderCover({
+      fields: { kicker: "log/ · 01", heading: "Ninguém [[lê docs]]" },
+    });
+
+    // Dentro do `<p>`: o kicker também é um span em accent, e vem antes no documento.
+    const accent = container.querySelector("p > span.text-azure-radiance-400");
+
+    expect(accent?.textContent).toBe("lê docs");
+    // O resto do título fica fora do span, e a marcação não aparece na tela.
+    expect(container.querySelector("p")?.textContent).toBe("Ninguém lê docs");
+  });
+
+  test("título sem marcação continua saindo inteiro, sem elemento a mais", () => {
+    const { container } = renderCover({
+      fields: { kicker: "log/ · 01", heading: "Um título literal" },
+    });
+
+    expect(screen.getByText("Um título literal")).toBeDefined();
+    expect(container.querySelector("p > span")).toBeNull();
+  });
+
   test("a capa não traz handle nem rodapé de identidade", () => {
     renderCover();
 
