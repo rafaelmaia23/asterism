@@ -87,11 +87,11 @@ Instala `zod`.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 1.4 | Tipos `TemplateDef` e `Field` em `src/templates/types.ts` — o descritor declarativo da §8 | Os sete tipos de `Field` compilam; `TemplateDef` é genérico em `F` e `O` |
+| 1.4 | Tipos `TemplateDef` e `Field` em `src/templates/types.ts` — o descritor declarativo da §8 do documento de contexto | Os sete tipos de `Field` compilam; `TemplateDef` é genérico em `F` e `O` |
 | 1.5 | Registry de templates — `register`, `get`, `list` | Testes antes: registrar e recuperar, `list` preserva ordem de registro, `get` de id desconhecido lança |
-| 1.5a | As oito `@utility slide-*` da escala tipográfica da §3.3 — decisão 19 | `globals.css` e `docs/theme.css` recebem o mesmo bloco; cada utility carrega família, tamanho, altura, peso e tracking, e `slide-meta` inclui a caixa alta. A §3.3 do design system ganha a nota no mesmo commit |
-| 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` do §11.1 validam contra o próprio schema, verificado em teste. `kicker` é campo digitado, não derivado — decisão 14 |
-| 1.7 | `cover-statement`: `index.tsx` com as regiões do §11.1, texto literal | Kicker em 80–148, título ancorado à **base** da região 300–1160; título de uma linha e de quatro linhas pousam na mesma altura |
+| 1.5a | As oito `@utility slide-*` da escala tipográfica da §3.3 do design system — decisão 19 | `globals.css` e `docs/theme.css` recebem o mesmo bloco; cada utility carrega família, tamanho, altura, peso e tracking, e `slide-meta` inclui a caixa alta. A §3.3 do design system ganha a nota no mesmo commit |
+| 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` da §11.1 dos templates validam contra o próprio schema, verificado em teste. `kicker` é campo digitado, não derivado — decisão 14 |
+| 1.7 | `cover-statement`: `index.tsx` com as regiões da §11.1 dos templates, texto literal | Kicker em 80–148, título ancorado à **base** da região 300–1160; título de uma linha e de quatro linhas pousam na mesma altura |
 
 `src/templates/index.ts` é o único lugar que importa e registra template. A conferência
 visual do componente é da 1C — aqui ele só precisa compilar.
@@ -116,7 +116,7 @@ Instala `zustand` e acrescenta o `textarea` do shadcn, que ainda não está em
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 1.10 | Store zustand mínimo — deck, slide ativo, `setField` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
-| 1.11 | Inspector: formulário derivado dos descritores, tipos `text` e `textarea`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector. O contador fica âmbar ao passar do `max` e não trava a digitação — §11.0, limite é conselho |
+| 1.11 | Inspector: formulário derivado dos descritores, tipos `text` e `textarea`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector. O contador fica âmbar ao passar do `max` e não trava a digitação — §11.0 dos templates, limite é conselho |
 | 1.12 | Lista lateral de slides — índice, rótulo do template, seleção | Clicar troca o slide ativo. Somente leitura: sem arraste, sem duplicar, sem remover |
 
 O deck semente tem **três slides `cover-statement`**. Com um slide só, a lista lateral, a
@@ -152,18 +152,18 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1: cada marcador isolado, marcadores adjacentes, marcador não fechado, `**a *b* c**` tratado como literal no marcador externo, string vazia, texto sem marcador. Devolve AST, **nunca** HTML |
-| 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
+| 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7 do documento de contexto, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1: cada marcador isolado, marcadores adjacentes, marcador não fechado, `**a *b* c**` tratado como literal no marcador externo, string vazia, texto sem marcador. Devolve AST, **nunca** HTML |
+| 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 do design system | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
 | 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
-| 2.4 | Componentes recorrentes da §10.5 — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa; rodapé com `MaiahubGlyph` a 32px, gap 20px, handle |
+| 2.4 | Componentes recorrentes da §10.5 do design system — `Kicker`, `Constelacao`, `Chevron`, `Rodape` | Constelação com dois estados apenas, sem estado para o slide atual; chevron só na capa; rodapé com `MaiahubGlyph` a 32px, gap 20px, handle |
 | 2.4a | Remover as quatro peças de logo não usadas | Decidido: o rodapé usa `MaiahubGlyph` a 32px. Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
-| 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 é atualizada junto |
+| 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 do design system é atualizada junto |
 | 2.5 | Conferir o fundo dos dois templates novos — a aplicação a partir de `meta.background` veio na 1C | `text-bullets` é `plain` e `final-cta` é `grid`; nenhum template de código ou imagem recebe grid |
 | 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
 | 2.7 | Inspector: tipos `select` e `toggle`, na seção de opções | Opções ficam visualmente separadas dos campos de conteúdo |
-| 2.8 | `text-bullets` completo — regiões da §11.2, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
+| 2.8 | `text-bullets` completo — regiões da §11.2 dos templates, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
 | 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa |
-| 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 torna a migração uma interseção de chaves, sem tabela de equivalência |
+| 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 do documento de contexto torna a migração uma interseção de chaves, sem tabela de equivalência |
 | 2.11 | Seletor de layout no topo do inspector, usando `migrateFields` | Trocar o layout preserva o que já foi digitado e reseta as opções |
 | 2.12 | `persist` do zustand em localStorage | Recarregar a página não perde o deck |
 
@@ -180,7 +180,7 @@ conteúdo denso. Corresponde à Fase 2 do §15.
 
 **Entrega.** Os sete templates restantes — `context`, `text-impact`, `code-window`,
 `code-annotated`, `compare-2col`, `split-vertical`, `image-caption`. Bloco de código
-com shiki e tema derivado dos tokens da §10.4, não importado pronto. Guard de transbordo
+com shiki e tema derivado dos tokens da §10.4 do design system, não importado pronto. Guard de transbordo
 por `ResizeObserver`, marcando o slide como inválido no canvas e na lista lateral.
 
 O guard não é polimento opcional: slide tem altura fixa e texto longo transborda: é a
@@ -237,13 +237,13 @@ dá a ela, e o desvio é consciente — a correção ótica dela é justamente o
 legível sobre `ink-950`, enquanto a `MaiahubMark`, apesar de estar dentro da própria
 faixa, some ali.
 
-Registrado na §11.0 e na §10.5 do design system, na decisão 18 da §16 do documento de
+Registrado na §11.0 dos templates e na §10.5 do design system, na decisão 18 da §16 do documento de
 contexto, e em `maiahub-logo.md`. A remoção das quatro peças perdedoras virou a tarefa
 2.4a.
 
 ### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b
 
-A §10.5 diz "5 pontos mais um contador `03 / 12`" e não diz quais cinco. Três leituras:
+A §10.5 do design system diz "5 pontos mais um contador `03 / 12`" e não diz quais cinco. Três leituras:
 
 - **Cinco primeiros.** Simples, mas para de comunicar progresso a partir do sexto slide.
 - **Janela deslizante** em torno do atual. É a leitura mais provável, e colide com a
