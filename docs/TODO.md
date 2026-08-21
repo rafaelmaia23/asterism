@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **1B concluída; a próxima
-> sessão é a 1C**
+> **Status** bootstrap concluído · decisões resolvidas · **1C concluída; a próxima
+> sessão é a 1D**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. A Etapa 1 tem um nível a mais — **sub-etapa**, uma por
 > sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -131,7 +131,7 @@ Resolvido na sessão:
   `defaults` atribuível ao `SlideDefaults` da §6, e a nota de por que o registry guarda
   `TemplateDef<any, any>`.
 
-### 1C — quadro, canvas e shell · ~1 h
+### 1C — quadro, canvas e shell ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
@@ -142,6 +142,33 @@ Resolvido na sessão:
 
 O `k` vem de um `ResizeObserver` na área central, `min(w / 1080, h / 1350)`: auto-fit, sem
 seletor de zoom — decisão 22.
+
+Resolvido na sessão:
+
+- **Duas pastas novas, cortadas por quem as usa.** `src/render/` guarda o que preview e
+  exportação compartilham — `SlideFrame` e `SlideView` —, e `src/editor/` guarda o chrome:
+  shell, canvas, escala e deck semente. O palco oculto da 1E monta o deck reusando
+  `src/render/` e não passa perto do `src/editor/`.
+- **`SlideView` é quem traduz `slide.template` em componente**, pedindo o descritor ao
+  registry. Ficou fora do canvas de propósito: o canvas sabe de escala e de mais nada, e
+  a 1E precisa da tradução sem precisar do canvas.
+- **A moldura do preview mora no quadro externo, fora do `transform`** — decisão 23. O
+  slide e o fundo do editor são os dois `ink-950` e precisam de separação; dentro do
+  `transform` a borda encolheria com a escala e viajaria dentro do nó capturado.
+- **Auto-fit com teto de 1.** Numa tela grande a área central passa de 1080×1350, e
+  exibir o slide acima do tamanho real não ajuda — o carrossel é publicado reduzido.
+  Enquanto a escala for 0, o canvas não desenha quadro nenhum: `calc(1px / 0)` na
+  compensação do grid não pode acontecer.
+- **A barra superior nasceu junto, reservada**, com o nome do deck. A 1E acha onde pôr o
+  botão de exportação e o editor já tem as proporções finais. A §14 do documento de
+  contexto ganhou a nota.
+- **O deck semente é um módulo**, `src/editor/seed.ts`, com os defaults vindos do
+  registry e três títulos de comprimentos diferentes — um de uma linha, um de quatro. É
+  o que faz a âncora de base da 1.7 ser conferível olhando. A 1D o move para dentro do
+  store sem editá-lo.
+- **`createSeedDeck()` é chamado dentro do componente**, em `useState`, não em módulo:
+  `crypto.randomUUID()` avaliado no import daria ids diferentes na pré-renderização
+  estática e no cliente.
 
 ### 1D — estado e inspector · ~1,5 h
 

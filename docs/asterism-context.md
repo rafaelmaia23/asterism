@@ -449,6 +449,11 @@ Três colunas, sem invenção:
 - **Topo** — nome do deck, ações de deck (novo, importar, exportar JSON) e o botão de
   exportação com escolha de alvo.
 
+As quatro áreas nascem juntas, na 1C, e se preenchem por etapa: o centro já funciona, o
+topo tem só o nome do deck, e as duas laterais são espaço reservado até a 1D. Criar o
+quadrilátero de uma vez custa nada e faz o editor ter, desde o primeiro dia, as
+proporções que vai ter no fim.
+
 ## 15. Roadmap
 
 | Fase | Escopo | Estimativa |
