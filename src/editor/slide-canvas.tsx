@@ -45,7 +45,9 @@ export function SlideCanvas({ slide, deck, format, index, total }: SlideCanvasPr
     <div
       ref={area}
       data-testid="slide-canvas-area"
-      className="relative min-h-0 min-w-0 flex-1 overflow-hidden p-8"
+      // `bg-card` é `ink-900`: no editor a escada de superfícies da §2.2 do design
+      // system se inverte, e a área de trabalho é um degrau mais clara que o slide.
+      className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-card p-8"
     >
       <div
         data-testid="slide-canvas-stage"

@@ -11,6 +11,10 @@
  * preview e o arquivo têm de ser o mesmo DOM, e a única divergência permitida é a
  * compensação de espessura do grid.
  *
+ * Ela é `ink-700`, e não o `ink-800` de hairline: contra a área de trabalho em `ink-900`,
+ * o tom 800 fica a meio caminho entre o slide e o entorno e a página deixa de ter
+ * contorno. É a exceção da §2.2 do design system, e vale só no chrome do editor.
+ *
  * `--slide-w` e `--slide-h` saem de `deck.format`, nunca de constante: é o que a §12
  * compra por meia hora hoje. Nenhum template conhece 1080 ou 1350.
  *
@@ -48,7 +52,7 @@ export function SlideFrame({
       data-testid="slide-frame"
       // `box-content` para que a borda cresça para fora: o miolo mede exatamente o
       // slide escalado, e a linha não come 2px do conteúdo.
-      className="box-content border border-ink-800"
+      className="box-content border border-ink-700"
       style={{ width: format.w * scale, height: format.h * scale }}
     >
       <div

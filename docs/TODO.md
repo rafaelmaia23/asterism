@@ -152,9 +152,12 @@ Resolvido na sessão:
 - **`SlideView` é quem traduz `slide.template` em componente**, pedindo o descritor ao
   registry. Ficou fora do canvas de propósito: o canvas sabe de escala e de mais nada, e
   a 1E precisa da tradução sem precisar do canvas.
-- **A moldura do preview mora no quadro externo, fora do `transform`** — decisão 23. O
-  slide e o fundo do editor são os dois `ink-950` e precisam de separação; dentro do
-  `transform` a borda encolheria com a escala e viajaria dentro do nó capturado.
+- **A área de trabalho é `ink-900` e o quadro tem moldura de 1px `ink-700`** — decisão
+  23, corrigida na conferência visual. A primeira tentativa pôs slide e área no mesmo
+  `ink-950` separados por hairline `ink-800`, e não dava para ver onde termina a página;
+  a §2.2 do design system já mandava inverter a escada, e a borda entrou por cima. Ela
+  mora no quadro externo, fora do `transform`: dentro, encolheria com a escala e viajaria
+  dentro do nó capturado.
 - **Auto-fit com teto de 1.** Numa tela grande a área central passa de 1080×1350, e
   exibir o slide acima do tamanho real não ajuda — o carrossel é publicado reduzido.
   Enquanto a escala for 0, o canvas não desenha quadro nenhum: `calc(1px / 0)` na
@@ -169,6 +172,15 @@ Resolvido na sessão:
 - **`createSeedDeck()` é chamado dentro do componente**, em `useState`, não em módulo:
   `crypto.randomUUID()` avaliado no import daria ids diferentes na pré-renderização
   estática e no cliente.
+- **A conferência visual reprovou a primeira versão, por laço de medição.** O slide abria
+  pequeno e crescia sozinho até o teto de 1, estourando a tela: a área observada pelo
+  `ResizeObserver` tinha altura dirigida pelo conteúdo, então o quadro esticava a área que
+  o media e cada medida realimentava uma escala maior. Corrigido em dois pontos, e os dois
+  ficam: o `body` passou a ter altura de viewport em vez de altura mínima, e o quadro saiu
+  do fluxo, num palco `absolute` dentro da área. A §13 do documento de contexto e o
+  `CLAUDE.md` ganharam a armadilha, que volta na 1E com o palco de exportação.
+- **A medição roda em layout effect, com uma primeira leitura síncrona.** Sem isso o
+  quadro aparece num tamanho e se ajusta no quadro seguinte, o que se lê como animação.
 
 ### 1D — estado e inspector · ~1,5 h
 

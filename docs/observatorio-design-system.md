@@ -129,7 +129,17 @@ degrau mais claro, ou tem borda, raramente os dois.
 
 No editor do `asterism` isso se inverte de forma útil — a área de trabalho é
 `ink-900` e o slide é `ink-950`, então o slide fica **mais escuro** que o entorno e
-se lê como objeto, sem precisar de borda que depois teria de ser removida na exportação.
+se lê como objeto.
+
+A inversão sozinha não bastou, e o quadro do preview ganhou **borda de 1px `ink-700`** —
+verificado olhando, na 1C: com o degrau de superfície apenas, a página não tinha contorno
+e não dava para saber onde começa o que vai virar PDF. O tom é 700 e não o 800 de
+hairline porque, entre um slide `ink-950` e uma área `ink-900`, o 800 cai a meio caminho
+dos dois e some. É exceção de uma linha e vale **só no chrome do editor**.
+
+Ela não chega ao arquivo exportado, e não por cuidado: a borda mora no quadro externo, do
+lado de fora do `transform` de escala, e a exportação captura a raiz do slide, que está
+dentro. Ver a §9 e a decisão 23 do documento de contexto.
 
 ### 2.3 Texto
 
