@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída; Etapa 2
-> dividida em sub-etapas e pronta para executar — a próxima sessão abre a 2A**
+> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída; Etapa 2 em
+> curso: 2A concluída — a próxima sessão abre a 2B**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 e 2 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -355,7 +355,7 @@ as decisões 29 a 32 da §16 do documento de contexto:
 > já permite publicar um carrossel real, e um deck que some no reload não permite. Custa
 > poucas linhas de middleware.
 
-### 2A — marcação inline
+### 2A — marcação inline ✅
 
 Nada a instalar. Pasta nova `src/markup/`, autocontida: o parser, os tipos e o
 componente. Quem chama é o template, que escreve `<Inline>` e nunca vê a AST.
@@ -375,6 +375,39 @@ texto vizinhos colapsados em um só.
 Fecha conferindo no navegador **e no PDF**. Cor de span atravessa a rasterização, mas o
 fundo de `==marca==` é da mesma classe de risco que a grade foi na 1E — fundo desenhado
 por CSS é justamente o que não sobreviveu lá.
+
+Resolvido na sessão:
+
+- **O risco do fundo de `==marca==` não se confirmou.** Medido no bitmap do PDF, com uma
+  sonda dos sete marcadores no título da capa: 83.922 px de `#441504` atrás da marca,
+  `#f8c251` no texto dela, 897 blocos sólidos de `#1e293b` no chip de código com `#bfdbfe`
+  em cima, `#60a5fa` no destaque e `#64748b` no riscado. O que matou a grade na 1E era o
+  **gradiente**, não o fundo — cor chapada atravessa a rasterização inteira. Fica como
+  medida, não como suposição.
+- **O parser não conhece limite de palavra** — decisão 33. `micro**serviços**` marca. Três
+  regras de resolução caíram de graça do desenho de uma varredura só, e todas dão no mesmo
+  lugar: marcador não fechado, conteúdo vazio (`****`) e marcador dentro de marcador viram
+  **texto literal**. A §7 do documento de contexto ganhou a tabela.
+- **O peso de `**forte**` virou piso, não valor** — decisão 34, e a §10.2 do design system
+  corrigida junto. Os documentos se contradiziam: 600 fixo sobre a Oxanium 700 do título
+  deixaria o trecho marcado mais **leve** que a frase, e a §11.1 dos templates promete que
+  ele "não tem efeito visível" ali. Cada `@utility slide-*` passou a publicar o próprio
+  peso em `--slide-font-weight`, e a utility nova `slide-strong` lê com
+  `max(600, var(--slide-font-weight, 400))`. Medido nas oito escalas: 600 em `slide-body`,
+  700 em `slide-display`, 600 fora de qualquer escala. Herança de custom property foi o que
+  evitou o `<Inline>` ter de receber o peso do template — o renderer de marcação não conhece
+  template, §5.
+- **Marcador vira elemento HTML de verdade**, não `<span>` com classe: `<strong>`, `<em>`,
+  `<s>`, `<u>`, `<mark>`, `<code>`. Nó de texto puro não ganha wrapper nenhum. Sai teste por
+  tag em vez de `data-testid`, e o DOM que a exportação captura fica semântico. O
+  `[[destaque]]` é a exceção que confirma: como é só cor, não há elemento com esse
+  significado e o `<span>` é o honesto.
+- **`==marca==` e `` `código` `` levam `box-decoration-break: clone`**, senão o padding
+  lateral apareceria só nas duas pontas de um trecho que quebra de linha. Confirmado
+  `clone` no estilo computado e no arquivo.
+- **O deck semente ganhou marcação.** Os três títulos abrem com `[[destaque]]`, e o teste
+  que mede comprimento de título passou a medir o **texto renderizado** — os colchetes não
+  chegam ao canvas e não podem contar contra o limite de linha da §11.1.
 
 ### 2B — rodapé e `text-bullets`
 
@@ -510,7 +543,8 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 ## A resolver por experimento
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
-contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32. Sobraram
+contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, e a 2A as
+33 e 34. Sobraram
 **dois** pontos abertos: o recorte da constelação, que se resolve na 2E, e o foco e raio
 dos controles de formulário, do experimento 3. Nenhum dos dois bloqueia nada.
 
