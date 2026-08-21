@@ -61,6 +61,21 @@ function renderInspector() {
 }
 
 describe("Inspector", () => {
+  /**
+   * O seletor de layout da §14 do documento de contexto. A troca de verdade é a 2.11 e
+   * depende do `migrateFields` da 2.10 — até lá o controle mostra o layout do slide e não
+   * oferece troca. Desabilitado de propósito: a 2.8 e a 2.9 registram mais dois templates
+   * **antes** da 2.11, e um select ativo que não trocasse nada mentiria por semanas.
+   */
+  test("o topo mostra o layout do slide ativo, e ainda não troca", () => {
+    renderInspector();
+
+    const trigger = screen.getByTestId("layout-trigger");
+
+    expect(trigger.textContent).toContain("Template de teste");
+    expect(trigger).toHaveProperty("disabled", true);
+  });
+
   test("desenha um controle por descritor, com o rótulo do descritor", () => {
     renderInspector();
 

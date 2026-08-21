@@ -233,6 +233,28 @@ Resolvido na sessão:
   garante que lista, inspector e canvas falam com o mesmo store, que é justamente o que os
   testes isolados — cada um com o seu store de fixture — não podem ver.
 
+A conferência visual no navegador rendeu mais cinco ajustes, e todos entraram na 1D:
+
+- **Erro de hidratação no inspector.** Os `id` dos controles saíam de `slide.id`, que vem
+  de `crypto.randomUUID()`: um valor na pré-renderização estática, outro no cliente, e o
+  React não remenda atributo. Passaram a sair do `useId`. Virou armadilha na §13 do
+  documento de contexto e no `CLAUDE.md`, e a decisão 24 foi corrigida — manter id de dado
+  fora do DOM é condição que o código sustenta, não consequência do desenho.
+- **`register` derrubava o `next dev` a cada edição**, porque o HMR reavalia
+  `templates/index.ts` sem reavaliar o registry. Em desenvolvimento passa a substituir.
+- **A miniatura da lista lateral entrou**, e ela nunca tinha sido agendada: a §14 do
+  contexto a prometia e nenhuma tarefa a entregava. É o próprio `SlideView` numa escala
+  fixa — sem `ResizeObserver`, que num item de lista traria de volta o laço da 1C — e o
+  item da lista é memoizado por referência de slide, senão cada tecla digitada
+  re-renderizaria a árvore completa de todos os slides do deck.
+- **A grade de fundo virou opção do slide** — decisão 25, e a §4.3 do design system mudou
+  junto. Era propriedade fixa do template; agora o `background` do descritor é só o padrão
+  com que o slide nasce. O descritor de `showGrid` mora em `src/templates/shared/`, um só
+  para os dez templates.
+- **O seletor de layout apareceu no topo do inspector**, desabilitado. A troca continua
+  sendo a 2.11, que depende do `migrateFields` da 2.10; desabilitar é o honesto, porque a
+  2.8 e a 2.9 registram mais dois templates antes disso.
+
 ### 1E — exportação · ~1,5 h
 
 Instala `modern-screenshot` e `jspdf`.
@@ -274,7 +296,7 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 | 2.8 | `text-bullets` completo — regiões da §11.2 dos templates, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
 | 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa |
 | 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 do documento de contexto torna a migração uma interseção de chaves, sem tabela de equivalência |
-| 2.11 | Seletor de layout no topo do inspector, usando `migrateFields` | Trocar o layout preserva o que já foi digitado e reseta as opções |
+| 2.11 | Ligar o seletor de layout ao `migrateFields` — o controle em si veio na 1D, desabilitado | Trocar o layout preserva o que já foi digitado e reseta as opções. O select já lista o registry e mostra o layout do slide; falta a troca |
 | 2.12 | `persist` do zustand em localStorage | Recarregar a página não perde o deck |
 
 > A tarefa 2.12 é antecipada da Fase 3 do §15. Motivo: o próprio §15 afirma que a Fase 1

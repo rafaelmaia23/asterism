@@ -488,8 +488,9 @@ uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que
 fim.
 
 Estado hoje, depois da 1D: o centro funciona; o topo tem só o nome do deck; a direita tem
-o formulário derivado dos descritores, com contadores; a esquerda lista os slides com
-miniatura, número e nome, e troca o ativo — sem marca de transbordo, arraste, duplicar nem
+o seletor de layout — desabilitado até a 2.11, que é quem o liga ao `migrateFields` — e o
+formulário derivado dos descritores, com contadores; a esquerda lista os slides com
+miniatura, número e nome, e troca o ativo, sem marca de transbordo, arraste, duplicar nem
 remover.
 
 A miniatura é o mesmo `SlideView` do canvas numa escala fixa, e não uma representação

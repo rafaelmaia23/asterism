@@ -24,9 +24,16 @@ import { useStore } from "zustand";
 import type { FieldValue, OptionValue } from "@/deck/types";
 import { editorStore, selectActiveSlide, type EditorState } from "@/editor/store";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { get } from "@/templates/registry";
+import { get, list } from "@/templates/registry";
 import type { Field } from "@/templates/types";
 
 export type InspectorProps = {
@@ -141,6 +148,36 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+/**
+ * O seletor de layout da §14 — o topo do inspector.
+ *
+ * Mostra o layout do slide e **não troca**: a troca é a tarefa 2.11 e depende do
+ * `migrateFields` da 2.10, que preserva o que já foi digitado. Fica desabilitado em vez de
+ * ativo-sem-efeito porque a 2.8 e a 2.9 registram mais dois templates antes da 2.11 —
+ * um select que lista três opções e ignora a escolha mentiria por semanas.
+ *
+ * A lista sai do registry, nunca de um array à parte: um template novo aparece aqui pelo
+ * mesmo caminho que aparece no resto do sistema.
+ */
+function LayoutPicker({ template }: { template: string }) {
+  const labels = Object.fromEntries(list().map((def) => [def.id, def.label]));
+
+  return (
+    <Select value={template} items={labels} disabled>
+      <SelectTrigger data-testid="layout-trigger" className="w-full">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {list().map((def) => (
+          <SelectItem key={def.id} value={def.id}>
+            {def.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 export function Inspector({ store = editorStore }: InspectorProps) {
   const slide = useStore(store, selectActiveSlide);
   const setField = useStore(store, (state) => state.setField);
@@ -150,6 +187,11 @@ export function Inspector({ store = editorStore }: InspectorProps) {
 
   return (
     <div className="flex flex-col gap-8 p-4">
+      <Section title="Layout">
+        <LayoutPicker template={slide.template} />
+        <span className="text-xs text-ink-600">Trocar de layout chega na Etapa 2.</span>
+      </Section>
+
       <Section title="Conteúdo">
         {def.fields.map((field: Field) => (
           <FieldRow
