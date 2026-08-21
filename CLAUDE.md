@@ -65,6 +65,8 @@ Não crie estrutura para o que ainda não existe. Pasta vazia é custo sem retor
 npm run dev      # servidor de desenvolvimento
 npm run build    # build de produção (export estático em out/)
 npm run lint     # eslint
+npm test         # vitest, uma passada
+npm run test:watch
 npx tsc --noEmit # checagem de tipos
 ```
 

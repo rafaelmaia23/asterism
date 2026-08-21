@@ -369,6 +369,12 @@ código ser a única coisa do carrossel que não parece sua.
 
 `supertest` não entra: é cliente HTTP para testar servidor, e não há servidor.
 
+`@vitejs/plugin-react` também não entra, apesar de o guia do Next pedi-lo. Ele traz a
+cadeia do Babel 8 e o `shadcn` já fixa o Babel 7 na árvore — o `npm install` falha por
+conflito de peer. O que o plugin dá é Fast Refresh e ganchos de Babel, nenhum dos dois
+usado numa rodada de teste: o JSX é transformado direto pelo `"jsx": "react-jsx"` do
+`tsconfig.json`.
+
 ### Três armadilhas conhecidas
 
 **OKLCH quebra a serialização.** As bibliotecas de captura passam por
