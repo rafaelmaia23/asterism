@@ -18,10 +18,13 @@ O sistema visual é o **Observatório** — tema escuro único, sem variante cla
 | Estilo | Tailwind CSS v4, config CSS-first |
 | Componentes | shadcn/ui v4 sobre **Base UI** (`@base-ui/react`), preset `nova` |
 | Ícones | lucide-react |
+| Estado | zustand (cru; `persist` e `zundo` entram na Etapa 3) |
+| Validação | zod |
+| Exportação | modern-screenshot (DOM → bitmap) + jsPDF (bitmap → arquivo) |
 | Testes | Vitest (`@testing-library/react` + `happy-dom` para componentes) |
 
-Ainda não instalados, previstos pelo roadmap: zustand + persist + zundo, zod, shiki,
-modern-screenshot, jsPDF, @dnd-kit/sortable, idb-keyval.
+Ainda não instalados, previstos pelo roadmap: zundo, shiki, @dnd-kit/sortable,
+idb-keyval.
 
 ## Documentos de referência
 
