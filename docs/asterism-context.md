@@ -474,10 +474,14 @@ Três colunas, sem invenção:
 - **Topo** — nome do deck, ações de deck (novo, importar, exportar JSON) e o botão de
   exportação com escolha de alvo.
 
-As quatro áreas nascem juntas, na 1C, e se preenchem por etapa: o centro já funciona, o
-topo tem só o nome do deck, e as duas laterais são espaço reservado até a 1D. Criar o
-quadrilátero de uma vez custa nada e faz o editor ter, desde o primeiro dia, as
-proporções que vai ter no fim.
+As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadrilátero de
+uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
+fim.
+
+Estado hoje, depois da 1D: o centro funciona; o topo tem só o nome do deck; a direita tem
+o formulário derivado dos descritores, com contadores, mas ainda sem seletor de layout; a
+esquerda lista os slides e troca o ativo, sem miniatura, marca de transbordo, arraste,
+duplicar nem remover.
 
 ## 15. Roadmap
 

@@ -184,18 +184,25 @@ Resolvido na sessão:
 
 ### 1D — estado e inspector · ~1,5 h
 
-Instala `zustand` e acrescenta o `textarea` do shadcn, que ainda não está em
+Instala `zustand` e acrescenta o `textarea` e o `switch` do shadcn, que ainda não estão em
 `src/components/ui/`.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 1.10 | Store zustand mínimo — deck, slide ativo, `setField` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
-| 1.11 | Inspector: formulário derivado dos descritores, tipos `text` e `textarea`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector. O contador fica âmbar ao passar do `max` e não trava a digitação — §11.0 dos templates, limite é conselho |
+| 1.10 | Store zustand mínimo — deck, slide ativo, `setField` e `setOption` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
+| 1.11 | Inspector: formulário derivado dos descritores, tipos `text`, `textarea` e `toggle`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector. O contador fica âmbar ao passar do `max` e não trava a digitação — §11.0 dos templates, limite é conselho |
 | 1.12 | Lista lateral de slides — índice, rótulo do template, seleção | Clicar troca o slide ativo. Somente leitura: sem arraste, sem duplicar, sem remover |
 
 O deck semente tem **três slides `cover-statement`**. Com um slide só, a lista lateral, a
 troca de slide ativo e o laço de páginas do alvo PDF ficariam sem prova até a Etapa 2 — e
 é exatamente ali que os erros de exportador aparecem.
+
+**Ajuste de escopo, decidido na sessão.** A 1.11 escrevia `text` e `textarea` só. O
+`toggle` entrou junto, com `setOption` no store e o `switch` do shadcn: sem ele o
+`showChevron` do `cover-statement` nasceria sem controle e a separação `fields`/`options`
+da §6 do documento de contexto ficaria sem prova até a Etapa 2. Os tipos que sobram —
+`list`, `image`, `code`, `select` — não têm controle ainda, e o inspector os desenha como
+linha inerte com o rótulo, para que um campo novo nunca suma do formulário em silêncio.
 
 ### 1E — exportação · ~1,5 h
 

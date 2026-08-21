@@ -11,6 +11,7 @@
  * distribui.
  */
 
+import { Inspector } from "@/editor/inspector";
 import { SlideCanvas } from "@/editor/slide-canvas";
 import { selectActiveIndex, selectActiveSlide, useEditor } from "@/editor/store";
 
@@ -52,7 +53,7 @@ export function EditorShell() {
         />
 
         <aside className="w-80 shrink-0 overflow-y-auto border-l border-ink-800 bg-card">
-          <Placeholder title="Inspector" note="Campos do slide ativo" />
+          <Inspector />
         </aside>
       </div>
     </div>
