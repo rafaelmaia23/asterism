@@ -31,11 +31,17 @@ Ficam em `docs/`, escritos em português. Cada um tem uma autoridade:
 |---|---|
 | `asterism-context.md` | Arquitetura, modelo de dados, escopo, decisões registradas |
 | `observatorio-design-system.md` | Qualquer questão visual; é quem regenera o `theme.css` |
-| `theme.css` | Nada — é artefato derivado do documento acima |
+| `observatorio-templates.md` | Regiões, campos, opções e comportamento de cada template |
+| `theme.css` | Nada — é artefato derivado do design system |
 | `TODO.md` | Estado da execução: etapas, tarefas, experimentos em aberto |
 | `maiahub-logo.md` | As peças de logo e como foram adaptadas ao Observatório |
 
 Em conflito entre um documento e o código, o documento vence.
+
+Nenhum deles é para ser lido inteiro. O design system tem um **mapa na §0** que diz o que
+cada seção decide e quando abri-la — leia o mapa antes da seção, e a seção por faixa de
+linha. Referência `§N` sem nome de documento significa o próprio documento; referência a
+outro sempre o nomeia.
 
 `docs/theme.css` e `src/app/globals.css` compartilham o mesmo bloco de tokens, entre os
 marcadores `BEGIN/END Observatório`. Mudou um, muda o outro.
@@ -46,7 +52,7 @@ marcadores `BEGIN/END Observatório`. Mudou um, muda o outro.
 docs/                 documentos de referência, em português
 src/app/                App Router — layout, globals.css, rotas
 src/deck/               modelo de dados do deck e suas factories
-src/components/ui/      componentes shadcn (gerados; auditar contra a §2.4)
+src/components/ui/      componentes shadcn (gerados; auditar contra a §2.4 do design system)
 src/components/maiahub/ as cinco peças de logo
 src/fonts/              as três famílias em arquivo local + licenças OFL
 src/lib/                utilidades compartilhadas
