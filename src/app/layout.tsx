@@ -15,7 +15,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       // is here so `dark:` utilities inside shadcn components resolve coherently.
       className={`dark ${fontVariables} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/*
+        `h-full` e não `min-h-full`: o editor é shell de aplicação, não documento que
+        rola. Com altura só mínima, a do `body` é dirigida pelo conteúdo, e é por essa
+        ponta solta que o canvas empurrava a área que o mede — ver a §13 do documento de
+        contexto. O que rola, quando precisa, é cada coluna por dentro.
+      */}
+      <body className="h-full overflow-hidden flex flex-col">{children}</body>
     </html>
   );
 }

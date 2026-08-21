@@ -416,7 +416,7 @@ conflito de peer. O que o plugin dá é Fast Refresh e ganchos de Babel, nenhum 
 usado numa rodada de teste: o JSX é transformado direto pelo `"jsx": "react-jsx"` do
 `tsconfig.json`.
 
-### Três armadilhas conhecidas
+### Armadilhas conhecidas
 
 **OKLCH quebra a serialização.** As bibliotecas de captura passam por
 `foreignObject`/canvas e o suporte a `oklch()` é irregular. Os tokens da subárvore
@@ -436,6 +436,20 @@ referencia não chega ao CSS final, e `var(--color-ink-700)` num estilo inline r
 para nada — silenciosamente, sem erro de build. Por isso as rampas de cor e o bloco da
 superfície carrossel são declarados como `@theme static`. Só o mapeamento semântico do
 shadcn, em `@theme inline`, pode ser podado sem prejuízo.
+
+**Elemento medido não pode ser dimensionado pelo que ele contém.** O `ResizeObserver` do
+canvas mede a área central para calcular a escala, e a escala desenha o quadro dentro
+dela. Se a altura da área depender do conteúdo — basta um `min-height` no lugar de uma
+altura no caminho até o `body` —, cada medida realimenta uma escala maior e o slide cresce
+sozinho até o teto do auto-fit. Aconteceu na 1C, e o sintoma engana: parece animação, e é
+laço.
+
+São duas condições, e vale manter as duas. **O que se mede fica preso a algo de fora** —
+o shell tem altura de viewport, não altura mínima. **O que o resultado desenha fica fora
+do fluxo** — o quadro mora num palco `absolute` dentro da área, e conteúdo posicionado em
+absoluto não contribui para o tamanho do pai. A segunda sozinha já fecha a porta, e é a
+que vai valer também para o palco de exportação da §10, que monta o deck inteiro fora da
+tela.
 
 ## 14. Interface
 

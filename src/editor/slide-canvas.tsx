@@ -11,6 +11,17 @@
  * Enquanto a escala for 0 — o primeiro quadro, antes de o `ResizeObserver` medir — nada
  * é desenhado. Um quadro com `--slide-scale: 0` faria a compensação do grid dividir por
  * zero.
+ *
+ * **Duas camadas, e a separação é o que impede o laço de medição.** A área é quem se
+ * mede; o palco por cima dela é `absolute`, e é ele que carrega o quadro. Conteúdo fora
+ * de fluxo não contribui para o tamanho do pai, então nada do que o canvas desenha pode
+ * esticar o que o canvas mede. Sem isso, uma altura dirigida pelo conteúdo em qualquer
+ * ponto da cadeia de flex acima realimenta a escala até o teto — foi o que aconteceu na
+ * primeira versão. Ver a §13 do documento de contexto.
+ *
+ * O `p-8` fica na área, e não no palco: `contentRect` desconta padding, então a folga
+ * entra na conta do encaixe. O palco cobre a caixa de padding e centraliza dentro dela,
+ * o que deixa a folga igual nos quatro lados.
  */
 
 import { useRef } from "react";
@@ -34,18 +45,23 @@ export function SlideCanvas({ slide, deck, format, index, total }: SlideCanvasPr
     <div
       ref={area}
       data-testid="slide-canvas-area"
-      className="flex min-h-0 min-w-0 flex-1 items-center justify-center overflow-hidden p-8"
+      className="relative min-h-0 min-w-0 flex-1 overflow-hidden p-8"
     >
-      {scale > 0 && (
-        <SlideView
-          slide={slide}
-          deck={deck}
-          format={format}
-          index={index}
-          total={total}
-          scale={scale}
-        />
-      )}
+      <div
+        data-testid="slide-canvas-stage"
+        className="absolute inset-0 flex items-center justify-center"
+      >
+        {scale > 0 && (
+          <SlideView
+            slide={slide}
+            deck={deck}
+            format={format}
+            index={index}
+            total={total}
+            scale={scale}
+          />
+        )}
+      </div>
     </div>
   );
 }
