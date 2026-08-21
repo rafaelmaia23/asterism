@@ -7,8 +7,12 @@
  * oculto da 1E cuida de montar o deck inteiro, nenhum dos dois precisa saber que
  * templates existem. Registry em vez de `switch`, §5 do documento de contexto.
  *
- * O fundo sai de `def.background` e vai ao `SlideFrame`; o template não desenha a
- * própria grade, e nem saberia em que escala está sendo exibido para compensá-la.
+ * O fundo é decidido aqui e vai pronto ao `SlideFrame`; o template não desenha a própria
+ * grade, e nem saberia em que escala está sendo exibido para compensá-la.
+ *
+ * **Quem decide a grade é o slide, não o template** — decisão 25 e §4.3 do design system.
+ * O `background` do descritor é o padrão com que o slide nasce, e vale para quem não tem
+ * a opção: deck antigo, ou template que não a exponha.
  */
 
 import type { Deck, DeckMeta, Slide } from "@/deck/types";
@@ -29,8 +33,13 @@ export function SlideView({ slide, deck, format, index, total, scale }: SlideVie
   // runtime a tratar: um deck só guarda id de template que existiu algum dia.
   const def = get(slide.template);
 
+  const grid =
+    typeof slide.options.showGrid === "boolean"
+      ? slide.options.showGrid
+      : def.background === "grid";
+
   return (
-    <SlideFrame format={format} scale={scale} background={def.background}>
+    <SlideFrame format={format} scale={scale} background={grid ? "grid" : "plain"}>
       <def.Component
         fields={slide.fields}
         options={slide.options}

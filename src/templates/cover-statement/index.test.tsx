@@ -31,13 +31,13 @@ describe("cover-statement", () => {
   });
 
   test("showChevron ligado desenha a afordância de deslize", () => {
-    renderCover({ options: { showChevron: true } });
+    renderCover({ options: { showGrid: true, showChevron: true } });
 
     expect(screen.queryByTestId("chevron")).not.toBeNull();
   });
 
   test("showChevron desligado não desenha nada no lugar dela", () => {
-    renderCover({ options: { showChevron: false } });
+    renderCover({ options: { showGrid: true, showChevron: false } });
 
     expect(screen.queryByTestId("chevron")).toBeNull();
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(8);

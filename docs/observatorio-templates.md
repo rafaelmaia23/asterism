@@ -60,6 +60,12 @@ Os limites de caractere na tabela de campos são **conselho, não trava**. O cam
 mais; o contador fica âmbar ao passar do limite e o guard de transbordo é quem reprova
 de fato, medindo altura real.
 
+**Todo template expõe a opção `showGrid`**, que vem do descritor compartilhado em
+`src/templates/shared/options.ts` e aparece primeiro na lista de opções. O `background`
+do template diz apenas com que valor o slide nasce; a grade em si é escolha de quem edita
+— §4.3 do design system e decisão 25. A tabela de opções de cada template abaixo omite
+`showGrid`, que é comum a todos, e lista só o que é próprio dele.
+
 ---
 
 ### 11.1 `cover-statement`
@@ -120,7 +126,7 @@ demais em 96px e não deve ser usado em título.
 ```ts
 defaults: {
   fields:  { kicker: "log/ · 01", heading: "Um título que declara algo em vez de prometer" },
-  options: { showChevron: true },
+  options: { showGrid: true, showChevron: true },
 }
 ```
 
@@ -184,7 +190,7 @@ defaults: {
     heading: "Três coisas que eu mudaria",
     items: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
   },
-  options: { anchor: "center" },
+  options: { showGrid: false, anchor: "center" },
 }
 ```
 
@@ -250,6 +256,6 @@ defaults: {
     lead: "Backend, infra e o que aprendo quebrando os dois.",
     cta: "blog.maiahub.com.br",
   },
-  options: { showArrow: true },
+  options: { showGrid: true, showArrow: true },
 }
 ```

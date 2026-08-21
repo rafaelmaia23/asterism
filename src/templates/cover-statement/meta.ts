@@ -26,6 +26,8 @@ export const coverStatementMeta: {
       kicker: "log/ · 01",
       heading: "Um título que declara algo em vez de prometer",
     },
-    options: { showChevron: true },
+    // `showGrid` nasce igual ao `background` acima: o descritor dá o padrão, o slide
+    // decide daí em diante.
+    options: { showGrid: true, showChevron: true },
   },
 };

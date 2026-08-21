@@ -268,7 +268,7 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 | 2.4 | Componentes recorrentes da §10.5 do design system — falta o `Footer`; `Kicker`, `Constellation` e `Chevron` vieram na 1B | Rodapé com `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` e constelação à direita, em todo template menos capa e final |
 | 2.4a | Remover as quatro peças de logo não usadas | Decidido: o rodapé usa `MaiahubGlyph` a 32px. Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
 | 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 do design system é atualizada junto |
-| 2.5 | Conferir o fundo dos dois templates novos — a aplicação a partir de `meta.background` veio na 1C | `text-bullets` é `plain` e `final-cta` é `grid`; nenhum template de código ou imagem recebe grid |
+| 2.5 | Conferir o **padrão** de fundo dos dois templates novos e a opção `showGrid` em cada um | `text-bullets` nasce `plain` e `final-cta` nasce `grid`; os dois expõem `showGrid`, que a 1D tornou comum a todo template — decisão 25 |
 | 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
 | 2.7 | Inspector: tipos `select` e `toggle`, na seção de opções | Opções ficam visualmente separadas dos campos de conteúdo |
 | 2.8 | `text-bullets` completo — regiões da §11.2 dos templates, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
