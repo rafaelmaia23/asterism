@@ -313,13 +313,19 @@
 
    Sem `@theme static` aqui, e sem contradição com o bloco acima: utility é gerada a
    partir do nome de classe lido no source, e o tree-shaking que preocupa é o de
-   variável lida por `var()`. Utility que nenhum template escreve não precisa existir. */
+   variável lida por `var()`. Utility que nenhum template escreve não precisa existir.
+
+   Cada uma publica o próprio peso em `--slide-font-weight` antes de aplicá-lo. Quem lê
+   é o `slide-strong` no fim deste arquivo: o marcador `**forte**` precisa saber o peso
+   do bloco em que caiu para nunca ficar mais leve que ele, e a herança de custom
+   property é o caminho que não obriga o template a informar nada ao `<Inline>`. */
 
 @utility slide-display {
   font-family: var(--font-display);
   font-size: var(--text-slide-display);
   line-height: 1.05;
-  font-weight: 700;
+  --slide-font-weight: 700;
+  font-weight: var(--slide-font-weight);
   letter-spacing: -0.02em;
 }
 
@@ -327,7 +333,8 @@
   font-family: var(--font-display);
   font-size: var(--text-slide-title);
   line-height: 1.1;
-  font-weight: 700;
+  --slide-font-weight: 700;
+  font-weight: var(--slide-font-weight);
   letter-spacing: -0.02em;
 }
 
@@ -335,7 +342,8 @@
   font-family: var(--font-display);
   font-size: var(--text-slide-heading);
   line-height: 1.15;
-  font-weight: 600;
+  --slide-font-weight: 600;
+  font-weight: var(--slide-font-weight);
   letter-spacing: -0.01em;
 }
 
@@ -343,7 +351,8 @@
   font-family: var(--font-sans);
   font-size: var(--text-slide-lead);
   line-height: 1.45;
-  font-weight: 400;
+  --slide-font-weight: 400;
+  font-weight: var(--slide-font-weight);
   letter-spacing: 0;
 }
 
@@ -351,7 +360,8 @@
   font-family: var(--font-sans);
   font-size: var(--text-slide-body);
   line-height: 1.5;
-  font-weight: 400;
+  --slide-font-weight: 400;
+  font-weight: var(--slide-font-weight);
   letter-spacing: 0;
 }
 
@@ -359,7 +369,8 @@
   font-family: var(--font-sans);
   font-size: var(--text-slide-caption);
   line-height: 1.4;
-  font-weight: 400;
+  --slide-font-weight: 400;
+  font-weight: var(--slide-font-weight);
   letter-spacing: 0;
 }
 
@@ -367,7 +378,8 @@
   font-family: var(--font-mono);
   font-size: var(--text-slide-code);
   line-height: 1.5;
-  font-weight: 400;
+  --slide-font-weight: 400;
+  font-weight: var(--slide-font-weight);
   letter-spacing: 0;
 }
 
@@ -377,9 +389,26 @@
   font-family: var(--font-mono);
   font-size: var(--text-slide-meta);
   line-height: 1;
-  font-weight: 500;
+  --slide-font-weight: 500;
+  font-weight: var(--slide-font-weight);
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+/* O marcador `**forte**` da §10.2 do design system — decisão 34 da §16 do documento de
+   contexto.
+
+   A §10.2 pede peso 600, e 600 fixo funciona sobre a Sora 400 do corpo de texto. Sobre a
+   Oxanium 700 de um título ele faria o contrário do que o marcador significa: o trecho
+   "forte" sairia mais leve que o resto da frase. Daí o `max()` contra o peso que a
+   utility de escala publicou — em `slide-body` dá 600, em `slide-display` dá 700, que é
+   o "sem efeito visível" que a §11.1 dos templates promete.
+
+   Utility, e não valor arbitrário do Tailwind, porque `font-[...]` é ambíguo entre
+   família e peso e não aceita função de cálculo. Mesmo motivo do `slide-grid` logo
+   abaixo: valor computado a partir de `var()` mora em CSS. */
+@utility slide-strong {
+  font-weight: max(600, var(--slide-font-weight, 400));
 }
 
 /* A compensação de espessura da grade de fundo — §4.3 do design system.
