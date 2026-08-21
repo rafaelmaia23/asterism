@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 dividida em sessões,
-> pronta para começar pela 1A**
+> **Status** bootstrap concluído · decisões resolvidas · **1A concluída; a próxima
+> sessão é a 1B**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. A Etapa 1 tem um nível a mais — **sub-etapa**, uma por
 > sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -63,12 +63,15 @@ Dois ajustes de escopo que a divisão tornou visíveis:
 - **A tarefa 1.16 deixou de existir sozinha.** Remover a página de verificação de tema é o
   mesmo commit que a transforma no shell do editor, na 1C.
 
-### 1A — fundação testável · ~1 h
+### 1A — fundação testável ✅
 
-Instala `vitest`, `@vitejs/plugin-react`, `happy-dom`, `@testing-library/react`,
-`@testing-library/dom` e `vite-tsconfig-paths`. A configuração segue o guia do próprio
-Next em `node_modules/next/dist/docs/01-app/02-guides/testing/vitest.md`, com uma troca:
-`happy-dom` no lugar de jsdom. É `vite-tsconfig-paths` que faz o alias `@/` resolver.
+Instalou `vitest`, `happy-dom`, `@testing-library/react`, `@testing-library/dom` e
+`vite-tsconfig-paths`. A configuração segue o guia do próprio Next em
+`node_modules/next/dist/docs/01-app/02-guides/testing/vitest.md`, com duas trocas:
+`happy-dom` no lugar de jsdom e **sem `@vitejs/plugin-react`**, que conflita com o Babel
+7 fixado pelo `shadcn` e não serve para nada numa rodada de teste — o JSX sai do
+`"jsx": "react-jsx"` do `tsconfig.json`. Ver a §13 do documento de contexto. É
+`vite-tsconfig-paths` que faz o alias `@/` resolver.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
@@ -78,8 +81,16 @@ Next em `node_modules/next/dist/docs/01-app/02-guides/testing/vitest.md`, com um
 
 `createSlide` precisa dos `defaults` do template, mas `src/deck` **não** importa o
 registry: a seta é `templates → deck` e nunca o contrário. Então os defaults chegam como
-argumento, tipados por uma forma mínima declarada no próprio `deck/types.ts`. O teste passa
-um objeto literal e a 1A fecha antes de existir qualquer template.
+argumento, tipados por uma forma mínima declarada no próprio `deck/types.ts` —
+`SlideDefaults`. O teste passa um objeto literal e a 1A fechou antes de existir qualquer
+template.
+
+Resolvido na sessão: `FieldValue` é `string | string[]` e `OptionValue` é
+`string | boolean`; `TemplateId` é `string`; `DeckMeta` é só `handle` e `pillar`;
+`createDeck` recebe um init parcial opcional e nasce com `slides: []`. A cópia dos
+defaults em `createSlide` é profunda — `structuredClone` — senão dois slides do mesmo
+template compartilhariam o array de um campo `list`. A §6 do documento de contexto foi
+atualizada junto.
 
 ### 1B — registry e o primeiro template · ~1,5 h
 

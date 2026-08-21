@@ -45,6 +45,7 @@ marcadores `BEGIN/END Observatório`. Mudou um, muda o outro.
 ```
 docs/                 documentos de referência, em português
 src/app/                App Router — layout, globals.css, rotas
+src/deck/               modelo de dados do deck e suas factories
 src/components/ui/      componentes shadcn (gerados; auditar contra a §2.4)
 src/components/maiahub/ as cinco peças de logo
 src/fonts/              as três famílias em arquivo local + licenças OFL
@@ -65,6 +66,8 @@ Não crie estrutura para o que ainda não existe. Pasta vazia é custo sem retor
 npm run dev      # servidor de desenvolvimento
 npm run build    # build de produção (export estático em out/)
 npm run lint     # eslint
+npm test         # vitest, uma passada
+npm run test:watch
 npx tsc --noEmit # checagem de tipos
 ```
 
