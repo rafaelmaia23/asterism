@@ -1,10 +1,10 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída com a 1E; a
-> próxima sessão abre a Etapa 2**
+> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída; Etapa 2
+> dividida em sub-etapas e pronta para executar — a próxima sessão abre a 2A**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
-> Cada tarefa cabe num commit. A Etapa 1 tem um nível a mais — **sub-etapa**, uma por
-> sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
+> Cada tarefa cabe num commit. As Etapas 1 e 2 têm um nível a mais — **sub-etapa**, uma
+> por sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
 > entrega, e são quebradas em tarefas quando chegarem.
 
 ## Mapeamento com o roadmap
@@ -325,32 +325,136 @@ sub-etapa:
 **Objetivo.** Os três templates da Fase 1 especificados no design system, com a marcação
 inline funcionando. Ao fim desta etapa a ferramenta publica um carrossel real.
 
-**Fora desta etapa.** Os outros sete templates, shiki, guard de transbordo, imagens,
-undo/redo, múltiplos decks.
+**Fora desta etapa.** Os outros sete templates, shiki, guard de transbordo — decisão 32 —,
+imagens, undo/redo, múltiplos decks, e o resto do que a Etapa 4 promete para a lista
+lateral: reordenação por arraste e duplicar. Acrescentar e remover slide são a exceção,
+pela decisão 30.
 
 **Pronto quando** um carrossel de 8 a 12 slides é composto com os três templates,
 usando marcação, e exportado para publicação no LinkedIn sem retoque externo.
 
-| # | Tarefa | Critério de pronto |
-|---|---|---|
-| 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7 do documento de contexto, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1: cada marcador isolado, marcadores adjacentes, marcador não fechado, `**a *b* c**` tratado como literal no marcador externo, string vazia, texto sem marcador. Devolve AST, **nunca** HTML |
-| 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 do design system | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
-| 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
-| 2.4 | Componentes recorrentes da §10.5 do design system — falta o `Footer`; `Kicker`, `Constellation` e `Chevron` vieram na 1B | Rodapé com `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` e constelação à direita, em todo template menos capa e final |
-| 2.4a | Remover as quatro peças de logo não usadas | Decidido: o rodapé usa `MaiahubGlyph` a 32px. Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
-| 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 do design system é atualizada junto |
-| 2.5 | Conferir o **padrão** de fundo dos dois templates novos e a opção `showGrid` em cada um | `text-bullets` nasce `plain` e `final-cta` nasce `grid`; os dois expõem `showGrid`, que a 1D tornou comum a todo template — decisão 25 |
-| 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
-| 2.7 | Inspector: tipos `select` e `toggle`, na seção de opções | Opções ficam visualmente separadas dos campos de conteúdo |
-| 2.8 | `text-bullets` completo — regiões da §11.2 dos templates, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
-| 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa |
-| 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 do documento de contexto torna a migração uma interseção de chaves, sem tabela de equivalência |
-| 2.11 | Ligar o seletor de layout ao `migrateFields` — o controle em si veio na 1D, desabilitado | Trocar o layout preserva o que já foi digitado e reseta as opções. O select já lista o registry e mostra o layout do slide; falta a troca |
-| 2.12 | `persist` do zustand em localStorage | Recarregar a página não perde o deck |
+As quinze tarefas são grandes demais para uma sessão só, então a etapa está dividida em
+**cinco sub-etapas**, no mesmo formato da Etapa 1: dependências resolvidas, critério de
+pronto que se verifica sozinho e um estado do repositório que compila, passa nos testes e
+pode ser abandonado sem deixar meio caminho. Uma sub-etapa por sessão, uma branch por
+sub-etapa.
+
+Dois ajustes de escopo que a divisão tornou visíveis, e quatro decisões que ela cobrou —
+as decisões 29 a 32 da §16 do documento de contexto:
+
+- **A tarefa 2.5 deixou de existir sozinha.** "Conferir o padrão de fundo dos dois
+  templates novos" é verificar que `text-bullets/meta.ts` nasce `plain`, que
+  `final-cta/meta.ts` nasce `grid` e que os dois expõem o `showGridOption` compartilhado.
+  Isso é critério de pronto de quem escreve o template, não commit próprio: dissolveu-se
+  na 2.8 e na 2.9, como a 1.16 se dissolveu na 1C.
+- **Nasceu a 2.13** — `addSlide` e `removeSlide`, decisão 30. O "pronto quando" desta
+  etapa pede um carrossel de 8 a 12 slides e o store da 1D não tem como acrescentar um
+  slide sequer: sem ela o critério da própria etapa é inalcançável.
 
 > A tarefa 2.12 é antecipada da Fase 3 do §15. Motivo: o próprio §15 afirma que a Fase 1
 > já permite publicar um carrossel real, e um deck que some no reload não permite. Custa
 > poucas linhas de middleware.
+
+### 2A — marcação inline
+
+Nada a instalar. Pasta nova `src/markup/`, autocontida: o parser, os tipos e o
+componente. Quem chama é o template, que escreve `<Inline>` e nunca vê a AST.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7 do documento de contexto, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1. Devolve AST, **nunca** HTML |
+| 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 do design system | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
+| 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
+
+A matriz de teste da 2.1 é onde mora o valor desta sub-etapa: cada marcador isolado;
+marcadores adjacentes sem texto entre eles; marcador não fechado; `**a *b* c**` tratado
+como literal no marcador externo; marcador no meio de palavra; string vazia; texto sem
+marcador; conteúdo vazio (`****`, que sai como texto e não como marcador vazio); nós de
+texto vizinhos colapsados em um só.
+
+Fecha conferindo no navegador **e no PDF**. Cor de span atravessa a rasterização, mas o
+fundo de `==marca==` é da mesma classe de risco que a grade foi na 1E — fundo desenhado
+por CSS é justamente o que não sobreviveu lá.
+
+### 2B — rodapé e `text-bullets`
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.4 | `Footer` em `src/templates/shared/` — o que falta da §10.5 do design system; `Kicker`, `Constellation` e `Chevron` vieram na 1B | `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` à esquerda, constelação à direita |
+| 2.4a | Remover as quatro peças de logo não usadas | Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
+| 2.8 | `text-bullets` completo — regiões da §11.2 dos templates, marcador travessão, opção `anchor` | `center` centraliza o bloco de itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto. Nasce `plain` e expõe `showGrid` — o que era a 2.5 |
+
+O `Footer` finalmente tem consumidor: foi por não ter que ele ficou de fora da 1B, quando
+a capa era o único template e é justamente o que não o tem. A 2.4a vem logo atrás porque
+é a 2.4 que prova que as outras quatro peças não têm uso.
+
+Nesta sessão o `items` e o `anchor` aparecem no inspector como linha inerte com o rótulo,
+que é o que a 1D desenhou para tipo sem controle. É honesto e dura uma sub-etapa — os
+controles são a 2C.
+
+`anchor: "center"` centraliza o bloco de itens mantendo o gap de 48px da tabela de
+elementos da §11.2, em vez de distribuir o espaço sobrando entre eles: o gap está
+especificado como valor, não como mínimo.
+
+### 2C — `final-cta` e os controles que faltam no inspector
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa; rodapé completo, decisão 29. Nasce `grid` e expõe `showGrid` — o que era a 2.5 |
+| 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor, com contador por item |
+| 2.7 | Inspector: tipo `select`, na seção de opções | O `anchor` do `text-bullets` passa a ser trocável |
+
+O `final-cta` não pede nada novo do inspector — `heading`, `lead` e `cta` são
+`textarea`/`text` e `showArrow` é `toggle`, os três tipos que a 1D já desenha. É por isso
+que a sessão comporta os dois assuntos: fecha os três templates e fecha o inspector na
+mesma passada.
+
+**A 2.7 é menor do que a tabela original prometia.** A 1D antecipou o `toggle` e já
+separou "Conteúdo" de "Apresentação" no formulário; sobra o controle de `select`, sobre o
+componente shadcn que já está instalado. Reordenar item de `list` é por botão, subir e
+desce — `@dnd-kit` é da Etapa 4, e trazê-lo agora seria instalar dependência de etapa
+futura para o menor dos dois usos que ela vai ter.
+
+### 2D — troca de layout, composição e persistência
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 do documento de contexto torna a migração uma interseção de chaves, sem tabela de equivalência |
+| 2.11 | Ligar o seletor de layout ao `migrateFields` — o controle em si veio na 1D, desabilitado | Trocar o layout preserva o que já foi digitado e reseta as opções. Sai a legenda "Trocar de layout chega na Etapa 2" |
+| 2.13 | `addSlide` e `removeSlide` no store, com controles na lista lateral — decisão 30 | Acrescentar põe um slide no fim e o torna ativo; remover escolhe o vizinho como ativo. O deck nunca fica sem slides: com um slide só, o controle de remover fica desabilitado |
+| 2.12 | `persist` do zustand em localStorage, com validação na reidratação — decisão 31 | Recarregar a página não perde o deck; deck salvo com template desconhecido perde só aquele slide, não o carrossel |
+
+A 2.10 é a tarefa que cobra a decisão 13: é o vocabulário canônico que a torna uma
+interseção de chaves. A 2.13 fica ao lado da 2.11 porque é o par que faz a composição
+funcionar — o slide nasce `text-bullets`, o mais usado do carrossel, e o seletor de
+layout está a um clique de trocá-lo.
+
+O `persist` guarda o deck e **não** o `activeId`: recarregar volta ao primeiro slide. Um
+id salvo teria de ser validado contra o deck reidratado, e a reordenação da Etapa 4 o
+invalidaria de qualquer jeito.
+
+**Armadilha esperada na 2.12.** O `persist` reidrata de forma síncrona na criação do
+store, e a página é pré-renderizada estaticamente: o servidor desenha o deck semente e o
+cliente desenha o deck salvo. É divergência de hidratação, da mesma família do
+`crypto.randomUUID()` que a 1D pegou, e o caminho é `skipHydration` com a reidratação
+disparada em efeito. Se a sessão confirmar, a §13 do documento de contexto ganha a
+armadilha no mesmo commit.
+
+### 2E — constelação e fecho da etapa
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 do design system é atualizada junto |
+
+A 2.4b vem por último de propósito: o alvo da etapa são 8 a 12 slides, então é aqui que o
+recorte deixa de ser hipótese. O experimento se monta como o 4 se montou — as três
+candidatas lado a lado numa rota descartável, com um deck de 12 slides fabricado, e a
+escolha feita olhando.
+
+Fechado o experimento, a sessão compõe **o carrossel de verdade** com os três templates,
+usando marcação, e o exporta. É o critério de pronto da etapa e é também o teste de
+aceitação que acha o que teste unitário não acha — como a conferência do PDF na 1E achou
+a grade.
 
 ---
 
@@ -406,9 +510,9 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 ## A resolver por experimento
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
-contexto, decisões 13 a 18. Sobraram **dois** pontos abertos: o recorte da constelação, que
-aparece só na tarefa 2.4b, e o foco e raio dos controles de formulário, do experimento 3.
-Nenhum dos dois bloqueia nada.
+contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32. Sobraram
+**dois** pontos abertos: o recorte da constelação, que se resolve na 2E, e o foco e raio
+dos controles de formulário, do experimento 3. Nenhum dos dois bloqueia nada.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
 lado a lado e comparando o resultado — de preferência medido, como no experimento 4.
@@ -425,7 +529,7 @@ Registrado na §11.0 dos templates e na §10.5 do design system, na decisão 18 
 contexto, e em `maiahub-logo.md`. A remoção das quatro peças perdedoras virou a tarefa
 2.4a.
 
-### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b
+### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b, na 2E
 
 A §10.5 do design system diz "5 pontos mais um contador `03 / 12`" e não diz quais cinco. Três leituras:
 

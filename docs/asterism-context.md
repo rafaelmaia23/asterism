@@ -395,15 +395,30 @@ compra nada neste domínio.
   autocontido e versionável. É documento de trabalho, não asset de produção.
 
 O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`, e nada
-mais. `persist`, `zundo` e o IndexedDB entram na Etapa 3, por cima deste mesmo store —
-autosave e undo sobre um estado que ainda não sabe editar não teriam o que guardar.
+mais — autosave e undo sobre um estado que ainda não sabe editar não teriam o que
+guardar. O `persist` entra na **Etapa 2**, tarefa 2.12, por cima deste mesmo store: a
+Fase 1 do §15 promete um carrossel publicável e um deck que some no reload não cumpre a
+promessa. `zundo` e o IndexedDB ficam para a **Etapa 4**, junto com o resto do editor.
+
+**Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
+deixa de bater com o código quando um template some ou muda de chave, e a resposta é
+derrubar só os slides que não passam, nunca o deck inteiro e nunca nada. Confiar sem
+validar deixaria o `get()` do registry lançar dentro do render e abriria a ferramenta em
+tela branca; reiniciar do semente apagaria o carrossel por causa de um slide. O que se
+guarda é o **deck**, não o `activeId`: recarregar volta ao primeiro slide, e um id salvo
+teria de ser validado contra o deck reidratado que a reordenação da Etapa 4 invalidaria
+de qualquer jeito.
 
 Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory é o que
 deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
 reset global; a aplicação usa o singleton. Ver decisão 24.
 
-O slide ativo é guardado por **id**, não por índice: reordenar e remover chegam na Etapa 4
-e um índice guardado passaria a apontar para outro slide sem que nada avisasse.
+O slide ativo é guardado por **id**, não por índice: acrescentar e remover chegam na
+Etapa 2 e a reordenação na Etapa 4, e um índice guardado passaria a apontar para outro
+slide sem que nada avisasse. `addSlide` e `removeSlide` foram antecipados da Etapa 4 pela
+decisão 30 — sem eles a Etapa 2 não tem como compor os 8 a 12 slides que o próprio
+critério dela exige. O deck nunca fica sem slides: remover o último é recusado, porque
+deck vazio pediria um estado vazio, que é da Etapa 5.
 
 ### Imagens: escopo fechado
 
@@ -577,3 +592,7 @@ sem retoque em nenhum outro programa.
 | 26 | `Frame` carrega o bitmap como **PNG em data URL** | Devolver o `HTMLCanvasElement`, ou um `Blob` | O jsPDF consome data URL direto em `addImage`, e é a forma que um teste inspeciona sem canvas — `happy-dom` não tem nenhum. O canvas deixaria o alvo escolher a codificação sem recapturar, que é o que o plano de contingência da §13 pediria se um deck com fotos estourasse o tamanho; o preço seria um `Frame` que deixa de ser dado e passa a ser objeto de DOM vivo, com o alvo dependendo do navegador. O `Blob` economiza a base64, mas o jsPDF a exigiria de volta a cada página |
 | 27 | Um `createRegistry` genérico em `src/lib/registry.ts`, com dois usuários | Escrever o registry de alvos à mão, espelhando o de templates | A §10 já dizia "o registry é idêntico ao dos templates", e duas cópias da mesma lógica divergiriam na primeira correção — a regra de HMR, que existe para o `next dev` não cair a cada edição, vale para alvo tanto quanto para template. O genérico pede só o `id` e um rótulo para a mensagem de erro; cada registry continua sendo um módulo próprio, com o próprio tipo, e ninguém fora deles conhece a factory |
 | 28 | Grade de fundo desenhada em `<svg>`, com módulo tirado do formato e moldura fechada nos quatro lados | Manter os dois `linear-gradient` ladrilhados da §4.3; ou trocá-los por `repeating-linear-gradient`; ou usar `<pattern>` de SVG | Não é preferência: o gradiente **não sobrevive à rasterização**, e as quatro alternativas foram medidas num PDF antes da escolha — as duas de gradiente saem chapadas e o `<pattern>` sai com metade da espessura, porque o traço na borda do ladrilho é recortado. Linha de verdade em SVG atravessa intacta, como a constelação e o chevron já atravessavam. O módulo passou de 60px fixos para o divisor comum de largura e altura mais próximo de 54px — 54 em 1080×1350, 20 por 25 quadrados inteiros —, o que fecha a grade em qualquer formato e resolve de uma vez a assimetria que o ladrilho tinha: linha colada no topo e na esquerda, nenhuma na direita, e a faixa de baixo cortada ao meio |
+| 29 | O `final-cta` leva o rodapé completo — glyph, handle e constelação toda acesa | Espelhar a capa: só constelação, sem logo nem handle, como a §10.5 do design system dizia | Os documentos se contradiziam: a §10.5 tirava o rodapé da capa **e do final**, e a tabela de regiões da §11.3 dos templates dava ao final "Logo, handle, constelação toda acesa". Vence a §11.3, que é a mais específica — nomeia as três peças na faixa deste template — e que o `CLAUDE.md` faz autoridade sobre comportamento de template. O motivo de produto é que o último slide é onde o handle mais importa: quem chegou até o fim é quem vai seguir. A objeção real é que o bloco de CTA já carrega um destino escrito e o handle competiria com ele, que foi o que descartou o wordmark no experimento 1; a diferença é que o CTA fica no miolo, em 36px mono `azure-400`, e o handle no rodapé em 28px `ink-400` — hierarquias distintas, não duas vozes no mesmo canto. A §10.5 foi corrigida no mesmo commit |
+| 30 | `addSlide` e `removeSlide` antecipados da Etapa 4 para a Etapa 2 | Deixar os dois na Etapa 4 e fechar a Etapa 2 editando um deck semente já com 8 a 12 slides; ou antecipar só o `addSlide` | O "pronto quando" da Etapa 2 é um carrossel de 8 a 12 slides composto com os três templates, e o store da 1D só tem `selectSlide`, `setField` e `setOption`: não existe caminho para acrescentar um slide sequer, então o critério da própria etapa é inalcançável sem isso. Um deck semente grande faria o "compor" da etapa virar ficção — o número de slides ficaria congelado até a Etapa 4. E `addSlide` sozinho seria pior que os dois juntos: um clique errado deixaria um slide órfão sem saída, justo na etapa em que se compõe pela primeira vez. Arraste, duplicar e undo continuam na Etapa 4, que é onde a lista lateral vira ferramenta de verdade |
+| 31 | A reidratação do `persist` valida e descarta **slide a slide** | Reiniciar do deck semente a qualquer falha; ou confiar no que está no localStorage, sem validação | O que está salvo deixa de bater com o código quando um template some, muda de chave ou de tipo — e num projeto de um usuário só o autor dessa divergência é sempre o commit anterior. Tudo-ou-nada apaga o carrossel inteiro por causa de um slide, que é a perda de trabalho no pior momento possível; confiar sem validar deixa o `get()` do registry lançar dentro do render e abre a ferramenta em tela branca, com o erro só no console. Validar a forma do deck e derrubar apenas os slides que não passam preserva o resto e nunca apaga a tela. O zod já está instalado e cada template já carrega o próprio schema, então o custo é da ordem de vinte linhas |
+| 32 | O guard de transbordo continua na Etapa 3 | Antecipar um guard mínimo para a Etapa 2, que é quando o primeiro carrossel real é composto | Foi considerado porque a Etapa 2 termina compondo 8 a 12 slides de conteúdo de verdade, que é exatamente quando texto longo transborda. Fica onde está: na Etapa 2 o aviso é o contador de caractere, que já existe e já fica âmbar ao passar do limite, mais o próprio canvas — quem compõe está olhando cada slide enquanto digita. Antecipar traria `ResizeObserver` medindo **dentro** do slide, que é o laço de medição da §13, e essa é a tarefa mais delicada da Etapa 3: não é trabalho para fazer de passagem no fim de outra etapa |

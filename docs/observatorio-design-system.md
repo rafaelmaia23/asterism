@@ -590,9 +590,19 @@ Acima de 10 slides, mostre 5 pontos mais um contador `03 / 12` em mono.
 **Presente somente na capa.** A partir do slide 2 a pessoa já executou o gesto, e o
 rodapé volta a ser apenas progresso. Repetir a seta seria instruir alguém que já sabe.
 
-**Rodapé fixo** — presente em todos os slides exceto capa e final. Alinhado à base,
-dentro do padding: `MaiahubGlyph` a 32px, `@handle` em `slide-meta` `ink-400`,
-constelação à direita.
+**Rodapé fixo** — presente em todos os slides exceto a capa. Alinhado à base, dentro do
+padding: `MaiahubGlyph` a 32px, `@handle` em `slide-meta` `ink-400`, constelação à
+direita.
+
+O `final-cta` **leva o rodapé completo**, com a constelação toda acesa — decisão 29. Esta
+seção dizia "exceto capa e final" e contradizia a tabela de regiões da §11.3 dos
+templates, que sempre deu ao final as três peças. O último slide é onde o handle mais
+importa: quem chegou até o fim é quem vai seguir. O bloco de CTA no miolo não compete com
+ele — 36px mono `azure-400` contra 28px `ink-400` no rodapé são hierarquias distintas, e
+é isso que separa este caso do wordmark descartado no experimento 1, que traria "maiahub"
+escrito no mesmo canto que o handle.
+
+A capa continua sendo a única exceção: nem logo nem handle, só constelação e chevron.
 
 **Callout** — `border-left: 4px`, raio 0, fundo tingido no tom 950 correspondente,
 padding 24px. Variantes: `info` (azure), `atencao` (sun), `positivo` (pacifika),
