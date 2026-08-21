@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **1C concluída; a próxima
-> sessão é a 1D**
+> **Status** bootstrap concluído · decisões resolvidas · **1D concluída; a próxima
+> sessão é a 1E**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. A Etapa 1 tem um nível a mais — **sub-etapa**, uma por
 > sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -182,7 +182,7 @@ Resolvido na sessão:
 - **A medição roda em layout effect, com uma primeira leitura síncrona.** Sem isso o
   quadro aparece num tamanho e se ajusta no quadro seguinte, o que se lê como animação.
 
-### 1D — estado e inspector · ~1,5 h
+### 1D — estado e inspector ✅
 
 Instala `zustand` e acrescenta o `textarea` e o `switch` do shadcn, que ainda não estão em
 `src/components/ui/`.
@@ -203,6 +203,33 @@ troca de slide ativo e o laço de páginas do alvo PDF ficariam sem prova até a
 da §6 do documento de contexto ficaria sem prova até a Etapa 2. Os tipos que sobram —
 `list`, `image`, `code`, `select` — não têm controle ainda, e o inspector os desenha como
 linha inerte com o rótulo, para que um campo novo nunca suma do formulário em silêncio.
+
+Resolvido na sessão:
+
+- **O store é uma factory mais um singleton**, em `src/editor/store.ts`, sem provider de
+  contexto — decisão 24. A factory é o que deixa cada teste montar um deck de fixture sem
+  estado global atravessando de um caso para o outro, e o inspector e a lista recebem o
+  store por prop com o singleton como padrão. Provider só se paga com dois decks vivos ao
+  mesmo tempo, que é a tela de listagem da Etapa 4.
+- **O slide ativo é guardado por id, não por índice.** Reordenar e remover chegam na Etapa
+  4, e um índice guardado passaria a apontar para outro slide sem que nada avisasse.
+- **Id desconhecido lança**, nas três ações, como o registry faz com template
+  desconhecido. Nenhuma tela oferece um slide que o deck não tem, então é erro de
+  programação e não estado de runtime a tratar.
+- **A lista distingue três capas seguidas pelo trecho do `heading`.** É o primeiro uso
+  prático do vocabulário canônico da §6 do documento de contexto fora dos templates: a
+  lista lê a mesma chave em qualquer template e continua sem conhecer nenhum.
+- **A auditoria do `textarea` e do `switch` contra a §9 do design system não pediu
+  ajuste.** O switch ligado já é `primary` com o polegar em `primary-foreground`, que é o
+  padrão "400 de preenchimento, 950 de texto" da §2.4. Sobraram duas divergências do
+  preset que **já vinham do bootstrap** e valem para `button`, `input` e `card` também:
+  anel de foco `ring-3` a 50% sem offset, onde a §5 pede 2px com offset 2px, e
+  `rounded-lg` (8px) em controle de formulário, onde a §5 pede o raio padrão de 6px.
+  Corrigir só nos dois componentes novos criaria divergência interna; virou o
+  **experimento 3**, abaixo.
+- **Um teste de integração do shell**, além dos testes isolados de cada coluna: é o que
+  garante que lista, inspector e canvas falam com o mesmo store, que é justamente o que os
+  testes isolados — cada um com o seu store de fixture — não podem ver.
 
 ### 1E — exportação · ~1,5 h
 
@@ -334,3 +361,20 @@ A §10.5 do design system diz "5 pontos mais um contador `03 / 12`" e não diz q
   perde a de contagem, que o contador ao lado já cobre.
 
 Montar as três com um deck de 12 slides e escolher.
+
+### Experimento 3 — foco e raio dos controles de formulário · a agendar
+
+A auditoria da 1D encontrou duas divergências entre os componentes shadcn instalados e o
+design system. As duas vêm do preset `nova`, entraram no bootstrap com `button`, `input` e
+`card`, e se repetiram no `textarea` e no `switch`:
+
+- **Anel de foco.** Os componentes trazem `focus-visible:ring-3` com `ring/50` e sem
+  offset; a §5 do design system diz "anel de 2px `azure-500` com offset de 2px", e a §8
+  repete. O anel do preset é mais grosso, mais apagado e colado no controle.
+- **Raio.** Os controles usam `rounded-lg`, que o `globals.css` resolve em 8px; a §5 dá
+  8px a cartões e blocos de código e 6px ao resto.
+
+Não são erros de instalação: o preset é coerente consigo mesmo, e a §9 é explícita em que
+quem cede é o componente, não o documento. O trabalho é mexer nos cinco componentes de uma
+vez, ver as duas telas e decidir se o documento estava certo — corrigir só os dois
+componentes novos seria pior que a divergência.
