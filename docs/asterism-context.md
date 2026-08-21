@@ -327,6 +327,7 @@ rasterização. O corte correto tem dois estágios:
 ```ts
 // estágio 1 — único, compartilhado
 type RenderSource = { slide: Slide; node: HTMLElement }
+type Frame = { slide: Slide; width: number; height: number; data: string }
 function rasterize(src: RenderSource, escala: number): Promise<Frame>
 
 // estágio 2 — plugável
@@ -341,11 +342,31 @@ type ExportResult = { files: { name: string; blob: Blob }[] }
 ```
 
 `ExportResult` sempre devolve uma lista: o alvo PDF produz um arquivo, o alvo PNG
-produz N, um futuro alvo ZIP produz um. O registry é idêntico ao dos templates.
+produz N, um futuro alvo ZIP produz um. O registry é idêntico ao dos templates — e desde
+a 1E é literalmente o mesmo: os dois instanciam o `createRegistry` de `src/lib/registry.ts`,
+decisão 27. Quem registra alvo é `src/export/index.ts`, e cada alvo é um módulo em
+`src/export/targets/`.
 
 `RenderSource` carrega o **nó e o slide**, não o bitmap pronto — assim um alvo futuro
 pode optar por ler os dados diretamente em vez de rasterizar, mantendo aberta a porta
 para saída vetorial.
+
+O `data` do `Frame` é **PNG em data URL** — decisão 26. `width` e `height` já vêm
+multiplicados pela escala, e saem do tamanho medido no nó, nunca de `1080` escrito à mão:
+o formato é dado, §12. Os módulos moram em `src/export/`: `types.ts` para os quatro tipos
+acima e `rasterize.ts` para o estágio 1, sobre `modern-screenshot`.
+
+### De onde vêm os nós
+
+`withExportStage(deck, uso)`, em `src/export/stage.tsx`. Monta o deck inteiro num
+container `fixed` fora da tela — fora de fluxo, nunca `display: none`, que não teria
+layout para capturar —, espera `document.fonts.ready`, entrega um `RenderSource` por
+slide e desmonta, inclusive quando o uso falha. Os slides são montados **sem escala**: o
+default do `SlideFrame` é 1, o tamanho de spec. Ver a decisão 20.
+
+O nó capturado é a raiz do slide, e quem o expõe é o próprio `SlideFrame`, por um
+`canvasRef` opcional que o `SlideView` repassa. O quadro externo fica de fora junto com a
+sua borda de 1px — decisão 23.
 
 ### Alvos
 
@@ -438,6 +459,15 @@ documento do Observatório). OKLCH permanece no chrome do editor.
 arquivos locais (`next/font/local`). Fonte servida pelo CDN do Google não é inlinada
 na captura e o arquivo exportado sai em Arial.
 
+**Gradiente não sobrevive à rasterização.** No Firefox, um `linear-gradient` ladrilhado
+por `background-size` dentro do nó capturado sai como **um módulo desenhado e o resto da
+página chapado com a primeira parada** — a grade da §4.3 do design system some e o fundo
+inteiro troca de cor. `repeating-linear-gradient` falha igual, e `<pattern>` de SVG sai
+com metade da espessura, porque o traço na borda do ladrilho é recortado. O que a
+exportação precisa ver tem de ser **elemento**: um `<svg>` com linhas de verdade atravessa
+intacto, e a constelação e o chevron já provavam isso no mesmo PDF que reprovou o fundo.
+Medido na 1E, com quatro implementações comparadas no arquivo. Ver a decisão 28.
+
 **Tamanho do arquivo.** PNG 2× sobre fundo escuro chapado comprime bem; dez slides
 devem ficar bem abaixo de 3 MB. Se um deck com fotos estourar, o alvo PDF cai para
 JPEG 0.92 apenas nos slides com imagem.
@@ -487,11 +517,12 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 1D: o centro funciona; o topo tem só o nome do deck; a direita tem
-o seletor de layout — desabilitado até a 2.11, que é quem o liga ao `migrateFields` — e o
-formulário derivado dos descritores, com contadores; a esquerda lista os slides com
-miniatura, número e nome, e troca o ativo, sem marca de transbordo, arraste, duplicar nem
-remover.
+Estado hoje, depois da 1E: o centro funciona; o topo tem o nome do deck e a exportação —
+um botão por alvo do registry, hoje um só, e o menu com escolha de alvo entra quando
+houver mais de um; a direita tem o seletor de layout — desabilitado até a 2.11, que é
+quem o liga ao `migrateFields` — e o formulário derivado dos descritores, com contadores;
+a esquerda lista os slides com miniatura, número e nome, e troca o ativo, sem marca de
+transbordo, arraste, duplicar nem remover.
 
 A miniatura é o mesmo `SlideView` do canvas numa escala fixa, e não uma representação
 própria: um segundo desenho do slide para a lista lateral divergiria do primeiro no
@@ -543,3 +574,6 @@ sem retoque em nenhum outro programa.
 | 23 | Área de trabalho em `ink-900` **e** moldura de 1px `ink-700` no quadro externo, fora do `transform` | Só a inversão de superfície, sem borda, como a §2.2 previa; ou só a borda, com a área no mesmo `ink-950` do slide | A primeira versão da 1C pôs slide e área no mesmo tom e separou por hairline `ink-800`: reprovou olhando, não dava para saber onde termina a página. A inversão da §2.2 do design system resolve o grosso, e a borda dá o contorno que faltava — em `ink-700`, porque o 800 cai entre os dois tons e some. Na raiz do slide a borda encolheria com a escala e viajaria dentro do nó capturado, contra a §9; no quadro externo ela vale 1px em qualquer `k` e a exportação nunca a vê |
 | 24 | Store como factory mais singleton, em `src/editor/store.ts` | Provider de contexto com o store criado no componente, como o guia do zustand para Next prescreve | O provider se paga quando há dois decks vivos ao mesmo tempo, que é a tela de listagem da Etapa 4. Até lá ele é cerimônia: a factory já dá ao teste um store isolado por deck de fixture, sem reset global, e o singleton dá à aplicação o único deck que ela tem. O preço é que o deck é criado duas vezes, uma na pré-renderização estática e outra no cliente, com ids diferentes: manter esses ids fora do DOM deixa de ser consequência do desenho e passa a ser condição que o código sustenta — ver a armadilha na §13 |
 | 25 | Grade de fundo é opção do slide, com o `background` do template como padrão | Grade fixa por template, como a §4.3 do design system definia | Quem edita ganha a escolha slide a slide, e o custo é a consistência automática que a regra anterior dava de graça: nada impede uma capa com grade e outra sem no mesmo carrossel. O descritor continua dizendo com o que o slide nasce, e a §4.3 passa a chamar de recomendação o que era proibição — grade em slide de código continua má ideia, só não é mais impossível. O `SlideView` é o único ponto que lê a opção; o `SlideFrame` continua recebendo `grid` ou `plain` e não sabe de onde veio |
+| 26 | `Frame` carrega o bitmap como **PNG em data URL** | Devolver o `HTMLCanvasElement`, ou um `Blob` | O jsPDF consome data URL direto em `addImage`, e é a forma que um teste inspeciona sem canvas — `happy-dom` não tem nenhum. O canvas deixaria o alvo escolher a codificação sem recapturar, que é o que o plano de contingência da §13 pediria se um deck com fotos estourasse o tamanho; o preço seria um `Frame` que deixa de ser dado e passa a ser objeto de DOM vivo, com o alvo dependendo do navegador. O `Blob` economiza a base64, mas o jsPDF a exigiria de volta a cada página |
+| 27 | Um `createRegistry` genérico em `src/lib/registry.ts`, com dois usuários | Escrever o registry de alvos à mão, espelhando o de templates | A §10 já dizia "o registry é idêntico ao dos templates", e duas cópias da mesma lógica divergiriam na primeira correção — a regra de HMR, que existe para o `next dev` não cair a cada edição, vale para alvo tanto quanto para template. O genérico pede só o `id` e um rótulo para a mensagem de erro; cada registry continua sendo um módulo próprio, com o próprio tipo, e ninguém fora deles conhece a factory |
+| 28 | Grade de fundo desenhada em `<svg>`, com módulo tirado do formato e moldura fechada nos quatro lados | Manter os dois `linear-gradient` ladrilhados da §4.3; ou trocá-los por `repeating-linear-gradient`; ou usar `<pattern>` de SVG | Não é preferência: o gradiente **não sobrevive à rasterização**, e as quatro alternativas foram medidas num PDF antes da escolha — as duas de gradiente saem chapadas e o `<pattern>` sai com metade da espessura, porque o traço na borda do ladrilho é recortado. Linha de verdade em SVG atravessa intacta, como a constelação e o chevron já atravessavam. O módulo passou de 60px fixos para o divisor comum de largura e altura mais próximo de 54px — 54 em 1080×1350, 20 por 25 quadrados inteiros —, o que fecha a grade em qualquer formato e resolve de uma vez a assimetria que o ladrilho tinha: linha colada no topo e na esquerda, nenhuma na direita, e a faixa de baixo cortada ao meio |

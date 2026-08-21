@@ -15,6 +15,7 @@
  * a opção: deck antigo, ou template que não a exponha.
  */
 
+import type { Ref } from "react";
 import type { Deck, DeckMeta, Slide } from "@/deck/types";
 import { SlideFrame } from "@/render/slide-frame";
 import { get } from "@/templates/registry";
@@ -26,9 +27,19 @@ export type SlideViewProps = {
   index: number;
   total: number;
   scale?: number;
+  /** Repassado ao `SlideFrame`: a raiz do slide, que é o nó que a exportação captura. */
+  canvasRef?: Ref<HTMLDivElement>;
 };
 
-export function SlideView({ slide, deck, format, index, total, scale }: SlideViewProps) {
+export function SlideView({
+  slide,
+  deck,
+  format,
+  index,
+  total,
+  scale,
+  canvasRef,
+}: SlideViewProps) {
   // Id desconhecido lança aqui, vindo do registry. É erro de dado, não estado de
   // runtime a tratar: um deck só guarda id de template que existiu algum dia.
   const def = get(slide.template);
@@ -39,7 +50,12 @@ export function SlideView({ slide, deck, format, index, total, scale }: SlideVie
       : def.background === "grid";
 
   return (
-    <SlideFrame format={format} scale={scale} background={grid ? "grid" : "plain"}>
+    <SlideFrame
+      format={format}
+      scale={scale}
+      background={grid ? "grid" : "plain"}
+      canvasRef={canvasRef}
+    >
       <def.Component
         fields={slide.fields}
         options={slide.options}

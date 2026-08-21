@@ -3,13 +3,15 @@
 /**
  * O shell do editor — as três colunas da §14 do documento de contexto.
  *
- * As três colunas estão vivas desde a 1D. Falta à barra superior o botão de exportação,
- * que é da 1E, e as ações de deck da §14, que são da Etapa 4.
+ * As três colunas estão vivas desde a 1D, e a barra superior ganhou a exportação na 1E.
+ * Faltam a ela as ações de deck da §14 — novo, importar, exportar JSON —, que são da
+ * Etapa 4.
  *
  * Quem guarda o deck é o store. O shell não tem estado próprio: lê o que precisa e
  * distribui.
  */
 
+import { ExportButtons } from "@/editor/export-button";
 import { Inspector } from "@/editor/inspector";
 import { SlideCanvas } from "@/editor/slide-canvas";
 import { SlideList } from "@/editor/slide-list";
@@ -28,6 +30,12 @@ export function EditorShell() {
         </span>
         <span className="text-ink-700">/</span>
         <span className="text-sm text-ink-400">{deck.title}</span>
+
+        {/* As ações de deck da §14 — novo, importar, exportar JSON — entram à esquerda
+            destes, na Etapa 4. */}
+        <div className="ml-auto flex items-center gap-2">
+          <ExportButtons />
+        </div>
       </header>
 
       <div className="flex min-h-0 flex-1">

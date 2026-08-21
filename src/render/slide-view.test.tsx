@@ -37,6 +37,11 @@ function canvas() {
   return screen.getByTestId("slide-canvas");
 }
 
+/** A grade é elemento desde que o gradiente reprovou na exportação — ver `slide-grid`. */
+function grade() {
+  return screen.queryByTestId("slide-grid");
+}
+
 describe("SlideView", () => {
   test("renderiza o template que o slide declara, com os campos do slide", () => {
     render(<SlideView slide={slide} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
@@ -54,7 +59,7 @@ describe("SlideView", () => {
 
     render(<SlideView slide={semOpcao} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
 
-    expect(canvas().className).toContain("slide-grid");
+    expect(grade()).not.toBeNull();
   });
 
   test("a opção desligada tira a grade de um template que nasce com ela", () => {
@@ -62,7 +67,7 @@ describe("SlideView", () => {
 
     render(<SlideView slide={semGrade} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
 
-    expect(canvas().className).not.toContain("slide-grid");
+    expect(grade()).toBeNull();
   });
 
   test("a opção ligada põe a grade num template que nasce sem ela", () => {
@@ -75,7 +80,7 @@ describe("SlideView", () => {
 
     render(<SlideView slide={emPlain} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
 
-    expect(canvas().className).toContain("slide-grid");
+    expect(grade()).not.toBeNull();
   });
 
   test("a escala recebida chega ao quadro", () => {

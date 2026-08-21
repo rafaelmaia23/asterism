@@ -19,12 +19,21 @@ describe("EditorShell", () => {
 
     const segundo = editorStore.getState().deck.slides[1];
 
-    fireEvent.click(screen.getAllByRole("button")[1]);
+    // Pelo número do slide, e não pela posição entre os botões da tela: a barra superior
+    // também tem botões desde a 1E, e uma posição fixa aqui quebraria de novo no próximo
+    // controle que ela ganhar.
+    fireEvent.click(screen.getByRole("button", { name: /02/ }));
 
     expect(editorStore.getState().activeId).toBe(segundo.id);
     expect(screen.getByLabelText<HTMLTextAreaElement>("Título").value).toBe(
       segundo.fields.heading,
     );
+  });
+
+  test("a barra superior tem a exportação, com o rótulo que o alvo declarou", () => {
+    render(<EditorShell />);
+
+    expect(screen.getByRole("button", { name: /PDF/ })).toBeTruthy();
   });
 
   test("digitar no inspector escreve no slide ativo do deck", () => {
