@@ -291,6 +291,85 @@
   }
 }
 
+/* A escala tipográfica do carrossel — §3.3 do design system.
+
+   A §3.3 define cinco propriedades por token, e só o tamanho vira token automático.
+   Repetir família, altura, peso e tracking dentro de dez templates é divergência
+   garantida, então cada linha daquela tabela vira uma utility de mesmo nome: o
+   template escreve `slide-display` e a escala mora num lugar só. Decisão 19 da §16
+   do documento de contexto.
+
+   Sem `@theme static` aqui, e sem contradição com o bloco acima: utility é gerada a
+   partir do nome de classe lido no source, e o tree-shaking que preocupa é o de
+   variável lida por `var()`. Utility que nenhum template escreve não precisa existir. */
+
+@utility slide-display {
+  font-family: var(--font-display);
+  font-size: var(--text-slide-display);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+@utility slide-title {
+  font-family: var(--font-display);
+  font-size: var(--text-slide-title);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+@utility slide-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-slide-heading);
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@utility slide-lead {
+  font-family: var(--font-sans);
+  font-size: var(--text-slide-lead);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+@utility slide-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-slide-body);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+@utility slide-caption {
+  font-family: var(--font-sans);
+  font-size: var(--text-slide-caption);
+  line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+@utility slide-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-slide-code);
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* A caixa alta é da escala, não do conteúdo: o kicker é digitado como `api/ · 04` e
+   sai em versal sem que o dado guardado mude. */
+@utility slide-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-slide-meta);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 /* O grid de fundo dos templates que declaram fundo: "grid".
    Nunca em slides de codigo ou com imagem. */
 @utility slide-grid {

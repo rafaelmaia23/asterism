@@ -221,6 +221,15 @@ Valores absolutos, sem relação com a escala web. **Nada abaixo de 28px.**
 | `slide-code`    | JetBrains Mono | 34px    | 1.5    | 400  | 0                 |
 | `slide-meta`    | JetBrains Mono | 28px    | 1.0    | 500  | 0.12em, maiúscula |
 
+Cada linha desta tabela é uma `@utility` de mesmo nome em `globals.css`, carregando as
+cinco propriedades. O template escreve `slide-display` e nunca recompõe família, altura,
+peso e tracking — decisão 19 da §16 do documento de contexto. Só o tamanho vira token
+automático (`--text-slide-*`), e é justamente por isso que a utility existe: as outras
+quatro propriedades não têm onde morar senão repetidas em cada template.
+
+A caixa alta de `slide-meta` é da escala, não do conteúdo. O kicker é guardado como
+`api/ · 04` e sai em versal na renderização; o dado no deck não muda.
+
 ### 3.4 Regras
 
 Medida de linha entre **45 e 75 caracteres** na web; no carrossel, entre 28 e 42, o
@@ -534,6 +543,12 @@ Não existe estado para o slide atual — o atual é simplesmente o último aces
 Não existe prenúncio do próximo. Um significado por cor.
 
 Acima de 10 slides, mostre 5 pontos mais um contador `03 / 12` em mono.
+
+> **Pendente.** Quais cinco pontos é o experimento 2, que se resolve na tarefa 2.4b —
+> as três leituras precisam ser montadas com um deck de 12 slides e comparadas. Até lá o
+> `Constellation` implementado desenha um ponto por slide em qualquer contagem: doze
+> slides são doze pontos, sem janela e sem contador. Esta seção é atualizada junto com a
+> 2.4b.
 
 **Afordância de deslize** — chevron duplo (Lucide `chevrons-right`), 40px, traço 2.25,
 `azure-400`, à direita da constelação com gap de 20px.

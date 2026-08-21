@@ -215,7 +215,10 @@ src/templates/cover-statement/
 ```
 
 ```ts
-type TemplateDef<F = any, O = any> = {
+type TemplateDef<
+  F extends Record<string, FieldValue> = any,
+  O extends Record<string, OptionValue> = any,
+> = {
   id: TemplateId
   label: string
   group: "cover" | "content" | "code" | "media" | "final"
@@ -227,6 +230,15 @@ type TemplateDef<F = any, O = any> = {
   Component: React.FC<{ fields: F; options: O; deck: DeckMeta; index: number; total: number }>
 }
 ```
+
+Os limites em `F` e `O` são o que torna `defaults` atribuível ao `SlideDefaults` da §6 —
+o contrato pelo qual `createSlide` recebe os defaults de um template sem que `src/deck`
+importe o registry. O padrão `= any` fica: um template concreto sempre informa os dois.
+
+O registry, por sua vez, guarda `TemplateDef<any, any>`. Não dá para guardar
+`TemplateDef<Record<string, FieldValue>>`: `Component` é propriedade de tipo função, e
+sob `strictFunctionTypes` os parâmetros são contravariantes — um componente que exige
+`{ heading: string }` não é atribuível a um que promete aceitar qualquer campo.
 
 O `Field` é um descritor declarativo — não uma derivação automática do zod:
 
