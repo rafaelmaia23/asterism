@@ -27,7 +27,7 @@ uso, que é o que não cabe em CSS.
 | 3.4       | Medida de linha, um nível de ênfase por bloco           | Revisar densidade de texto             | —                              |
 | 4.1       | Degraus de espaçamento sancionados                      | Espaçamento no chrome do editor        | Tailwind                       |
 | 4.2       | Grade do slide: padding 80, largura útil 920, gaps      | Definir as regiões de um template      | `--slide-*`                    |
-| 4.3       | Grid de fundo e a compensação de `--slide-scale`        | Mexer no fundo ou na escala do preview | `@utility slide-grid`          |
+| 4.3       | Grid de fundo e a compensação de `--slide-scale`        | Mexer no fundo ou na escala do preview | `slide-grid.tsx` + `@utility slide-grid` |
 | 5–8       | Forma, ícones, movimento, estados                       | Componente novo no editor              | `--radius` e afins             |
 | 9         | Mapeamento shadcn e as duas armadilhas de nome          | Instalar componente shadcn novo        | `globals.css`, `@theme inline` |
 | 10.1–10.4 | Superfícies, marcadores inline, bloco de código, shiki  | Parser, `<Inline>`, bloco de código    | só a 10.1                      |
@@ -286,22 +286,40 @@ A recomendação continua de pé: em slide de código ou com imagem o grid compe
 conteúdo, e ligá-lo ali costuma ser erro. É conselho, como os limites de caractere da
 §11.0 dos templates — o sistema informa, não impede.
 
-```css
---grid-size: 60px; /* 18px na web */
---grid-line: #1e293b; /* ink-800 */
---grid-line-w: 2px; /* medida no slide de 1080 */
+A intensidade é fixa. Não varie entre slides do mesmo carrossel.
 
-background-image:
-  linear-gradient(var(--grid-line) var(--grid-line-w), transparent var(--grid-line-w)),
-  linear-gradient(
-    90deg,
-    var(--grid-line) var(--grid-line-w),
-    transparent var(--grid-line-w)
-  );
-background-size: var(--grid-size) var(--grid-size);
+#### A grade é elemento, não fundo
+
+A v2.0 deste documento especificava dois `linear-gradient` ladrilhados por
+`background-size`. Funcionava no preview e **se perdia na exportação**: o rasterizador
+desenha o ladrilho uma vez e chapa o resto da página com a primeira parada do gradiente.
+Medido no PDF, com quatro implementações comparadas — ver o experimento 4 do `TODO.md` e a
+decisão 28 do documento de contexto. Gradiente repetente falha igual; `<pattern>` de SVG
+sai com metade da espessura, porque o traço na borda do ladrilho é recortado.
+
+A grade é um `<svg>` com linhas de verdade, dentro da raiz do slide:
+
+```html
+<svg class="slide-grid absolute inset-0" viewBox="0 0 1080 1350" aria-hidden="true">
+  <path d="M1 0V1350 M55 0V1350 … M0 1 H1080 …"
+        style="stroke: var(--color-slide-grid-line);
+               stroke-width: var(--slide-grid-line-render);
+               fill: none" />
+</svg>
 ```
 
-A intensidade é fixa. Não varie entre slides do mesmo carrossel.
+**O módulo sai do formato, não de constante.** É o divisor comum de largura e altura mais
+próximo de **54px**, para que a grade feche em módulos inteiros em qualquer proporção:
+1080×1350 dá 54 — 20 por 25 quadrados —, 1080×1920 daria 60. Formato sem divisor
+utilizável cai nos 54 e aceita o corte.
+
+**A moldura fecha nos quatro lados.** Cada traço entra meia espessura para dentro da
+coordenada, e as linhas da direita e da base entram meia espessura para dentro da borda:
+sem isso metade do traço cai fora do slide e a linha da borda sai pela metade. Foi o que
+reprovou a variante `<pattern>`.
+
+Quem desenha é `src/render/slide-grid.tsx`, e quem decide se aparece é o `SlideFrame`, a
+partir do `background` do template e da opção `showGrid` do slide.
 
 #### Por que 2px
 
@@ -319,8 +337,8 @@ com linha de `L` px medida no slide de 1080:
 
 Com `L = 1` a linha cai abaixo de um pixel em toda linha da tabela que não seja a
 primeira — some no artefato publicado, que é o único lugar que de fato importa. Com
-`L = 2` ela sobrevive ao downscale do feed. A 1:1 são 2px a cada 60px em `ink-800` sobre
-`ink-950`: cobertura de 3,3%, ainda textura e não desenho.
+`L = 2` ela sobrevive ao downscale do feed. A 1:1 são 2px a cada 54px em `ink-800` sobre
+`ink-950`: cobertura de 3,7%, ainda textura e não desenho.
 
 #### Compensação no preview
 

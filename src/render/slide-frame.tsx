@@ -22,10 +22,14 @@
  * tamanho o slide está sendo exibido. A variável fica na raiz do slide, e não no quadro
  * externo, porque quem desenha o grid está lá dentro: a §4.3 do design system exige que
  * `--slide-grid-line-render` resolva num elemento que já enxergue a escala.
+ *
+ * A grade é elemento, não `background-image`. Fundo em gradiente não sobrevive à
+ * rasterização — ver `slide-grid.tsx`, a §13 do documento de contexto e a decisão 28.
  */
 
 import type { CSSProperties, ReactNode, Ref } from "react";
 import type { Deck } from "@/deck/types";
+import { SlideGrid } from "@/render/slide-grid";
 import type { TemplateBackground } from "@/templates/types";
 
 export type SlideFrameProps = {
@@ -68,12 +72,7 @@ export function SlideFrame({
         data-testid="slide-canvas"
         // `slide-canvas` é o nome que a §13 do documento de contexto dá à subárvore
         // que precisa de cor em hex sRGB — a que a rasterização vai serializar.
-        className={[
-          "slide-canvas relative overflow-hidden bg-slide-bg",
-          background === "grid" ? "slide-grid" : "",
-        ]
-          .join(" ")
-          .trim()}
+        className="slide-canvas relative overflow-hidden bg-slide-bg"
         style={
           {
             "--slide-w": `${format.w}px`,
@@ -86,6 +85,7 @@ export function SlideFrame({
           } as CSSProperties
         }
       >
+        {background === "grid" && <SlideGrid format={format} />}
         {children}
       </div>
     </div>

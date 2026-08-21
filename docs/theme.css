@@ -224,6 +224,10 @@
   /* Grid de fundo. A espessura é medida no slide de 1080px; ver §4.3 do design
      system para a cadeia de escalas que leva a 2px em vez de 1px.
 
+     O módulo não mora aqui: ele sai do formato do deck, em `slide-grid.tsx`, para
+     que a grade feche em módulos inteiros em qualquer proporção. Em 1080×1350 dá
+     54px — 20 por 25 quadrados, nenhum cortado na borda.
+
      `--slide-scale` é declarada por quem exibe o slide reduzido — o SlideFrame —
      com o mesmo fator passado ao `transform`. `calc(1px / k)` devolve a
      espessura que, depois de escalada, dá exatamente um pixel de dispositivo,
@@ -232,7 +236,6 @@
      não pinta. Mesma ideia do `vector-effect: non-scaling-stroke` do SVG, feita
      com variável porque a exportação precisa do oposto — lá a escala é 1 e vale
      a espessura de spec. */
-  --slide-grid-size: 60px;
   --slide-grid-line-w: 2px;
   --slide-scale: 1;
 
@@ -370,26 +373,21 @@
   text-transform: uppercase;
 }
 
-/* O grid de fundo dos templates que declaram fundo: "grid".
-   Nunca em slides de codigo ou com imagem. */
+/* A compensação de espessura da grade de fundo — §4.3 do design system.
+
+   A classe vai no `<svg>` que desenha a grade, em `src/render/slide-grid.tsx`, e não
+   mais na raiz do slide: desde a 1E a grade é linha de verdade, não `background-image`.
+   Gradiente não sobrevive à rasterização — o exportador desenha um módulo e chapa o
+   resto da página com a primeira parada. Ver a §13 do documento de contexto, a decisão
+   28 e o experimento 4 do `TODO.md`.
+
+   Declarada aqui, e não no `:root`, de propósito. Custom property resolve os `var()` do
+   próprio valor no elemento onde é declarada — se isto morasse no `:root`,
+   `--slide-scale` resolveria como 1 ali e os descendentes herdariam o resultado já
+   pronto. Sobrescrever a escala no wrapper não teria efeito. */
 @utility slide-grid {
-  /* Declarada aqui, e não no `:root`, de propósito. Custom property resolve os
-     `var()` do próprio valor no elemento onde é declarada — se isto morasse no
-     `:root`, `--slide-scale` resolveria como 1 ali e os descendentes herdariam
-     o resultado já pronto. Sobrescrever a escala no wrapper não teria efeito. */
   --slide-grid-line-render: max(
     var(--slide-grid-line-w),
     calc(1px / var(--slide-scale, 1))
   );
-  background-image:
-    linear-gradient(
-      var(--color-slide-grid-line) var(--slide-grid-line-render),
-      transparent var(--slide-grid-line-render)
-    ),
-    linear-gradient(
-      90deg,
-      var(--color-slide-grid-line) var(--slide-grid-line-render),
-      transparent var(--slide-grid-line-render)
-    );
-  background-size: var(--slide-grid-size) var(--slide-grid-size);
 }
