@@ -342,7 +342,10 @@ type ExportResult = { files: { name: string; blob: Blob }[] }
 ```
 
 `ExportResult` sempre devolve uma lista: o alvo PDF produz um arquivo, o alvo PNG
-produz N, um futuro alvo ZIP produz um. O registry é idêntico ao dos templates.
+produz N, um futuro alvo ZIP produz um. O registry é idêntico ao dos templates — e desde
+a 1E é literalmente o mesmo: os dois instanciam o `createRegistry` de `src/lib/registry.ts`,
+decisão 27. Quem registra alvo é `src/export/index.ts`, e cada alvo é um módulo em
+`src/export/targets/`.
 
 `RenderSource` carrega o **nó e o slide**, não o bitmap pronto — assim um alvo futuro
 pode optar por ler os dados diretamente em vez de rasterizar, mantendo aberta a porta
@@ -562,3 +565,4 @@ sem retoque em nenhum outro programa.
 | 24 | Store como factory mais singleton, em `src/editor/store.ts` | Provider de contexto com o store criado no componente, como o guia do zustand para Next prescreve | O provider se paga quando há dois decks vivos ao mesmo tempo, que é a tela de listagem da Etapa 4. Até lá ele é cerimônia: a factory já dá ao teste um store isolado por deck de fixture, sem reset global, e o singleton dá à aplicação o único deck que ela tem. O preço é que o deck é criado duas vezes, uma na pré-renderização estática e outra no cliente, com ids diferentes: manter esses ids fora do DOM deixa de ser consequência do desenho e passa a ser condição que o código sustenta — ver a armadilha na §13 |
 | 25 | Grade de fundo é opção do slide, com o `background` do template como padrão | Grade fixa por template, como a §4.3 do design system definia | Quem edita ganha a escolha slide a slide, e o custo é a consistência automática que a regra anterior dava de graça: nada impede uma capa com grade e outra sem no mesmo carrossel. O descritor continua dizendo com o que o slide nasce, e a §4.3 passa a chamar de recomendação o que era proibição — grade em slide de código continua má ideia, só não é mais impossível. O `SlideView` é o único ponto que lê a opção; o `SlideFrame` continua recebendo `grid` ou `plain` e não sabe de onde veio |
 | 26 | `Frame` carrega o bitmap como **PNG em data URL** | Devolver o `HTMLCanvasElement`, ou um `Blob` | O jsPDF consome data URL direto em `addImage`, e é a forma que um teste inspeciona sem canvas — `happy-dom` não tem nenhum. O canvas deixaria o alvo escolher a codificação sem recapturar, que é o que o plano de contingência da §13 pediria se um deck com fotos estourasse o tamanho; o preço seria um `Frame` que deixa de ser dado e passa a ser objeto de DOM vivo, com o alvo dependendo do navegador. O `Blob` economiza a base64, mas o jsPDF a exigiria de volta a cada página |
+| 27 | Um `createRegistry` genérico em `src/lib/registry.ts`, com dois usuários | Escrever o registry de alvos à mão, espelhando o de templates | A §10 já dizia "o registry é idêntico ao dos templates", e duas cópias da mesma lógica divergiriam na primeira correção — a regra de HMR, que existe para o `next dev` não cair a cada edição, vale para alvo tanto quanto para template. O genérico pede só o `id` e um rótulo para a mensagem de erro; cada registry continua sendo um módulo próprio, com o próprio tipo, e ninguém fora deles conhece a factory |
