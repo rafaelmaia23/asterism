@@ -373,6 +373,17 @@ compra nada neste domínio.
 - **Import/export `.json`** com as imagens embutidas em base64 — arquivo grande, porém
   autocontido e versionável. É documento de trabalho, não asset de produção.
 
+O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`, e nada
+mais. `persist`, `zundo` e o IndexedDB entram na Etapa 3, por cima deste mesmo store —
+autosave e undo sobre um estado que ainda não sabe editar não teriam o que guardar.
+
+Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory é o que
+deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
+reset global; a aplicação usa o singleton. Ver decisão 24.
+
+O slide ativo é guardado por **id**, não por índice: reordenar e remover chegam na Etapa 4
+e um índice guardado passaria a apontar para outro slide sem que nada avisasse.
+
 ### Imagens: escopo fechado
 
 Apenas upload local. Imagem por URL externa contamina o canvas e faz a exportação
@@ -451,6 +462,15 @@ absoluto não contribui para o tamanho do pai. A segunda sozinha já fecha a por
 que vai valer também para o palco de exportação da §10, que monta o deck inteiro fora da
 tela.
 
+**Id de dado não vira atributo do DOM.** O deck é criado duas vezes — uma na
+pré-renderização estática, no Node, e outra no navegador — e os ids saem de
+`crypto.randomUUID()`, então os dois lados discordam. Id de slide em `id`, `htmlFor`,
+`aria-labelledby` ou `data-*` é divergência de hidratação garantida, e o React não remenda
+atributo: ele avisa no console e segue com o valor do cliente. Identificador de formulário
+sai de `useId`, que o React gera pela posição na árvore e por isso casa dos dois lados.
+Aconteceu na 1D, no inspector. Vale para o palco de exportação da 1E e para a lista de
+arraste da Etapa 4, que também vão querer marcar nós.
+
 ## 14. Interface
 
 Três colunas, sem invenção:
@@ -463,10 +483,19 @@ Três colunas, sem invenção:
 - **Topo** — nome do deck, ações de deck (novo, importar, exportar JSON) e o botão de
   exportação com escolha de alvo.
 
-As quatro áreas nascem juntas, na 1C, e se preenchem por etapa: o centro já funciona, o
-topo tem só o nome do deck, e as duas laterais são espaço reservado até a 1D. Criar o
-quadrilátero de uma vez custa nada e faz o editor ter, desde o primeiro dia, as
-proporções que vai ter no fim.
+As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadrilátero de
+uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
+fim.
+
+Estado hoje, depois da 1D: o centro funciona; o topo tem só o nome do deck; a direita tem
+o seletor de layout — desabilitado até a 2.11, que é quem o liga ao `migrateFields` — e o
+formulário derivado dos descritores, com contadores; a esquerda lista os slides com
+miniatura, número e nome, e troca o ativo, sem marca de transbordo, arraste, duplicar nem
+remover.
+
+A miniatura é o mesmo `SlideView` do canvas numa escala fixa, e não uma representação
+própria: um segundo desenho do slide para a lista lateral divergiria do primeiro no
+terceiro template.
 
 ## 15. Roadmap
 
@@ -512,3 +541,5 @@ sem retoque em nenhum outro programa.
 | 21 | Página do PDF em pt, 1080×1350 | Unidade `px` casada com a medida do canvas | Confirma a §10. O bitmap é 2160×2700 nos dois casos, então a diferença é só o número que o visualizador mostra; e a unidade `px` do jsPDF depende de uma conversão de 96 dpi que não vale a pena carregar |
 | 22 | Escala do canvas por auto-fit na fatia vertical | Seletor de zoom desde a primeira etapa | O que a etapa precisa provar é que `--slide-scale` acompanha o `transform`; um seletor entra quando houver barra onde colocá-lo |
 | 23 | Área de trabalho em `ink-900` **e** moldura de 1px `ink-700` no quadro externo, fora do `transform` | Só a inversão de superfície, sem borda, como a §2.2 previa; ou só a borda, com a área no mesmo `ink-950` do slide | A primeira versão da 1C pôs slide e área no mesmo tom e separou por hairline `ink-800`: reprovou olhando, não dava para saber onde termina a página. A inversão da §2.2 do design system resolve o grosso, e a borda dá o contorno que faltava — em `ink-700`, porque o 800 cai entre os dois tons e some. Na raiz do slide a borda encolheria com a escala e viajaria dentro do nó capturado, contra a §9; no quadro externo ela vale 1px em qualquer `k` e a exportação nunca a vê |
+| 24 | Store como factory mais singleton, em `src/editor/store.ts` | Provider de contexto com o store criado no componente, como o guia do zustand para Next prescreve | O provider se paga quando há dois decks vivos ao mesmo tempo, que é a tela de listagem da Etapa 4. Até lá ele é cerimônia: a factory já dá ao teste um store isolado por deck de fixture, sem reset global, e o singleton dá à aplicação o único deck que ela tem. O preço é que o deck é criado duas vezes, uma na pré-renderização estática e outra no cliente, com ids diferentes: manter esses ids fora do DOM deixa de ser consequência do desenho e passa a ser condição que o código sustenta — ver a armadilha na §13 |
+| 25 | Grade de fundo é opção do slide, com o `background` do template como padrão | Grade fixa por template, como a §4.3 do design system definia | Quem edita ganha a escolha slide a slide, e o custo é a consistência automática que a regra anterior dava de graça: nada impede uma capa com grade e outra sem no mesmo carrossel. O descritor continua dizendo com o que o slide nasce, e a §4.3 passa a chamar de recomendação o que era proibição — grade em slide de código continua má ideia, só não é mais impossível. O `SlideView` é o único ponto que lê a opção; o `SlideFrame` continua recebendo `grid` ou `plain` e não sabe de onde veio |

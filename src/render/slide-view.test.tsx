@@ -1,12 +1,30 @@
 import { describe, expect, test } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { z } from "zod";
 import type { DeckMeta, Slide } from "@/deck/types";
 import { SlideView } from "@/render/slide-view";
+import { register } from "@/templates/registry";
+import type { TemplateDef } from "@/templates/types";
 // Importar `@/templates` é o que popula o registry — é o único módulo que conhece
 // template. O `SlideView` chega nele pelo id gravado no slide, nunca por import direto.
 import "@/templates";
 
 const deck: DeckMeta = { handle: "@rafael", pillar: "log" };
+
+/** Um template `plain` que só existe aqui: a biblioteca da Etapa 1 tem só a capa. */
+const PLAIN_TEMPLATE = "plain-de-teste";
+
+register({
+  id: PLAIN_TEMPLATE,
+  label: "Template plano",
+  group: "content",
+  background: "plain",
+  fields: [],
+  options: [],
+  schema: z.object({ fields: z.object({}), options: z.record(z.string(), z.boolean()) }),
+  defaults: { fields: {}, options: {} },
+  Component: () => null,
+} satisfies TemplateDef);
 
 const slide: Slide = {
   id: "s1",
@@ -27,8 +45,35 @@ describe("SlideView", () => {
     expect(screen.getByText("log/ · 01")).toBeDefined();
   });
 
-  test("o fundo vem do descritor: a capa declara grid e o quadro o desenha", () => {
-    render(<SlideView slide={slide} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
+  /**
+   * O `background` do descritor é o **padrão** do template, não a palavra final: quem
+   * decide é a opção `showGrid` do slide. Ver a §4.3 do design system e a decisão 25.
+   */
+  test("sem a opção, o fundo cai no padrão do descritor", () => {
+    const semOpcao: Slide = { ...slide, options: { showChevron: true } };
+
+    render(<SlideView slide={semOpcao} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
+
+    expect(canvas().className).toContain("slide-grid");
+  });
+
+  test("a opção desligada tira a grade de um template que nasce com ela", () => {
+    const semGrade: Slide = { ...slide, options: { ...slide.options, showGrid: false } };
+
+    render(<SlideView slide={semGrade} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
+
+    expect(canvas().className).not.toContain("slide-grid");
+  });
+
+  test("a opção ligada põe a grade num template que nasce sem ela", () => {
+    const emPlain: Slide = {
+      id: "s2",
+      template: PLAIN_TEMPLATE,
+      fields: {},
+      options: { showGrid: true },
+    };
+
+    render(<SlideView slide={emPlain} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
 
     expect(canvas().className).toContain("slide-grid");
   });

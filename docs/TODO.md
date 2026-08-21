@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **1C concluída; a próxima
-> sessão é a 1D**
+> **Status** bootstrap concluído · decisões resolvidas · **1D concluída; a próxima
+> sessão é a 1E**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. A Etapa 1 tem um nível a mais — **sub-etapa**, uma por
 > sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -121,7 +121,9 @@ Resolvido na sessão:
   registra é um módulo só, que roda uma vez, então id duplicado é erro de programação e
   não estado de runtime. O registry é uma factory `createRegistry()` com uma instância
   módulo-nível exportada — os testes criam a sua e não precisam de um `clear()` que só
-  existiria para eles.
+  existiria para eles. **Menos em desenvolvimento**, onde registrar de novo substitui:
+  ajuste da 1D, porque ali o segundo registro é o HMR reavaliando `templates/index.ts` sem
+  reavaliar o registry, e lançar derrubava o `next dev` a cada edição.
 - `meta.ts` guarda os cinco campos que a §8 do documento de contexto lhe dá; o
   `TemplateDef` completo é montado no `index.tsx`, que é quem tem o `Component`.
 - O critério de pronto da 1.7 — uma linha e quatro linhas pousando na mesma altura — não
@@ -182,20 +184,76 @@ Resolvido na sessão:
 - **A medição roda em layout effect, com uma primeira leitura síncrona.** Sem isso o
   quadro aparece num tamanho e se ajusta no quadro seguinte, o que se lê como animação.
 
-### 1D — estado e inspector · ~1,5 h
+### 1D — estado e inspector ✅
 
-Instala `zustand` e acrescenta o `textarea` do shadcn, que ainda não está em
+Instala `zustand` e acrescenta o `textarea` e o `switch` do shadcn, que ainda não estão em
 `src/components/ui/`.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 1.10 | Store zustand mínimo — deck, slide ativo, `setField` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
-| 1.11 | Inspector: formulário derivado dos descritores, tipos `text` e `textarea`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector. O contador fica âmbar ao passar do `max` e não trava a digitação — §11.0 dos templates, limite é conselho |
-| 1.12 | Lista lateral de slides — índice, rótulo do template, seleção | Clicar troca o slide ativo. Somente leitura: sem arraste, sem duplicar, sem remover |
+| 1.10 | Store zustand mínimo — deck, slide ativo, `setField` e `setOption` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
+| 1.11 | Inspector: formulário derivado dos descritores, tipos `text`, `textarea` e `toggle`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector. O contador fica âmbar ao passar do `max` e não trava a digitação — §11.0 dos templates, limite é conselho |
+| 1.12 | Lista lateral de slides — índice, rótulo do template, miniatura, seleção | Clicar troca o slide ativo. A miniatura é o próprio `SlideView` numa escala fixa, com o grid de fundo sobrevivendo à redução. Somente leitura: sem arraste, sem duplicar, sem remover |
 
 O deck semente tem **três slides `cover-statement`**. Com um slide só, a lista lateral, a
 troca de slide ativo e o laço de páginas do alvo PDF ficariam sem prova até a Etapa 2 — e
 é exatamente ali que os erros de exportador aparecem.
+
+**Ajuste de escopo, decidido na sessão.** A 1.11 escrevia `text` e `textarea` só. O
+`toggle` entrou junto, com `setOption` no store e o `switch` do shadcn: sem ele o
+`showChevron` do `cover-statement` nasceria sem controle e a separação `fields`/`options`
+da §6 do documento de contexto ficaria sem prova até a Etapa 2. Os tipos que sobram —
+`list`, `image`, `code`, `select` — não têm controle ainda, e o inspector os desenha como
+linha inerte com o rótulo, para que um campo novo nunca suma do formulário em silêncio.
+
+Resolvido na sessão:
+
+- **O store é uma factory mais um singleton**, em `src/editor/store.ts`, sem provider de
+  contexto — decisão 24. A factory é o que deixa cada teste montar um deck de fixture sem
+  estado global atravessando de um caso para o outro, e o inspector e a lista recebem o
+  store por prop com o singleton como padrão. Provider só se paga com dois decks vivos ao
+  mesmo tempo, que é a tela de listagem da Etapa 4.
+- **O slide ativo é guardado por id, não por índice.** Reordenar e remover chegam na Etapa
+  4, e um índice guardado passaria a apontar para outro slide sem que nada avisasse.
+- **Id desconhecido lança**, nas três ações, como o registry faz com template
+  desconhecido. Nenhuma tela oferece um slide que o deck não tem, então é erro de
+  programação e não estado de runtime a tratar.
+- **A lista distingue três capas seguidas pelo trecho do `heading`.** É o primeiro uso
+  prático do vocabulário canônico da §6 do documento de contexto fora dos templates: a
+  lista lê a mesma chave em qualquer template e continua sem conhecer nenhum.
+- **A auditoria do `textarea` e do `switch` contra a §9 do design system não pediu
+  ajuste.** O switch ligado já é `primary` com o polegar em `primary-foreground`, que é o
+  padrão "400 de preenchimento, 950 de texto" da §2.4. Sobraram duas divergências do
+  preset que **já vinham do bootstrap** e valem para `button`, `input` e `card` também:
+  anel de foco `ring-3` a 50% sem offset, onde a §5 pede 2px com offset 2px, e
+  `rounded-lg` (8px) em controle de formulário, onde a §5 pede o raio padrão de 6px.
+  Corrigir só nos dois componentes novos criaria divergência interna; virou o
+  **experimento 3**, abaixo.
+- **Um teste de integração do shell**, além dos testes isolados de cada coluna: é o que
+  garante que lista, inspector e canvas falam com o mesmo store, que é justamente o que os
+  testes isolados — cada um com o seu store de fixture — não podem ver.
+
+A conferência visual no navegador rendeu mais cinco ajustes, e todos entraram na 1D:
+
+- **Erro de hidratação no inspector.** Os `id` dos controles saíam de `slide.id`, que vem
+  de `crypto.randomUUID()`: um valor na pré-renderização estática, outro no cliente, e o
+  React não remenda atributo. Passaram a sair do `useId`. Virou armadilha na §13 do
+  documento de contexto e no `CLAUDE.md`, e a decisão 24 foi corrigida — manter id de dado
+  fora do DOM é condição que o código sustenta, não consequência do desenho.
+- **`register` derrubava o `next dev` a cada edição**, porque o HMR reavalia
+  `templates/index.ts` sem reavaliar o registry. Em desenvolvimento passa a substituir.
+- **A miniatura da lista lateral entrou**, e ela nunca tinha sido agendada: a §14 do
+  contexto a prometia e nenhuma tarefa a entregava. É o próprio `SlideView` numa escala
+  fixa — sem `ResizeObserver`, que num item de lista traria de volta o laço da 1C — e o
+  item da lista é memoizado por referência de slide, senão cada tecla digitada
+  re-renderizaria a árvore completa de todos os slides do deck.
+- **A grade de fundo virou opção do slide** — decisão 25, e a §4.3 do design system mudou
+  junto. Era propriedade fixa do template; agora o `background` do descritor é só o padrão
+  com que o slide nasce. O descritor de `showGrid` mora em `src/templates/shared/`, um só
+  para os dez templates.
+- **O seletor de layout apareceu no topo do inspector**, desabilitado. A troca continua
+  sendo a 2.11, que depende do `migrateFields` da 2.10; desabilitar é o honesto, porque a
+  2.8 e a 2.9 registram mais dois templates antes disso.
 
 ### 1E — exportação · ~1,5 h
 
@@ -232,13 +290,13 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 | 2.4 | Componentes recorrentes da §10.5 do design system — falta o `Footer`; `Kicker`, `Constellation` e `Chevron` vieram na 1B | Rodapé com `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` e constelação à direita, em todo template menos capa e final |
 | 2.4a | Remover as quatro peças de logo não usadas | Decidido: o rodapé usa `MaiahubGlyph` a 32px. Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
 | 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 do design system é atualizada junto |
-| 2.5 | Conferir o fundo dos dois templates novos — a aplicação a partir de `meta.background` veio na 1C | `text-bullets` é `plain` e `final-cta` é `grid`; nenhum template de código ou imagem recebe grid |
+| 2.5 | Conferir o **padrão** de fundo dos dois templates novos e a opção `showGrid` em cada um | `text-bullets` nasce `plain` e `final-cta` nasce `grid`; os dois expõem `showGrid`, que a 1D tornou comum a todo template — decisão 25 |
 | 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor |
 | 2.7 | Inspector: tipos `select` e `toggle`, na seção de opções | Opções ficam visualmente separadas dos campos de conteúdo |
 | 2.8 | `text-bullets` completo — regiões da §11.2 dos templates, marcador travessão, opção `anchor` | `center` distribui os itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto |
 | 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa |
 | 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 do documento de contexto torna a migração uma interseção de chaves, sem tabela de equivalência |
-| 2.11 | Seletor de layout no topo do inspector, usando `migrateFields` | Trocar o layout preserva o que já foi digitado e reseta as opções |
+| 2.11 | Ligar o seletor de layout ao `migrateFields` — o controle em si veio na 1D, desabilitado | Trocar o layout preserva o que já foi digitado e reseta as opções. O select já lista o registry e mostra o layout do slide; falta a troca |
 | 2.12 | `persist` do zustand em localStorage | Recarregar a página não perde o deck |
 
 > A tarefa 2.12 é antecipada da Fase 3 do §15. Motivo: o próprio §15 afirma que a Fase 1
@@ -327,3 +385,20 @@ A §10.5 do design system diz "5 pontos mais um contador `03 / 12`" e não diz q
   perde a de contagem, que o contador ao lado já cobre.
 
 Montar as três com um deck de 12 slides e escolher.
+
+### Experimento 3 — foco e raio dos controles de formulário · a agendar
+
+A auditoria da 1D encontrou duas divergências entre os componentes shadcn instalados e o
+design system. As duas vêm do preset `nova`, entraram no bootstrap com `button`, `input` e
+`card`, e se repetiram no `textarea` e no `switch`:
+
+- **Anel de foco.** Os componentes trazem `focus-visible:ring-3` com `ring/50` e sem
+  offset; a §5 do design system diz "anel de 2px `azure-500` com offset de 2px", e a §8
+  repete. O anel do preset é mais grosso, mais apagado e colado no controle.
+- **Raio.** Os controles usam `rounded-lg`, que o `globals.css` resolve em 8px; a §5 dá
+  8px a cartões e blocos de código e 6px ao resto.
+
+Não são erros de instalação: o preset é coerente consigo mesmo, e a §9 é explícita em que
+quem cede é o componente, não o documento. O trabalho é mexer nos cinco componentes de uma
+vez, ver as duas telas e decidir se o documento estava certo — corrigir só os dois
+componentes novos seria pior que a divergência.

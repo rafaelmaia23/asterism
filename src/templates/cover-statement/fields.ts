@@ -7,6 +7,7 @@
  */
 
 import { z } from "zod";
+import { showGridOption } from "@/templates/shared/options";
 import type { Field } from "@/templates/types";
 
 /** Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates. */
@@ -28,7 +29,9 @@ export const fields: Field[] = [
   },
 ];
 
+/** A grade vem de `shared/options.ts`: é o mesmo campo em todo template. */
 export const options: Field[] = [
+  showGridOption,
   { key: "showChevron", type: "toggle", label: "Afordância de deslize" },
 ];
 
@@ -38,6 +41,7 @@ export const coverStatementSchema = z.object({
     heading: z.string(),
   }),
   options: z.object({
+    showGrid: z.boolean(),
     showChevron: z.boolean(),
   }),
 });

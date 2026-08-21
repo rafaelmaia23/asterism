@@ -277,8 +277,14 @@ grupos `8`; entre seções `16` ou `24`.
 
 ### 4.3 Grid de fundo
 
-Presente apenas nos templates que declaram `background: "grid"` — capas e slide final.
-Nunca em slides de código ou com imagem: o grid compete com o conteúdo.
+**Disponível em qualquer template, e quem decide é quem edita.** Cada template declara em
+`background` se o slide nasce com grade — capas e slide final nascem com, o resto sem —, e
+a opção `showGrid` do slide manda daí em diante. A regra anterior, que restringia a grade
+aos templates que a declaravam, virou padrão em vez de trava.
+
+A recomendação continua de pé: em slide de código ou com imagem o grid compete com o
+conteúdo, e ligá-lo ali costuma ser erro. É conselho, como os limites de caractere da
+§11.0 dos templates — o sistema informa, não impede.
 
 ```css
 --grid-size: 60px; /* 18px na web */
