@@ -298,6 +298,17 @@ renderiza com `k = 1` e recebe os valores de spec sem saber que a compensação 
 É a única divergência deliberada entre preview e exportação, e ela existe para preservar
 a aparência, não para quebrá-la.
 
+O wrapper é o `SlideFrame` (`src/render/slide-frame.tsx`), e ele é o **único** dono de
+`--slide-scale`: é o único ponto do sistema que sabe em que tamanho o slide está sendo
+exibido. São duas camadas — um quadro externo já escalado, que ocupa espaço no editor, e
+a raiz do slide em pixels reais, com o `transform`. A variável fica na raiz do slide,
+porque quem desenha o grid está lá dentro e precisa enxergá-la.
+
+**A moldura do preview mora na camada de fora.** A borda de 1px que separa o slide do
+fundo do editor — os dois são `ink-950` — fica no quadro externo, nunca na raiz. Dentro,
+ela encolheria junto com a escala e entraria no nó capturado pela exportação, que é
+exatamente o que esta seção diz não pode acontecer. Ver decisão 23.
+
 ### Guard de transbordo
 
 Slide tem altura fixa, então texto longo transborda — é a falha número um deste tipo
@@ -481,3 +492,4 @@ sem retoque em nenhum outro programa.
 | 20 | Palco de exportação oculto, montado a 1:1 | Zerar a escala do canvas visível antes de capturar | O exportador precisa do deck inteiro, não do slide ativo — e capturar o nó do preview arrastaria a compensação de `--slide-scale` para dentro do arquivo, que é justamente o que a §9 diz não pode acontecer |
 | 21 | Página do PDF em pt, 1080×1350 | Unidade `px` casada com a medida do canvas | Confirma a §10. O bitmap é 2160×2700 nos dois casos, então a diferença é só o número que o visualizador mostra; e a unidade `px` do jsPDF depende de uma conversão de 96 dpi que não vale a pena carregar |
 | 22 | Escala do canvas por auto-fit na fatia vertical | Seletor de zoom desde a primeira etapa | O que a etapa precisa provar é que `--slide-scale` acompanha o `transform`; um seletor entra quando houver barra onde colocá-lo |
+| 23 | Moldura do preview no quadro externo, fora do `transform` | Borda na própria raiz do slide; ou área central um degrau mais clara, sem borda | O slide e o fundo do editor são os dois `ink-950` e precisam de separação. Na raiz, a borda encolheria com a escala e viajaria dentro do nó capturado, contra a §9; fora, ela vale 1px em qualquer `k` e a exportação nunca a vê. Subir a área central a `ink-900` resolveria sem borda, mas inverteria a escada da §2.2 do design system — o miolo do editor ficaria mais claro que as laterais |
