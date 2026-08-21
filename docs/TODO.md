@@ -193,7 +193,7 @@ Instala `zustand` e acrescenta o `textarea` e o `switch` do shadcn, que ainda n�
 |---|---|---|
 | 1.10 | Store zustand mínimo — deck, slide ativo, `setField` e `setOption` | Digitar no inspector muda o canvas. Sem `persist`, sem `zundo` |
 | 1.11 | Inspector: formulário derivado dos descritores, tipos `text`, `textarea` e `toggle`, com contador de caracteres | Campo novo no descritor aparece no formulário sem tocar no inspector. O contador fica âmbar ao passar do `max` e não trava a digitação — §11.0 dos templates, limite é conselho |
-| 1.12 | Lista lateral de slides — índice, rótulo do template, seleção | Clicar troca o slide ativo. Somente leitura: sem arraste, sem duplicar, sem remover |
+| 1.12 | Lista lateral de slides — índice, rótulo do template, miniatura, seleção | Clicar troca o slide ativo. A miniatura é o próprio `SlideView` numa escala fixa, com o grid de fundo sobrevivendo à redução. Somente leitura: sem arraste, sem duplicar, sem remover |
 
 O deck semente tem **três slides `cover-statement`**. Com um slide só, a lista lateral, a
 troca de slide ativo e o laço de páginas do alvo PDF ficariam sem prova até a Etapa 2 — e

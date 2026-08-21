@@ -2,8 +2,10 @@ import { describe, expect, test } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { Deck } from "@/deck/types";
 import { createEditorStore } from "@/editor/store";
-import { SlideList } from "@/editor/slide-list";
+import { SlideList, THUMBNAIL_WIDTH } from "@/editor/slide-list";
 import "@/templates";
+
+const SLIDE_ID = "id-que-nao-pode-vazar";
 
 function makeDeck(): Deck {
   return {
@@ -14,7 +16,7 @@ function makeDeck(): Deck {
     meta: { handle: "@rafael", pillar: "log" },
     slides: [
       {
-        id: "s1",
+        id: SLIDE_ID,
         template: "cover-statement",
         fields: { kicker: "log/ · 01", heading: "Ninguém lê docs" },
         options: { showChevron: true },
@@ -32,8 +34,8 @@ function makeDeck(): Deck {
 
 function renderList(deck: Deck = makeDeck()) {
   const store = createEditorStore(deck);
-  render(<SlideList store={store} />);
-  return store;
+  const { container } = render(<SlideList store={store} />);
+  return { store, container };
 }
 
 describe("SlideList", () => {
@@ -49,27 +51,30 @@ describe("SlideList", () => {
   });
 
   /**
-   * Três capas seguidas mostrariam três vezes o mesmo rótulo. O trecho sai da chave
-   * canônica `heading` da §6 do documento de contexto — que existe justamente para que o
-   * mesmo papel tenha a mesma chave em todo template —, então a lista continua sem
-   * conhecer template nenhum.
+   * A miniatura é o mesmo `SlideView` do canvas, só que numa escala fixa. É o que
+   * distingue três capas seguidas, que de outro modo mostrariam três vezes o mesmo
+   * rótulo — e é de graça, porque o `SlideFrame` já sabe desenhar em qualquer escala.
    */
-  test("o trecho do item vem da chave canônica heading", () => {
+  test("cada item carrega uma miniatura do próprio slide", () => {
     renderList();
 
-    const itens = screen.getAllByRole("button");
+    const quadros = screen.getAllByTestId("slide-frame");
 
-    expect(itens[0].textContent).toContain("Ninguém lê docs");
-    expect(itens[1].textContent).toContain("O cache mentiu");
+    expect(quadros).toHaveLength(2);
+    expect(quadros[0].style.width).toBe(`${THUMBNAIL_WIDTH}px`);
   });
 
-  test("slide sem heading não quebra a lista", () => {
+  /**
+   * A escala sai de `deck.format`, nunca de 1080 escrito à mão — §12 do documento de
+   * contexto. Num formato 1:1 a miniatura continua com a largura pedida.
+   */
+  test("a escala da miniatura sai do formato do deck", () => {
     const deck = makeDeck();
-    deck.slides[1] = { ...deck.slides[1], fields: { kicker: "log/ · 02" } };
+    deck.format = { w: 2160, h: 2700 };
 
     renderList(deck);
 
-    expect(screen.getAllByRole("button")[1].textContent).toContain("Capa — declaração");
+    expect(screen.getAllByTestId("slide-frame")[0].style.width).toBe(`${THUMBNAIL_WIDTH}px`);
   });
 
   test("o item ativo se distingue dos outros", () => {
@@ -82,7 +87,7 @@ describe("SlideList", () => {
   });
 
   test("clicar num item troca o slide ativo no store", () => {
-    const store = renderList();
+    const { store } = renderList();
 
     fireEvent.click(screen.getAllByRole("button")[1]);
 
@@ -98,5 +103,12 @@ describe("SlideList", () => {
 
     expect(item.querySelector("button")).toBeNull();
     expect(item.getAttribute("draggable")).toBeNull();
+  });
+
+  /** A armadilha da §13: id de dado não vira atributo do DOM. */
+  test("nenhum id de dado chega ao DOM", () => {
+    const { container } = renderList();
+
+    expect(container.innerHTML).not.toContain(SLIDE_ID);
   });
 });

@@ -488,9 +488,13 @@ uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que
 fim.
 
 Estado hoje, depois da 1D: o centro funciona; o topo tem só o nome do deck; a direita tem
-o formulário derivado dos descritores, com contadores, mas ainda sem seletor de layout; a
-esquerda lista os slides e troca o ativo, sem miniatura, marca de transbordo, arraste,
-duplicar nem remover.
+o formulário derivado dos descritores, com contadores; a esquerda lista os slides com
+miniatura, número e nome, e troca o ativo — sem marca de transbordo, arraste, duplicar nem
+remover.
+
+A miniatura é o mesmo `SlideView` do canvas numa escala fixa, e não uma representação
+própria: um segundo desenho do slide para a lista lateral divergiria do primeiro no
+terceiro template.
 
 ## 15. Roadmap
 
