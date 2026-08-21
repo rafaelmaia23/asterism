@@ -373,6 +373,17 @@ compra nada neste domínio.
 - **Import/export `.json`** com as imagens embutidas em base64 — arquivo grande, porém
   autocontido e versionável. É documento de trabalho, não asset de produção.
 
+O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`, e nada
+mais. `persist`, `zundo` e o IndexedDB entram na Etapa 3, por cima deste mesmo store —
+autosave e undo sobre um estado que ainda não sabe editar não teriam o que guardar.
+
+Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory é o que
+deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
+reset global; a aplicação usa o singleton. Ver decisão 24.
+
+O slide ativo é guardado por **id**, não por índice: reordenar e remover chegam na Etapa 4
+e um índice guardado passaria a apontar para outro slide sem que nada avisasse.
+
 ### Imagens: escopo fechado
 
 Apenas upload local. Imagem por URL externa contamina o canvas e faz a exportação
@@ -512,3 +523,4 @@ sem retoque em nenhum outro programa.
 | 21 | Página do PDF em pt, 1080×1350 | Unidade `px` casada com a medida do canvas | Confirma a §10. O bitmap é 2160×2700 nos dois casos, então a diferença é só o número que o visualizador mostra; e a unidade `px` do jsPDF depende de uma conversão de 96 dpi que não vale a pena carregar |
 | 22 | Escala do canvas por auto-fit na fatia vertical | Seletor de zoom desde a primeira etapa | O que a etapa precisa provar é que `--slide-scale` acompanha o `transform`; um seletor entra quando houver barra onde colocá-lo |
 | 23 | Área de trabalho em `ink-900` **e** moldura de 1px `ink-700` no quadro externo, fora do `transform` | Só a inversão de superfície, sem borda, como a §2.2 previa; ou só a borda, com a área no mesmo `ink-950` do slide | A primeira versão da 1C pôs slide e área no mesmo tom e separou por hairline `ink-800`: reprovou olhando, não dava para saber onde termina a página. A inversão da §2.2 do design system resolve o grosso, e a borda dá o contorno que faltava — em `ink-700`, porque o 800 cai entre os dois tons e some. Na raiz do slide a borda encolheria com a escala e viajaria dentro do nó capturado, contra a §9; no quadro externo ela vale 1px em qualquer `k` e a exportação nunca a vê |
+| 24 | Store como factory mais singleton, em `src/editor/store.ts` | Provider de contexto com o store criado no componente, como o guia do zustand para Next prescreve | O provider se paga quando há dois decks vivos ao mesmo tempo, que é a tela de listagem da Etapa 4. Até lá ele é cerimônia: a factory já dá ao teste um store isolado por deck de fixture, sem reset global, e o singleton dá à aplicação o único deck que ela tem. Os ids do deck semente nunca chegam ao DOM, então a pré-renderização estática não gera divergência de hidratação |

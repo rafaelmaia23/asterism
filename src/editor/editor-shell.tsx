@@ -3,18 +3,16 @@
 /**
  * O shell do editor — as três colunas da §14 do documento de contexto.
  *
- * Só o centro está vivo nesta etapa. A lista de slides e o inspector chegam na 1D e a
- * barra superior ganha o botão de exportação na 1E; até lá as três são espaço reservado,
- * presentes para que as proporções do editor sejam as de verdade desde já.
+ * A lista de slides e o inspector chegam nas próximas tarefas da 1D e a barra superior
+ * ganha o botão de exportação na 1E; até lá são espaço reservado, presentes para que as
+ * proporções do editor sejam as de verdade desde já.
  *
- * O deck semente é criado uma vez, dentro do componente: `crypto.randomUUID()` avaliado
- * em módulo daria ids diferentes na pré-renderização estática e no cliente. Na 1D quem
- * guarda o deck passa a ser o store, e é esta linha que muda.
+ * Quem guarda o deck é o store. O shell não tem estado próprio: lê o que precisa e
+ * distribui.
  */
 
-import { useState } from "react";
-import { createSeedDeck } from "@/editor/seed";
 import { SlideCanvas } from "@/editor/slide-canvas";
+import { selectActiveIndex, selectActiveSlide, useEditor } from "@/editor/store";
 
 function Placeholder({ title, note }: { title: string; note: string }) {
   return (
@@ -26,8 +24,9 @@ function Placeholder({ title, note }: { title: string; note: string }) {
 }
 
 export function EditorShell() {
-  const [deck] = useState(createSeedDeck);
-  const active = deck.slides[0];
+  const deck = useEditor((state) => state.deck);
+  const active = useEditor(selectActiveSlide);
+  const index = useEditor(selectActiveIndex);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -48,7 +47,7 @@ export function EditorShell() {
           slide={active}
           deck={deck.meta}
           format={deck.format}
-          index={0}
+          index={index}
           total={deck.slides.length}
         />
 
