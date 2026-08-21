@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **1D concluída; a próxima
-> sessão é a 1E**
+> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída com a 1E; a
+> próxima sessão abre a Etapa 2**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. A Etapa 1 tem um nível a mais — **sub-etapa**, uma por
 > sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -37,7 +37,7 @@ mapeada para `azure-400`. Documentação em `docs/maiahub-logo.md`.
 
 ---
 
-## Etapa 1 — MVP, prova de conceito
+## Etapa 1 — MVP, prova de conceito ✅
 
 **Objetivo.** Provar o caminho inteiro de ponta a ponta: um deck existir, um template
 renderizar, o canvas exibir e sair um PDF. Cru é aceitável; incompleto no meio do
@@ -255,7 +255,7 @@ A conferência visual no navegador rendeu mais cinco ajustes, e todos entraram n
   sendo a 2.11, que depende do `migrateFields` da 2.10; desabilitar é o honesto, porque a
   2.8 e a 2.9 registram mais dois templates antes disso.
 
-### 1E — exportação · ~1,5 h
+### 1E — exportação ✅
 
 Instala `modern-screenshot` e `jspdf`.
 
@@ -268,6 +268,55 @@ Instala `modern-screenshot` e `jspdf`.
 
 Fecho da etapa: abrir o PDF fora da ferramenta e conferir as três páginas, a Oxanium e o
 grid. Se o título sair em Arial, o problema é inlining de fonte, não o alvo.
+
+Resolvido na sessão:
+
+- **`Frame` carrega PNG em data URL** — decisão 26. É o que o jsPDF consome direto em
+  `addImage` e o que um teste inspeciona sem canvas, que `happy-dom` não tem. Devolver o
+  `HTMLCanvasElement` deixaria o alvo trocar de codificação sem recapturar — o plano de
+  contingência da §13 do documento de contexto, se um deck com fotos estourar o tamanho —
+  ao preço de o `Frame` deixar de ser dado e passar a ser objeto de DOM vivo.
+- **O registry virou genérico**, em `src/lib/registry.ts` — decisão 27. A §10 já dizia que
+  o registry de alvos é idêntico ao dos templates; agora é literalmente o mesmo, e a regra
+  de HMR que a 1D descobriu vale para alvo sem ser escrita duas vezes.
+- **O palco expõe o nó pelo `SlideFrame`, não por seletor no DOM.** O quadro ganhou um
+  `canvasRef` opcional que o `SlideView` repassa. O `SlideFrame` já era o dono do nó
+  capturável pela §9, e caçar `data-testid` no documento faria a exportação depender de um
+  atributo de teste.
+- **O palco é imperativo — `withExportStage(deck, run)` —, não componente do shell.** O
+  fluxo é one-shot e nasce de um clique: montar, esperar `document.fonts.ready`, entregar,
+  desmontar. Em estado e efeito do shell, o mesmo fluxo ficaria espalhado por três lugares
+  sem ganhar nada. O parâmetro se chama `run` porque o eslint lê `use` como o hook homônimo
+  do React e reprova a chamada dentro do `try`.
+- **O palco fica `fixed` fora da tela, nunca `display: none`.** Sem caixa não há layout, e
+  sem layout não há o que capturar. Fora de fluxo, ele também não realimenta medida
+  nenhuma — a segunda condição da §13.
+- **O alvo não conhece o deck, então não nomeia o arquivo.** Ele devolve `carrossel.pdf` e
+  quem sabe o título é o `exportDeck`, que troca o nome pelo slug do deck. Foi o que
+  manteve a §10 intacta: o alvo recebe `RenderSource[]` e mais nada.
+- **Nem 1080 nem 1350 aparecem no alvo PDF.** A medida da página sai do primeiro `Frame`
+  dividido pela escala, que é o que a §12 pede — o dia em que um deck 1:1 existir, o alvo
+  não muda.
+- **O teste do shell deixou de clicar por posição.** O botão de exportação entrou na barra
+  superior e empurrou o índice do segundo slide; agora a busca é pelo número do slide, que
+  o próximo controle da barra não quebra.
+
+A conferência do PDF aprovou tudo menos a grade, e o conserto rendeu a mudança visual da
+sub-etapa:
+
+- **A grade de fundo virou elemento** — decisão 28, e a §4.3 do design system reescrita.
+  O que o arquivo mostrava era um módulo desenhado no canto e o resto da página chapado de
+  `ink-800`: gradiente não sobrevive à rasterização. Virou um `<svg>` com linhas de
+  verdade, desenhado por `src/render/slide-grid.tsx`.
+- **O módulo passou de 60px fixos para o divisor comum do formato mais próximo de 54px.**
+  Em 1080×1350 são 54 — 20 por 25 quadrados inteiros — e a moldura fecha nos quatro lados.
+  Some a assimetria que o ladrilho tinha e que ninguém tinha reparado: linha colada no topo
+  e na esquerda, nenhuma na direita, e a faixa de baixo cortada ao meio. O `--slide-grid-size`
+  saiu do `@theme`; a espessura e a compensação continuam onde estavam, no CSS.
+- **O que o PDF já provava antes do conserto**, medido no bitmap e não a olho: três
+  páginas, 1080×1350 pt, bitmap 2160×2700 a 144 ppi, Oxanium inlinada e nítida a 2×,
+  espessura de linha de 2px de spec e módulo de 60px corretos. O único defeito era a
+  repetição — e os três sintomas relatados eram esse um.
 
 ---
 
@@ -357,9 +406,12 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 ## A resolver por experimento
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
-contexto, decisões 13 a 18. Sobrou **um** ponto, que não se resolve no papel — precisa dos
-três lados renderizados e comparados. Ele não bloqueia o início da Etapa 1: aparece só na
-tarefa 2.4b.
+contexto, decisões 13 a 18. Sobraram **dois** pontos abertos: o recorte da constelação, que
+aparece só na tarefa 2.4b, e o foco e raio dos controles de formulário, do experimento 3.
+Nenhum dos dois bloqueia nada.
+
+O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
+lado a lado e comparando o resultado — de preferência medido, como no experimento 4.
 
 ### ~~Experimento 1 — a peça de logo do rodapé~~ · resolvido
 
@@ -385,6 +437,28 @@ A §10.5 do design system diz "5 pontos mais um contador `03 / 12`" e não diz q
   perde a de contagem, que o contador ao lado já cobre.
 
 Montar as três com um deck de 12 slides e escolher.
+
+### ~~Experimento 4 — como desenhar a grade que sobrevive à exportação~~ · resolvido
+
+Apareceu na 1E, na conferência do PDF: a grade saía uma vez e o resto da página vinha
+chapado. Quatro implementações montadas numa rota descartável e **medidas no arquivo**,
+não julgadas a olho:
+
+| Variante | Campo | Verticais | Espessura | Espaçamento |
+|---|---|---|---|---|
+| `linear-gradient` + `background-size` | ❌ `#1e293b` | 0 | — | — |
+| `repeating-linear-gradient` | ❌ `#1e293b` | 0 | — | — |
+| `<svg>` + `<path>` | ✅ `#020617` | 18 | 4px (2px de spec) | 120px (60px) |
+| `<svg>` + `<pattern>` | ✅ `#020617` | 18 | 2px — metade | 120px |
+
+O problema é o **gradiente**, não o ladrilho: o repetente falha igual. O `<pattern>` sai
+com metade da espessura porque o traço na borda do ladrilho é recortado, e no visualizador
+umas linhas caem em pixel inteiro e outras não — daí o efeito irregular.
+
+Uma segunda rodada comparou quatro tratamentos de borda sobre o `<path>` vencedor, e a
+escolha foi a moldura fechada nos quatro lados com módulo de 54px, sem nenhum quadrado
+cortado. Registrado na decisão 28 do documento de contexto, na §4.3 do design system e na
+armadilha da §13.
 
 ### Experimento 3 — foco e raio dos controles de formulário · a agendar
 
