@@ -298,6 +298,17 @@ renderiza com `k = 1` e recebe os valores de spec sem saber que a compensação 
 É a única divergência deliberada entre preview e exportação, e ela existe para preservar
 a aparência, não para quebrá-la.
 
+O wrapper é o `SlideFrame` (`src/render/slide-frame.tsx`), e ele é o **único** dono de
+`--slide-scale`: é o único ponto do sistema que sabe em que tamanho o slide está sendo
+exibido. São duas camadas — um quadro externo já escalado, que ocupa espaço no editor, e
+a raiz do slide em pixels reais, com o `transform`. A variável fica na raiz do slide,
+porque quem desenha o grid está lá dentro e precisa enxergá-la.
+
+**A moldura do preview mora na camada de fora.** A borda de 1px que contorna a página
+fica no quadro externo, nunca na raiz. Dentro, ela encolheria junto com a escala e
+entraria no nó capturado pela exportação, que é exatamente o que esta seção diz não pode
+acontecer. Ver decisão 23.
+
 ### Guard de transbordo
 
 Slide tem altura fixa, então texto longo transborda — é a falha número um deste tipo
@@ -405,7 +416,7 @@ conflito de peer. O que o plugin dá é Fast Refresh e ganchos de Babel, nenhum 
 usado numa rodada de teste: o JSX é transformado direto pelo `"jsx": "react-jsx"` do
 `tsconfig.json`.
 
-### Três armadilhas conhecidas
+### Armadilhas conhecidas
 
 **OKLCH quebra a serialização.** As bibliotecas de captura passam por
 `foreignObject`/canvas e o suporte a `oklch()` é irregular. Os tokens da subárvore
@@ -426,6 +437,20 @@ para nada — silenciosamente, sem erro de build. Por isso as rampas de cor e o 
 superfície carrossel são declarados como `@theme static`. Só o mapeamento semântico do
 shadcn, em `@theme inline`, pode ser podado sem prejuízo.
 
+**Elemento medido não pode ser dimensionado pelo que ele contém.** O `ResizeObserver` do
+canvas mede a área central para calcular a escala, e a escala desenha o quadro dentro
+dela. Se a altura da área depender do conteúdo — basta um `min-height` no lugar de uma
+altura no caminho até o `body` —, cada medida realimenta uma escala maior e o slide cresce
+sozinho até o teto do auto-fit. Aconteceu na 1C, e o sintoma engana: parece animação, e é
+laço.
+
+São duas condições, e vale manter as duas. **O que se mede fica preso a algo de fora** —
+o shell tem altura de viewport, não altura mínima. **O que o resultado desenha fica fora
+do fluxo** — o quadro mora num palco `absolute` dentro da área, e conteúdo posicionado em
+absoluto não contribui para o tamanho do pai. A segunda sozinha já fecha a porta, e é a
+que vai valer também para o palco de exportação da §10, que monta o deck inteiro fora da
+tela.
+
 ## 14. Interface
 
 Três colunas, sem invenção:
@@ -437,6 +462,11 @@ Três colunas, sem invenção:
   apresentação abaixo, contadores de caractere.
 - **Topo** — nome do deck, ações de deck (novo, importar, exportar JSON) e o botão de
   exportação com escolha de alvo.
+
+As quatro áreas nascem juntas, na 1C, e se preenchem por etapa: o centro já funciona, o
+topo tem só o nome do deck, e as duas laterais são espaço reservado até a 1D. Criar o
+quadrilátero de uma vez custa nada e faz o editor ter, desde o primeiro dia, as
+proporções que vai ter no fim.
 
 ## 15. Roadmap
 
@@ -481,3 +511,4 @@ sem retoque em nenhum outro programa.
 | 20 | Palco de exportação oculto, montado a 1:1 | Zerar a escala do canvas visível antes de capturar | O exportador precisa do deck inteiro, não do slide ativo — e capturar o nó do preview arrastaria a compensação de `--slide-scale` para dentro do arquivo, que é justamente o que a §9 diz não pode acontecer |
 | 21 | Página do PDF em pt, 1080×1350 | Unidade `px` casada com a medida do canvas | Confirma a §10. O bitmap é 2160×2700 nos dois casos, então a diferença é só o número que o visualizador mostra; e a unidade `px` do jsPDF depende de uma conversão de 96 dpi que não vale a pena carregar |
 | 22 | Escala do canvas por auto-fit na fatia vertical | Seletor de zoom desde a primeira etapa | O que a etapa precisa provar é que `--slide-scale` acompanha o `transform`; um seletor entra quando houver barra onde colocá-lo |
+| 23 | Área de trabalho em `ink-900` **e** moldura de 1px `ink-700` no quadro externo, fora do `transform` | Só a inversão de superfície, sem borda, como a §2.2 previa; ou só a borda, com a área no mesmo `ink-950` do slide | A primeira versão da 1C pôs slide e área no mesmo tom e separou por hairline `ink-800`: reprovou olhando, não dava para saber onde termina a página. A inversão da §2.2 do design system resolve o grosso, e a borda dá o contorno que faltava — em `ink-700`, porque o 800 cai entre os dois tons e some. Na raiz do slide a borda encolheria com a escala e viajaria dentro do nó capturado, contra a §9; no quadro externo ela vale 1px em qualquer `k` e a exportação nunca a vê |
