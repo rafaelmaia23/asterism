@@ -102,4 +102,34 @@ describe("SlideFrame", () => {
 
     expect(canvas().textContent).toBe("conteúdo");
   });
+
+  test("fundo grid desenha a grade da §4.3", () => {
+    render(
+      <SlideFrame format={FORMAT} background="grid">
+        <p>conteúdo</p>
+      </SlideFrame>,
+    );
+
+    expect(canvas().className).toContain("slide-grid");
+  });
+
+  test("fundo plain não desenha grade nenhuma", () => {
+    render(
+      <SlideFrame format={FORMAT} background="plain">
+        <p>conteúdo</p>
+      </SlideFrame>,
+    );
+
+    expect(canvas().className).not.toContain("slide-grid");
+  });
+
+  test("sem fundo declarado o quadro fica liso", () => {
+    render(
+      <SlideFrame format={FORMAT}>
+        <p>conteúdo</p>
+      </SlideFrame>,
+    );
+
+    expect(canvas().className).not.toContain("slide-grid");
+  });
 });

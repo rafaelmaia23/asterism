@@ -22,15 +22,27 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import type { Deck } from "@/deck/types";
+import type { TemplateBackground } from "@/templates/types";
 
 export type SlideFrameProps = {
   format: Deck["format"];
   /** O mesmo `k` que vai ao `transform`. 1 é o tamanho real, o caso da exportação. */
   scale?: number;
+  /**
+   * Vem de `meta.background` do template, e o quadro não decide nada além de aplicar:
+   * quais templates têm grade é assunto da §4.3 do design system, declarado no
+   * descritor de cada um.
+   */
+  background?: TemplateBackground;
   children: ReactNode;
 };
 
-export function SlideFrame({ format, scale = 1, children }: SlideFrameProps) {
+export function SlideFrame({
+  format,
+  scale = 1,
+  background = "plain",
+  children,
+}: SlideFrameProps) {
   return (
     <div
       data-testid="slide-frame"
@@ -43,7 +55,12 @@ export function SlideFrame({ format, scale = 1, children }: SlideFrameProps) {
         data-testid="slide-canvas"
         // `slide-canvas` é o nome que a §13 do documento de contexto dá à subárvore
         // que precisa de cor em hex sRGB — a que a rasterização vai serializar.
-        className="slide-canvas relative overflow-hidden bg-slide-bg"
+        className={[
+          "slide-canvas relative overflow-hidden bg-slide-bg",
+          background === "grid" ? "slide-grid" : "",
+        ]
+          .join(" ")
+          .trim()}
         style={
           {
             "--slide-w": `${format.w}px`,
