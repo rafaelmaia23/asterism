@@ -7,8 +7,17 @@ describe("biblioteca de templates", () => {
     expect(get("cover-statement").label).toBe("Capa — declaração");
   });
 
-  test("a Etapa 1 tem um template só", () => {
-    expect(list().map((def) => def.id)).toEqual(["cover-statement"]);
+  test("o text-bullets está registrado e sai por id", () => {
+    expect(get("text-bullets").label).toBe("Tópicos");
+  });
+
+  /**
+   * A ordem de registro é a ordem em que a biblioteca se apresenta — no seletor de
+   * layout, e em qualquer lista futura. A capa vem primeiro porque é por onde um
+   * carrossel começa.
+   */
+  test("a 2B leva a biblioteca a dois templates, na ordem de registro", () => {
+    expect(list().map((def) => def.id)).toEqual(["cover-statement", "text-bullets"]);
   });
 
   /**
