@@ -4,7 +4,11 @@ import type { MaiahubLogoProps } from "./logo-shared";
 /**
  * Versão simplificada para 16–24px: sem o vértice central, traço mais grosso,
  * pontos proporcionalmente maiores. Mesma lógica ótica do favicon.
- * Acima de 24px use MaiahubMark.
+ *
+ * É a única peça de marca que o asterism carrega — as outras quatro saíram na 2.4a, sem
+ * uso. O rodapé do slide a usa a 32px, acima da faixa: desvio consciente da decisão 18 da
+ * §16 do documento de contexto, porque sobre `ink-950` num slide que depois é reduzido a
+ * peça de traço grosso é a que sobrevive. Ver `docs/maiahub-logo.md`.
  */
 export function MaiahubGlyph({ className, mono = false, ...props }: MaiahubLogoProps) {
   return (
