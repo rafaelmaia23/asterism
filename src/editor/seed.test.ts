@@ -4,26 +4,63 @@ import { parseInline } from "@/markup/parse";
 import { get } from "@/templates";
 
 describe("createSeedDeck", () => {
-  test("nasce com três slides de capa", () => {
+  test("nasce com três capas e dois text-bullets, nessa ordem", () => {
     const deck = createSeedDeck();
 
-    expect(deck.slides).toHaveLength(3);
-    expect(deck.slides.every((slide) => slide.template === "cover-statement")).toBe(true);
+    expect(deck.slides.map((slide) => slide.template)).toEqual([
+      "cover-statement",
+      "cover-statement",
+      "cover-statement",
+      "text-bullets",
+      "text-bullets",
+    ]);
   });
 
   test("as opções vêm dos defaults do registry, não de cópia à mão", () => {
-    const deck = createSeedDeck();
-    const { defaults } = get("cover-statement");
+    for (const slide of createSeedDeck().slides) {
+      const { defaults } = get(slide.template);
 
-    for (const slide of deck.slides) {
-      expect(slide.options).toEqual(defaults.options);
+      // O `anchor` do segundo `text-bullets` é o único desvio, e é deliberado — ver o
+      // teste abaixo. Tudo o mais tem de bater com o que o template diz, chave por chave:
+      // o dia em que um template ganhar opção, a semente a ganha junto.
+      expect(Object.keys(slide.options)).toEqual(Object.keys(defaults.options));
+
+      for (const [key, value] of Object.entries(defaults.options)) {
+        if (key !== "anchor") {
+          expect(slide.options[key]).toEqual(value);
+        }
+      }
+    }
+  });
+
+  /**
+   * Enquanto o select de `anchor` for linha inerte no inspector — ele chega na 2C —, a
+   * semente é o único lugar que consegue pôr os dois valores na tela. Sem isto, o
+   * critério de pronto da 2.8 não tem como ser conferido olhando.
+   */
+  test("os dois text-bullets trazem âncoras diferentes, para comparar olhando", () => {
+    const anchors = createSeedDeck()
+      .slides.filter((slide) => slide.template === "text-bullets")
+      .map((slide) => slide.options.anchor);
+
+    expect(anchors).toEqual(["center", "top"]);
+  });
+
+  test("os itens ficam dentro do teto de quatro da §11.2 — três é o alvo", () => {
+    const lists = createSeedDeck()
+      .slides.filter((slide) => slide.template === "text-bullets")
+      .map((slide) => slide.fields.items as string[]);
+
+    expect(lists.map((items) => items.length)).toEqual([3, 4]);
+    for (const items of lists) {
+      expect(items.every((item) => item.length <= 80)).toBe(true);
     }
   });
 
   test("cada slide tem título próprio — é o que torna a lista da 1D verificável", () => {
     const headings = createSeedDeck().slides.map((slide) => slide.fields.heading);
 
-    expect(new Set(headings).size).toBe(3);
+    expect(new Set(headings).size).toBe(5);
   });
 
   test("os títulos vão de uma linha a quatro, para conferir a âncora de base", () => {
@@ -41,8 +78,11 @@ describe("createSeedDeck", () => {
     expect(longo).toBeLessThanOrEqual(70);
   });
 
+  /** Só as capas têm kicker: a §11.2 não dá o campo ao `text-bullets`. */
   test("o kicker numera a posição do slide", () => {
-    const kickers = createSeedDeck().slides.map((slide) => slide.fields.kicker);
+    const kickers = createSeedDeck()
+      .slides.filter((slide) => slide.template === "cover-statement")
+      .map((slide) => slide.fields.kicker);
 
     expect(kickers).toEqual(["log/ · 01", "log/ · 02", "log/ · 03"]);
   });
