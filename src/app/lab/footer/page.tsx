@@ -20,7 +20,7 @@
 
 import { SlideFrame } from "@/render/slide-frame";
 import { LabGlyph, PUBLISHED, blended, effectiveStroke } from "@/app/lab/footer/lab-glyph";
-import { FOOTERS, GLYPHS, SIZES } from "@/app/lab/footer/variants";
+import { FOOTERS, FullFooter, GLYPHS, SIZES } from "@/app/lab/footer/variants";
 
 const FORMAT = { w: 1080, h: 1350 };
 
@@ -46,6 +46,23 @@ function SlideBody() {
             </li>
           ))}
         </ul>
+      </div>
+    </>
+  );
+}
+
+/** A capa, para a seção 6: é o slide que nunca teve identidade, e agora pode ter. */
+function CoverBody() {
+  return (
+    <>
+      <div className="absolute top-[80px] left-[var(--slide-pad)] flex h-[68px] items-start">
+        <span className="slide-meta text-azure-radiance-400">log/ · 01</span>
+      </div>
+      <div className="absolute top-[300px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[860px] items-end">
+        <p className="slide-display text-ink-100">
+          O cache <span className="text-azure-radiance-400">mentiu</span> sobre o que ele
+          guardava
+        </p>
       </div>
     </>
   );
@@ -237,6 +254,54 @@ export default function FooterLab() {
               </div>
             </div>
           ))}
+        </div>
+      </Section>
+
+      <Section
+        n={6}
+        title="Os dois slides completos, com tudo ligado"
+        lead="A peça f dentro da placa da candidata 6, mais a régua, o handle, a constelação e
+        o chevron — as cinco partes acesas ao mesmo tempo, numa capa e num slide de miolo.
+        É o teto do que o rodapé pode mostrar; qualquer combinação real vai ser mais quieta
+        que esta."
+      >
+        <div className="flex flex-wrap gap-8">
+          {[
+            { id: "capa", title: "cover-statement", body: <CoverBody /> },
+            { id: "miolo", title: "text-bullets", body: <SlideBody /> },
+          ].map(({ id, title, body }) => (
+            <div key={id} className="flex flex-col gap-3">
+              <span className="text-xs text-ink-400">{title}</span>
+              <SlideFrame format={FORMAT} scale={0.5}>
+                {body}
+                <FullFooter handle="@rafael" index={3} total={5} />
+              </SlideFrame>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <span className="text-xs text-ink-500">
+            Os mesmos dois na escala do editor, k = 0,28 — e ao lado, o que acontece ao
+            desligar peça por peça. A constelação e o handle não se mexem em nenhum dos
+            casos: a placa cresce para fora da faixa, e a régua tem posição própria.
+          </span>
+          <div className="flex flex-wrap gap-6">
+            {[
+              { note: "tudo ligado", props: {} },
+              { note: "sem placa", props: { showLogoPlate: false } },
+              { note: "sem régua", props: { showRule: false } },
+              { note: "só constelação", props: { showRule: false, showLogo: false, showHandle: false, showChevron: false } },
+            ].map(({ note, props }) => (
+              <div key={note} className="flex flex-col gap-2">
+                <SlideFrame format={FORMAT} scale={0.28}>
+                  <SlideBody />
+                  <FullFooter handle="@rafael" index={3} total={5} {...props} />
+                </SlideFrame>
+                <span className="text-xs text-ink-500">{note}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </Section>
     </main>

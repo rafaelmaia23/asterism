@@ -57,6 +57,80 @@ export const SIZES = [32, 36, 40, 44, 48].map((size) => ({
 /** A peça corrigida que a maioria das candidatas de rodapé usa como base. */
 const FIXED: GlyphSpec = { ...PUBLISHED, opacity: 1, stroke: 2.25 };
 
+/**
+ * A escolhida na seção 2 — a variante **f**: traço 2.25 em opacidade cheia, tinta
+ * `ink-200` e estrela 4.0. É ela que a seção 6 usa dentro da placa da candidata 6.
+ */
+export const CHOSEN: GlyphSpec = {
+  ...FIXED,
+  ink: "#e2e8f0",
+  star: 4,
+};
+
+/**
+ * O rodapé com **todas** as partes independentes, que é o modelo que a seção 6 põe à
+ * prova: régua, logo, fundo da logo, handle e chevron, cada um com a própria chave.
+ *
+ * A propriedade que faz isso ser "bem controlável" e não só "muitas opções": **ligar ou
+ * desligar qualquer peça não move as outras**. A placa é um quadrado de 56px com margem
+ * vertical negativa, de modo que ela cresce para fora de uma faixa que continua tendo
+ * 32px — a constelação e o handle ficam na mesma linha nos dois estados. A régua tem
+ * posição própria no slide, medida da base, e não do topo da faixa.
+ */
+export function FullFooter({
+  handle,
+  index,
+  total,
+  showRule = true,
+  showLogo = true,
+  showLogoPlate = true,
+  showHandle = true,
+  showChevron = true,
+}: {
+  handle: string;
+  index: number;
+  total: number;
+  showRule?: boolean;
+  showLogo?: boolean;
+  showLogoPlate?: boolean;
+  showHandle?: boolean;
+  showChevron?: boolean;
+}) {
+  const glyph = <LabGlyph spec={CHOSEN} size={32} />;
+
+  return (
+    <>
+      {showRule && (
+        <div
+          className="absolute right-[var(--slide-pad)] bottom-[calc(var(--slide-pad)*2)] left-[var(--slide-pad)] h-px bg-ink-800"
+          aria-hidden
+        />
+      )}
+
+      <div className="absolute right-[var(--slide-pad)] bottom-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[32px] items-center justify-between">
+        <div className="flex items-center gap-[20px]">
+          {showLogo &&
+            (showLogoPlate ? (
+              // `-my-[12px]` tira a placa do cálculo de altura da faixa: ela cresce 12px
+              // para cima e 12px para baixo sem empurrar nada.
+              <span className="-my-[12px] flex size-[56px] items-center justify-center rounded-[var(--slide-radius)] border border-ink-700 bg-slide-raised">
+                {glyph}
+              </span>
+            ) : (
+              glyph
+            ))}
+          {showHandle && <Handle>{handle}</Handle>}
+        </div>
+
+        <div className="flex items-center gap-[20px]">
+          <Constellation index={index} total={total} />
+          {showChevron && index < total - 1 && <Chevron />}
+        </div>
+      </div>
+    </>
+  );
+}
+
 type FooterBand = {
   id: string;
   title: string;
@@ -95,8 +169,14 @@ function Band({
   );
 }
 
-function Handle({ className = "text-ink-400" }: { className?: string }) {
-  return <span className={`slide-meta ${className}`}>@rafael</span>;
+function Handle({
+  className = "text-ink-400",
+  children = "@rafael",
+}: {
+  className?: string;
+  children?: string;
+}) {
+  return <span className={`slide-meta ${className}`}>{children}</span>;
 }
 
 export const FOOTERS: FooterBand[] = [
