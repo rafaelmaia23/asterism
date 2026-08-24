@@ -4,10 +4,11 @@ import { textBullets } from "@/templates/text-bullets";
 import type { DeckMeta } from "@/deck/types";
 
 const deck: DeckMeta = { handle: "@rafael", pillar: "log" };
+const { defaults } = textBullets;
 
 function renderBullets(overrides: Partial<typeof textBullets.defaults> = {}) {
   const { Component } = textBullets;
-  const { fields, options } = { ...textBullets.defaults, ...overrides };
+  const { fields, options } = { ...defaults, ...overrides };
 
   return render(
     <Component fields={fields} options={options} deck={deck} index={3} total={5} />,
@@ -63,23 +64,37 @@ describe("text-bullets", () => {
   });
 
   test("anchor center centraliza o bloco; top encosta no topo da região", () => {
-    const { unmount } = renderBullets({ options: { showGrid: false, anchor: "center" } });
+    const { unmount } = renderBullets({
+      options: { ...defaults.options, anchor: "center" },
+    });
 
     expect(screen.getByTestId("items-region").className).toContain("justify-center");
     unmount();
 
-    renderBullets({ options: { showGrid: false, anchor: "top" } });
+    renderBullets({ options: { ...defaults.options, anchor: "top" } });
 
     expect(screen.getByTestId("items-region").className).toContain("justify-start");
   });
 
-  /** O oposto da asserção da capa: aqui o rodapé de identidade existe. */
-  test("traz o rodapé completo — glyph, handle e constelação", () => {
+  /** O oposto do padrão da capa: o miolo do carrossel nasce assinado. */
+  test("nasce com o rodapé completo — glyph, handle e constelação", () => {
     renderBullets();
 
     expect(screen.getByRole("img", { name: "maiahub" })).toBeDefined();
     expect(screen.getByText("@rafael")).toBeDefined();
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(5);
+  });
+
+  /** E nasce sem chevron: a partir do slide 2 o gesto já foi executado. */
+  test("nasce sem chevron, e o liga pela opção quando não é o último slide", () => {
+    const { unmount } = renderBullets();
+
+    expect(screen.queryByTestId("chevron")).toBeNull();
+    unmount();
+
+    renderBullets({ options: { ...defaults.options, showChevron: true } });
+
+    expect(screen.queryByTestId("chevron")).not.toBeNull();
   });
 
   test("o descritor declara fundo plain e grupo content", () => {

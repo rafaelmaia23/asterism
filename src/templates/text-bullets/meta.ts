@@ -27,8 +27,15 @@ export const textBulletsMeta: {
       heading: "Três coisas que eu mudaria",
       items: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
     },
-    // `showGrid` nasce igual ao `background` acima: o descritor dá o padrão, o slide
-    // decide daí em diante.
-    options: { showGrid: false, anchor: "center" },
+    // O descritor dá o padrão e o slide decide daí em diante — decisão 25, agora valendo
+    // para as quatro. Nasce assinado, que é o rodapé que a §11.0 dá ao miolo do
+    // carrossel, e sem chevron: a partir do slide 2 o gesto de deslizar já foi executado.
+    options: {
+      showGrid: false,
+      showLogo: true,
+      showHandle: true,
+      showChevron: false,
+      anchor: "center",
+    },
   },
 };

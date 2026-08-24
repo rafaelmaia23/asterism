@@ -72,7 +72,14 @@ function TextBullets({
         </ul>
       </div>
 
-      <Footer handle={deck.handle} index={index} total={total} />
+      <Footer
+        handle={deck.handle}
+        index={index}
+        total={total}
+        showLogo={settings.showLogo}
+        showHandle={settings.showHandle}
+        showChevron={settings.showChevron}
+      />
     </div>
   );
 }

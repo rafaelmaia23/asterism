@@ -4,10 +4,11 @@ import { coverStatement } from "@/templates/cover-statement";
 import type { DeckMeta } from "@/deck/types";
 
 const deck: DeckMeta = { handle: "@rafael", pillar: "log" };
+const { defaults } = coverStatement;
 
 function renderCover(overrides: Partial<typeof coverStatement.defaults> = {}) {
   const { Component } = coverStatement;
-  const { fields, options } = { ...coverStatement.defaults, ...overrides };
+  const { fields, options } = { ...defaults, ...overrides };
 
   return render(
     <Component fields={fields} options={options} deck={deck} index={0} total={8} />,
@@ -31,13 +32,13 @@ describe("cover-statement", () => {
   });
 
   test("showChevron ligado desenha a afordância de deslize", () => {
-    renderCover({ options: { showGrid: true, showChevron: true } });
+    renderCover({ options: { ...defaults.options, showChevron: true } });
 
     expect(screen.queryByTestId("chevron")).not.toBeNull();
   });
 
   test("showChevron desligado não desenha nada no lugar dela", () => {
-    renderCover({ options: { showGrid: true, showChevron: false } });
+    renderCover({ options: { ...defaults.options, showChevron: false } });
 
     expect(screen.queryByTestId("chevron")).toBeNull();
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(8);
@@ -65,10 +66,25 @@ describe("cover-statement", () => {
     expect(container.querySelector("p > span")).toBeNull();
   });
 
-  test("a capa não traz handle nem rodapé de identidade", () => {
+  /**
+   * Desde a 2B isto é **padrão**, não regra: as três peças da faixa são opção do slide, e
+   * a capa é o único template que nasce com a identidade desligada — a §11.1 diz que nada
+   * compete com o título, e a recomendação virou o valor com que o slide nasce.
+   */
+  test("a capa nasce sem logo nem handle", () => {
     renderCover();
 
     expect(screen.queryByText(deck.handle)).toBeNull();
+    expect(screen.queryByRole("img", { name: "maiahub" })).toBeNull();
+  });
+
+  test("mas a identidade liga pela opção, como em qualquer outro slide", () => {
+    renderCover({
+      options: { ...defaults.options, showLogo: true, showHandle: true },
+    });
+
+    expect(screen.getByText(deck.handle)).toBeDefined();
+    expect(screen.getByRole("img", { name: "maiahub" })).toBeDefined();
   });
 
   test("o descritor declara fundo grid e grupo cover", () => {

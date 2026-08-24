@@ -1,14 +1,16 @@
 /**
  * `cover-statement` — a capa, §11.1 dos templates.
  *
- * Único slide sem rodapé de identidade: nem logo nem handle, só constelação e chevron.
- * O título é a única coisa que importa e nada compete com ele.
+ * O slide que **nasce** sem identidade no rodapé: nem logo nem handle, só constelação e
+ * chevron. O título é a única coisa que importa e nada compete com ele. Desde a 2B isso é
+ * padrão e não regra — as três peças da faixa são opção do slide, e a capa é apenas o
+ * único template que nasce com duas delas desligadas.
  *
  * As três regiões, em faixa vertical sobre o canvas:
  *
  *   Kicker   80 – 148    `slide-meta`, azure-400
  *   Título   300 – 1160  `slide-display`, ancorado à BASE da região
- *   Rodapé   1240 – 1270 constelação + chevron, à direita
+ *   Rodapé   1238 – 1270 o `Footer` compartilhado, que se posiciona sozinho
  *
  * O título passa pelo `<Inline>`, e é o único campo do template que aceita marcação — o
  * kicker é literal. Na prática só `[[destaque]]` se usa aqui: `**forte**` não tem efeito
@@ -30,14 +32,14 @@ import {
   type CoverOptions,
 } from "@/templates/cover-statement/fields";
 import { coverStatementMeta } from "@/templates/cover-statement/meta";
-import { Chevron } from "@/templates/shared/chevron";
-import { Constellation } from "@/templates/shared/constellation";
+import { Footer } from "@/templates/shared/footer";
 import { Kicker } from "@/templates/shared/kicker";
 import type { TemplateComponentProps, TemplateDef } from "@/templates/types";
 
 function CoverStatement({
   fields: content,
   options: settings,
+  deck,
   index,
   total,
 }: TemplateComponentProps<CoverFields, CoverOptions>) {
@@ -53,10 +55,14 @@ function CoverStatement({
         </p>
       </div>
 
-      <div className="absolute top-[1240px] right-[var(--slide-pad)] flex h-[30px] items-center gap-[20px]">
-        <Constellation index={index} total={total} />
-        {settings.showChevron && <Chevron />}
-      </div>
+      <Footer
+        handle={deck.handle}
+        index={index}
+        total={total}
+        showLogo={settings.showLogo}
+        showHandle={settings.showHandle}
+        showChevron={settings.showChevron}
+      />
     </div>
   );
 }

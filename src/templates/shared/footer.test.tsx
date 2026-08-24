@@ -3,22 +3,78 @@ import { render, screen } from "@testing-library/react";
 import { Footer } from "@/templates/shared/footer";
 
 /**
- * Smoke test. As medidas da §10.5 — glyph a 32px, gap 20px, faixa a 80px do fundo — não
- * são verificáveis aqui: `happy-dom` não faz layout e mediria zero contra zero. Conforme
- * o CLAUDE.md, layout se verifica olhando. O que este arquivo guarda é a composição: as
- * três peças presentes, e a constelação recebendo o par índice/total que lhe foi dado.
+ * O que se testa aqui é **lógica de faixa**: quais peças aparecem sob quais opções, e a
+ * supressão do chevron no último slide. As medidas da §10.5 — glyph a 32px, gap 20px,
+ * faixa a 80px do fundo — não são verificáveis: `happy-dom` não faz layout e mediria zero
+ * contra zero. Conforme o CLAUDE.md, layout se verifica olhando.
  */
+
+const all = { showLogo: true, showHandle: true, showChevron: true };
+
+function renderFooter(props: Partial<Parameters<typeof Footer>[0]> = {}) {
+  return render(
+    <Footer handle="@rafael" index={0} total={5} {...all} {...props} />,
+  );
+}
+
 describe("Footer", () => {
-  test("traz a glyph, o handle e a constelação", () => {
-    render(<Footer handle="@rafael" index={2} total={5} />);
+  test("com tudo ligado, traz glyph, handle, constelação e chevron", () => {
+    renderFooter();
 
     expect(screen.getByRole("img", { name: "maiahub" })).toBeDefined();
     expect(screen.getByText("@rafael")).toBeDefined();
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(5);
+    expect(screen.queryByTestId("chevron")).not.toBeNull();
+  });
+
+  /** A constelação é a única peça sem opção: progresso é o que a faixa é. */
+  test("com tudo desligado, sobra a constelação", () => {
+    renderFooter({ showLogo: false, showHandle: false, showChevron: false });
+
+    expect(screen.queryByRole("img", { name: "maiahub" })).toBeNull();
+    expect(screen.queryByText("@rafael")).toBeNull();
+    expect(screen.queryByTestId("chevron")).toBeNull();
+    expect(screen.getAllByTestId("constellation-dot")).toHaveLength(5);
+  });
+
+  test("logo e handle são independentes — um não arrasta o outro", () => {
+    const { unmount } = renderFooter({ showLogo: true, showHandle: false });
+
+    expect(screen.getByRole("img", { name: "maiahub" })).toBeDefined();
+    expect(screen.queryByText("@rafael")).toBeNull();
+    unmount();
+
+    renderFooter({ showLogo: false, showHandle: true });
+
+    expect(screen.queryByRole("img", { name: "maiahub" })).toBeNull();
+    expect(screen.getByText("@rafael")).toBeDefined();
+  });
+
+  /**
+   * A regra mora aqui, e não nos templates: no último slide não há para onde deslizar, e
+   * a seta que convida ao próximo mentiria. O `Footer` já recebe `index` e `total` para a
+   * constelação, então a supressão sai de graça e é escrita uma vez só.
+   */
+  test("o chevron some no último slide, mesmo com a opção ligada", () => {
+    renderFooter({ index: 4, total: 5 });
+
+    expect(screen.queryByTestId("chevron")).toBeNull();
+  });
+
+  test("no penúltimo slide o chevron continua aparecendo", () => {
+    renderFooter({ index: 3, total: 5 });
+
+    expect(screen.queryByTestId("chevron")).not.toBeNull();
+  });
+
+  test("deck de um slide só é último e primeiro ao mesmo tempo", () => {
+    renderFooter({ index: 0, total: 1 });
+
+    expect(screen.queryByTestId("chevron")).toBeNull();
   });
 
   test("a constelação acende até o slide atual, inclusive", () => {
-    render(<Footer handle="@rafael" index={2} total={5} />);
+    renderFooter({ index: 2, total: 5 });
 
     const lit = screen
       .getAllByTestId("constellation-dot")
@@ -28,7 +84,7 @@ describe("Footer", () => {
   });
 
   test("o handle sai em slide-meta ink-400 — §10.5", () => {
-    render(<Footer handle="@rafael" index={0} total={3} />);
+    renderFooter();
 
     expect(screen.getByText("@rafael").className).toContain("slide-meta");
     expect(screen.getByText("@rafael").className).toContain("text-ink-400");

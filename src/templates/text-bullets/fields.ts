@@ -11,7 +11,7 @@
  */
 
 import { z } from "zod";
-import { showGridOption } from "@/templates/shared/options";
+import { sharedOptions } from "@/templates/shared/options";
 import type { Field } from "@/templates/types";
 
 /** Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates. */
@@ -35,9 +35,9 @@ export const fields: Field[] = [
   },
 ];
 
-/** A grade vem de `shared/options.ts`: é o mesmo campo em todo template. */
+/** As quatro primeiras vêm de `shared/options.ts`: são as mesmas em todo template. */
 export const options: Field[] = [
-  showGridOption,
+  ...sharedOptions,
   {
     key: "anchor",
     type: "select",
@@ -56,6 +56,9 @@ export const textBulletsSchema = z.object({
   }),
   options: z.object({
     showGrid: z.boolean(),
+    showLogo: z.boolean(),
+    showHandle: z.boolean(),
+    showChevron: z.boolean(),
     anchor: z.enum(["center", "top"]),
   }),
 });

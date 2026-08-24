@@ -26,8 +26,10 @@ export const coverStatementMeta: {
       kicker: "log/ · 01",
       heading: "Um título que declara algo em vez de prometer",
     },
-    // `showGrid` nasce igual ao `background` acima: o descritor dá o padrão, o slide
-    // decide daí em diante.
-    options: { showGrid: true, showChevron: true },
+    // O descritor dá o padrão e o slide decide daí em diante — decisão 25, agora valendo
+    // para as quatro. A capa nasce **sem identidade**: a §11.1 diz que nada compete com o
+    // título, e isso continua verdadeiro como recomendação, não mais como regra. Nasce
+    // com o chevron porque é onde o gesto de deslizar ainda não foi executado.
+    options: { showGrid: true, showLogo: false, showHandle: false, showChevron: true },
   },
 };
