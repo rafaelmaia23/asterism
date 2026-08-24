@@ -6,7 +6,7 @@ import { Constellation } from "@/templates/shared/constellation";
  * A faixa do rodapé — §10.5 do design system e §11.0 dos templates. **Todo template a
  * tem**, e o que varia é quais peças estão acesas:
  *
- *   régua      1px `ink-800`, a 160px da base, separando o conteúdo do rodapé
+ *   régua      1px `ink-600`, a 176px da base, separando o conteúdo do rodapé
  *   esquerda   glyph a 32px, com ou sem a placa atrás; handle em `slide-meta` `ink-400`
  *   direita    constelação de progresso, e o chevron depois dela com gap de 20px
  *
@@ -26,8 +26,24 @@ import { Constellation } from "@/templates/shared/constellation";
  *   base a `--slide-pad` do fundo. A placa é um quadrado de 56px com `-my-[12px]`, então
  *   avança 12px para cima e 12px para baixo sem entrar no cálculo de altura. Ligá-la e
  *   desligá-la não desloca o handle nem a constelação.
- * - **A régua se mede da base do slide**, não do topo da faixa: `--slide-pad * 2`, ou seja
- *   y = 1190 em 1350. Ancorada na faixa, ela pularia junto com a placa.
+ * - **A régua se mede da base do slide**, não do topo da faixa. Ancorada na faixa, ela
+ *   pularia junto com a placa.
+ *
+ * ## A régua não pode cair em cima da grade
+ *
+ * A primeira versão a pôs em `--slide-pad * 2` = y 1190, e ela **sumia do PDF quando a
+ * grade estava ligada**. Medido a 72 dpi: a grade desenha horizontais em `54k + 1` com
+ * traço de 2px, e em k = 22 isso ocupa exatamente 1189–1190. A régua era pintada dentro do
+ * traço, no mesmo `ink-800` — camuflada pixel a pixel, não perdida na rasterização.
+ *
+ * Duas correções, e as duas importam: a posição passou a ser a base da faixa mais a altura
+ * dela mais um `--slide-gap-block`, o que dá **y 1174**, 15px acima da linha da grade; e a
+ * cor passou a `ink-600`, dois degraus acima do `ink-800` da grade, escolhida no
+ * experimento 5 comparando nove candidatas em `ink`, `azure` e `sun` sobre páginas reais.
+ *
+ * A espessura é `slide-hairline` e não `h-px`: 1px fixo a k = 0,28 dá 0,28 pixel de
+ * dispositivo e o navegador não pinta. Ver a §4.3 do design system — a compensação da
+ * decisão 15 vale para qualquer hairline dentro do slide, não só para a grade.
  *
  * A placa é o único elemento do slide que entra na faixa de padding — o fundo dela chega a
  * 68px da borda, contra os 80px da grade da §4.2. Fica bem dentro da zona morta de 60px
@@ -79,7 +95,7 @@ export function Footer({
         <div
           data-testid="footer-rule"
           aria-hidden
-          className="absolute right-[var(--slide-pad)] bottom-[calc(var(--slide-pad)*2)] left-[var(--slide-pad)] h-px bg-ink-800"
+          className="slide-hairline absolute right-[var(--slide-pad)] bottom-[calc(var(--slide-pad)+32px+var(--slide-gap-block))] left-[var(--slide-pad)] bg-ink-600"
         />
       )}
 

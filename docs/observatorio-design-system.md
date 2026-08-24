@@ -378,6 +378,21 @@ nenhum.
 da propriedade nativa porque o caminho de exportação precisa do comportamento oposto: lá
 a escala é 1 e vale a espessura de spec, não uma hairline de dispositivo.
 
+**A regra vale para qualquer linha fina dentro do slide, não só para o grid.** A régua do
+rodapé da §10.5 foi a segunda, e reaprendeu a lição do jeito difícil: nascida com
+`height: 1px`, ela aparecia no PDF — que rasteriza a `k = 1` — e faltava no preview, onde
+1px × 0,28 dá 0,28 pixel de dispositivo e o navegador não pinta. O sintoma é traiçoeiro
+porque é o inverso do esperado: some no editor, sobrevive no arquivo.
+
+Toda hairline de 1px do canvas usa a utility `slide-hairline`, que é esta mesma conta com
+base 1px:
+
+```css
+@utility slide-hairline {
+  height: max(1px, calc(1px / var(--slide-scale, 1)));
+}
+```
+
 ---
 
 ## 5. Forma
@@ -615,7 +630,7 @@ Seis peças, e cinco delas são opção do slide:
 
 | Peça | Chave | Descrição |
 | --- | --- | --- |
-| Régua | `showRule` | 1px `ink-800`, a `--slide-pad × 2` da base (y 1190 em 1350), na largura útil |
+| Régua | `showRule` | 1px `ink-600`, a `--slide-pad + 32 + --slide-gap-block` da base (y 1174 em 1350), na largura útil |
 | Logo | `showLogo` | `MaiahubGlyph` a 32px em `ink-200` |
 | Fundo da logo | `showLogoPlate` | Quadrado de 56px, `slide-raised`, borda 1px `ink-700`, raio 12px |
 | Handle | `showHandle` | `slide-meta` `ink-400`, gap 20px após a logo |
@@ -630,6 +645,14 @@ forma da decisão 25, a mesma que a grade de fundo tem desde a 1E. Esta seção 
 custa duas escolhas de geometria: a faixa mantém 32px de altura e a placa da logo, que tem
 56px, cresce simetricamente para fora dela; e a régua se mede da base do slide, não do topo
 da faixa. Ancorada à faixa, ela pularia junto com a placa.
+
+**A régua não pode cair no módulo da grade.** A primeira versão a pôs em `--slide-pad × 2`
+= y 1190, e ela sumia do PDF com a grade ligada: a grade desenha horizontais em `54k + 1`
+com traço de 2px, e em k = 22 isso ocupa exatamente 1189–1190. A régua era pintada dentro
+do traço, no mesmo `ink-800` — camuflada, não perdida. Daí as duas correções: y 1174, 15px
+acima da linha da grade, e `ink-600`, dois degraus acima dela. A cor saiu do experimento 5,
+comparando nove candidatas em `ink`, `azure` e `sun` sobre páginas reais; o âmbar foi
+descartado porque a §2.5 o reserva a pontuação, e uma linha de 920px não é pontuação.
 
 A placa é o único elemento do slide que entra na faixa de padding — o fundo dela chega a
 68px da borda, contra os 80px da §4.2. Continua bem dentro da zona morta de 60px da §11.0

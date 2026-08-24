@@ -420,3 +420,18 @@
     calc(1px / var(--slide-scale, 1))
   );
 }
+
+/* A mesma compensação, para qualquer hairline de 1px dentro do slide — §4.3.
+
+   A régua do rodapé foi a segunda linha fina do sistema, e mostrou que a compensação da
+   decisão 15 não era um detalhe da grade: `height: 1px` a k = 0,28 dá 0,28 pixel de
+   dispositivo, e o navegador não pinta. O sintoma é traiçoeiro porque a exportação roda a
+   k = 1 — a linha aparece no PDF e falta no preview, que é o oposto do que se procura
+   quando algo some.
+
+   O `max()` faz a compensação entrar só quando ela é necessária, e por isso a espessura
+   exportada continua sendo a de spec. Mesma razão de morar numa utility e não no `:root`:
+   `var()` no valor de uma custom property resolve no elemento que a declara. */
+@utility slide-hairline {
+  height: max(1px, calc(1px / var(--slide-scale, 1)));
+}

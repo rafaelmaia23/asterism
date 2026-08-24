@@ -53,6 +53,20 @@ describe("Footer", () => {
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(5);
   });
 
+  /**
+   * A régua é a segunda hairline do sistema, e a primeira que não é a grade. `height: 1px`
+   * a k = 0,28 dá 0,28 pixel de dispositivo e o navegador não pinta — a linha aparece no
+   * PDF, que roda a k = 1, e falta no preview. A `slide-hairline` de `globals.css` é a
+   * mesma compensação da decisão 15, e a classe fica presa aqui porque é fácil trocá-la
+   * por um `h-px` sem perceber que o preview quebrou.
+   */
+  test("a régua compensa a escala em vez de fixar 1px", () => {
+    renderFooter();
+
+    expect(screen.getByTestId("footer-rule").className).toContain("slide-hairline");
+    expect(screen.getByTestId("footer-rule").className).not.toContain("h-px");
+  });
+
   test("a régua é independente do resto da faixa", () => {
     const { unmount } = renderFooter({ showRule: false });
 
