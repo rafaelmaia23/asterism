@@ -44,7 +44,9 @@ export const coverStatementSchema = z.object({
   }),
   options: z.object({
     showGrid: z.boolean(),
+    showRule: z.boolean(),
     showLogo: z.boolean(),
+    showLogoPlate: z.boolean(),
     showHandle: z.boolean(),
     showChevron: z.boolean(),
   }),

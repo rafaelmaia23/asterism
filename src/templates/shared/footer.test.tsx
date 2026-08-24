@@ -9,7 +9,13 @@ import { Footer } from "@/templates/shared/footer";
  * contra zero. Conforme o CLAUDE.md, layout se verifica olhando.
  */
 
-const all = { showLogo: true, showHandle: true, showChevron: true };
+const all = {
+  showRule: true,
+  showLogo: true,
+  showLogoPlate: true,
+  showHandle: true,
+  showChevron: true,
+};
 
 function renderFooter(props: Partial<Parameters<typeof Footer>[0]> = {}) {
   return render(
@@ -18,10 +24,12 @@ function renderFooter(props: Partial<Parameters<typeof Footer>[0]> = {}) {
 }
 
 describe("Footer", () => {
-  test("com tudo ligado, traz glyph, handle, constelação e chevron", () => {
+  test("com tudo ligado, traz régua, glyph na placa, handle, constelação e chevron", () => {
     renderFooter();
 
+    expect(screen.queryByTestId("footer-rule")).not.toBeNull();
     expect(screen.getByRole("img", { name: "maiahub" })).toBeDefined();
+    expect(screen.queryByTestId("logo-plate")).not.toBeNull();
     expect(screen.getByText("@rafael")).toBeDefined();
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(5);
     expect(screen.queryByTestId("chevron")).not.toBeNull();
@@ -29,12 +37,47 @@ describe("Footer", () => {
 
   /** A constelação é a única peça sem opção: progresso é o que a faixa é. */
   test("com tudo desligado, sobra a constelação", () => {
-    renderFooter({ showLogo: false, showHandle: false, showChevron: false });
+    renderFooter({
+      showRule: false,
+      showLogo: false,
+      showLogoPlate: false,
+      showHandle: false,
+      showChevron: false,
+    });
 
+    expect(screen.queryByTestId("footer-rule")).toBeNull();
     expect(screen.queryByRole("img", { name: "maiahub" })).toBeNull();
+    expect(screen.queryByTestId("logo-plate")).toBeNull();
     expect(screen.queryByText("@rafael")).toBeNull();
     expect(screen.queryByTestId("chevron")).toBeNull();
     expect(screen.getAllByTestId("constellation-dot")).toHaveLength(5);
+  });
+
+  test("a régua é independente do resto da faixa", () => {
+    const { unmount } = renderFooter({ showRule: false });
+
+    expect(screen.queryByTestId("footer-rule")).toBeNull();
+    expect(screen.getByRole("img", { name: "maiahub" })).toBeDefined();
+    unmount();
+
+    renderFooter({ showLogo: false, showHandle: false, showChevron: false });
+
+    expect(screen.queryByTestId("footer-rule")).not.toBeNull();
+  });
+
+  test("a placa desligada deixa a glyph solta, sem tirá-la", () => {
+    renderFooter({ showLogoPlate: false });
+
+    expect(screen.getByRole("img", { name: "maiahub" })).toBeDefined();
+    expect(screen.queryByTestId("logo-plate")).toBeNull();
+  });
+
+  /** Placa sem logo não é meia peça: é nada. Ela existe para emoldurar a glyph. */
+  test("a placa não aparece sozinha quando a logo está desligada", () => {
+    renderFooter({ showLogo: false, showLogoPlate: true });
+
+    expect(screen.queryByTestId("logo-plate")).toBeNull();
+    expect(screen.queryByRole("img", { name: "maiahub" })).toBeNull();
   });
 
   test("logo e handle são independentes — um não arrasta o outro", () => {

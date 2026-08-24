@@ -6,22 +6,40 @@ import { Constellation } from "@/templates/shared/constellation";
  * A faixa do rodapé — §10.5 do design system e §11.0 dos templates. **Todo template a
  * tem**, e o que varia é quais peças estão acesas:
  *
- *   esquerda   `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400`
+ *   régua      1px `ink-800`, a 160px da base, separando o conteúdo do rodapé
+ *   esquerda   glyph a 32px, com ou sem a placa atrás; handle em `slide-meta` `ink-400`
  *   direita    constelação de progresso, e o chevron depois dela com gap de 20px
  *
- * Três das quatro peças são opção do slide, com o descritor do template dando o padrão —
- * a forma da decisão 25, a mesma da grade. A §10.5 prendia a identidade a "todos os
- * slides exceto a capa" e o chevron a "somente a capa"; as duas frases viraram o valor
- * com que cada template nasce, e quem edita decide daí em diante.
+ * Cinco das seis peças são opção do slide, com o descritor do template dando o padrão — a
+ * forma da decisão 25, a mesma da grade. A §10.5 prendia a identidade a "todos os slides
+ * exceto a capa" e o chevron a "somente a capa"; as duas frases viraram o valor com que
+ * cada template nasce, e quem edita decide daí em diante.
  *
  * A **constelação não tem opção**: progresso é o que a faixa é.
  *
- * A peça de marca é a glyph, e não a `MaiahubMark` do sistema de marca, que a faixa de
- * tamanho apontaria — decisão 18 da §16 do documento de contexto. A 32px sobre `ink-950`,
- * num slide que depois é reduzido para caber num feed, a correção ótica da glyph é o que a
- * mantém legível; a `Mark` some ali, e é por isso que ela não está no projeto.
+ * ## Ligar uma peça não move as outras
  *
- * **O rodapé se posiciona sozinho.** A faixa 1238–1270 é a mesma em todo template, então
+ * É a propriedade que faz seis interruptores serem controle e não bagunça, e ela custa
+ * duas escolhas de geometria:
+ *
+ * - **A placa cresce para fora da faixa.** A faixa continua tendo 32px de altura com a
+ *   base a `--slide-pad` do fundo. A placa é um quadrado de 56px com `-my-[12px]`, então
+ *   avança 12px para cima e 12px para baixo sem entrar no cálculo de altura. Ligá-la e
+ *   desligá-la não desloca o handle nem a constelação.
+ * - **A régua se mede da base do slide**, não do topo da faixa: `--slide-pad * 2`, ou seja
+ *   y = 1190 em 1350. Ancorada na faixa, ela pularia junto com a placa.
+ *
+ * A placa é o único elemento do slide que entra na faixa de padding — o fundo dela chega a
+ * 68px da borda, contra os 80px da grade da §4.2. Fica bem dentro da zona morta de 60px
+ * que a §11.0 protege, e é o preço de a glyph continuar oticamente alinhada com o handle:
+ * encostar a placa nos 80px desalinharia os dois em 12px.
+ *
+ * A peça de marca é a glyph, e não a `MaiahubMark` do sistema de marca, que a faixa de
+ * tamanho apontaria — decisão 18 da §16 do documento de contexto. Ela sai em `ink-200`,
+ * um degrau acima do `ink-400` do handle: dentro da placa, sobre `slide-raised`, é o que
+ * mantém a hierarquia entre marca e assinatura.
+ *
+ * **O rodapé se posiciona sozinho.** A faixa é a mesma em todo template, então
  * `bottom: var(--slide-pad)` mora aqui em vez de repetido em cada um — mesmo argumento da
  * decisão 19 para a escala tipográfica: valor repetido em dez lugares diverge no terceiro.
  *
@@ -32,14 +50,18 @@ export function Footer({
   handle,
   index,
   total,
+  showRule,
   showLogo,
+  showLogoPlate,
   showHandle,
   showChevron,
 }: {
   handle: string;
   index: number;
   total: number;
+  showRule: boolean;
   showLogo: boolean;
+  showLogoPlate: boolean;
   showHandle: boolean;
   showChevron: boolean;
 }) {
@@ -48,20 +70,43 @@ export function Footer({
   // escrita uma vez, ela não pode divergir entre dez templates.
   const chevron = showChevron && index < total - 1;
 
-  return (
-    <div className="absolute right-[var(--slide-pad)] bottom-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[32px] items-center justify-between">
-      {/* Sempre renderizado, mesmo vazio: sem filhos ele tem largura zero, o
-          `justify-between` mantém a constelação na borda direita, e o `gap` só existe
-          entre filhos presentes — desligar uma das duas peças não deixa buraco. */}
-      <div className="flex items-center gap-[20px]">
-        {showLogo && <MaiahubGlyph className="size-[32px] text-ink-100" />}
-        {showHandle && <span className="slide-meta text-ink-400">{handle}</span>}
-      </div>
+  // A placa emoldura a glyph; sem glyph ela não é meia peça, é nada.
+  const glyph = <MaiahubGlyph className="size-[32px] text-ink-200" />;
 
-      <div className="flex items-center gap-[20px]">
-        <Constellation index={index} total={total} />
-        {chevron && <Chevron />}
+  return (
+    <>
+      {showRule && (
+        <div
+          data-testid="footer-rule"
+          aria-hidden
+          className="absolute right-[var(--slide-pad)] bottom-[calc(var(--slide-pad)*2)] left-[var(--slide-pad)] h-px bg-ink-800"
+        />
+      )}
+
+      <div className="absolute right-[var(--slide-pad)] bottom-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[32px] items-center justify-between">
+        {/* Sempre renderizado, mesmo vazio: sem filhos ele tem largura zero, o
+            `justify-between` mantém a constelação na borda direita, e o `gap` só existe
+            entre filhos presentes — desligar uma das peças não deixa buraco. */}
+        <div className="flex items-center gap-[20px]">
+          {showLogo &&
+            (showLogoPlate ? (
+              <span
+                data-testid="logo-plate"
+                className="-my-[12px] flex size-[56px] items-center justify-center rounded-[var(--slide-radius)] border border-ink-700 bg-slide-raised"
+              >
+                {glyph}
+              </span>
+            ) : (
+              glyph
+            ))}
+          {showHandle && <span className="slide-meta text-ink-400">{handle}</span>}
+        </div>
+
+        <div className="flex items-center gap-[20px]">
+          <Constellation index={index} total={total} />
+          {chevron && <Chevron />}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

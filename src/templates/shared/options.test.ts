@@ -4,6 +4,8 @@ import {
   showGridOption,
   showHandleOption,
   showLogoOption,
+  showLogoPlateOption,
+  showRuleOption,
 } from "@/templates/shared/options";
 import { options as coverOptions } from "@/templates/cover-statement/fields";
 import { options as bulletsOptions } from "@/templates/text-bullets/fields";
@@ -15,19 +17,33 @@ import { options as bulletsOptions } from "@/templates/text-bullets/fields";
  * descritor com as mesmas propriedades, este teste reprova, que é o ponto.
  */
 describe("opções compartilhadas do slide", () => {
-  const shared = [showGridOption, showLogoOption, showHandleOption, showChevronOption];
+  const shared = [
+    showGridOption,
+    showRuleOption,
+    showLogoOption,
+    showLogoPlateOption,
+    showHandleOption,
+    showChevronOption,
+  ];
 
-  test("as quatro têm chave própria e são toggles", () => {
+  /**
+   * A ordem é a de leitura da faixa, de fora para dentro: o fundo do slide, a régua que o
+   * separa do rodapé, a identidade, e por fim a seta. Ela é observável — é a ordem em que
+   * o inspector desenha os controles.
+   */
+  test("as seis têm chave própria e são toggles", () => {
     expect(shared.map((option) => option.key)).toEqual([
       "showGrid",
+      "showRule",
       "showLogo",
+      "showLogoPlate",
       "showHandle",
       "showChevron",
     ]);
     expect(shared.every((option) => option.type === "toggle")).toBe(true);
   });
 
-  test("todo template expõe as quatro, e o mesmo objeto — §11.0", () => {
+  test("todo template expõe as seis, e o mesmo objeto — §11.0", () => {
     for (const options of [coverOptions, bulletsOptions]) {
       for (const option of shared) {
         expect(options).toContain(option);

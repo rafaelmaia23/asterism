@@ -28,11 +28,16 @@ export const textBulletsMeta: {
       items: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
     },
     // O descritor dá o padrão e o slide decide daí em diante — decisão 25, agora valendo
-    // para as quatro. Nasce assinado, que é o rodapé que a §11.0 dá ao miolo do
-    // carrossel, e sem chevron: a partir do slide 2 o gesto de deslizar já foi executado.
+    // para as seis. Nasce assinado, que é o rodapé que a §11.0 dá ao miolo do carrossel, e
+    // sem chevron: a partir do slide 2 o gesto de deslizar já foi executado.
+    //
+    // A régua nasce **desligada**. Ela foi a candidata 8 do experimento 5 e a escolhida
+    // foi a 6, sem régua; o que a sessão pediu foi tê-la disponível, não tê-la sempre.
     options: {
       showGrid: false,
+      showRule: false,
       showLogo: true,
+      showLogoPlate: true,
       showHandle: true,
       showChevron: false,
       anchor: "center",

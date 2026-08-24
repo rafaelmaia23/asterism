@@ -59,7 +59,9 @@ function CoverStatement({
         handle={deck.handle}
         index={index}
         total={total}
+        showRule={settings.showRule}
         showLogo={settings.showLogo}
+        showLogoPlate={settings.showLogoPlate}
         showHandle={settings.showHandle}
         showChevron={settings.showChevron}
       />

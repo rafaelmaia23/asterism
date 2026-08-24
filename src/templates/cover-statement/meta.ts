@@ -27,9 +27,20 @@ export const coverStatementMeta: {
       heading: "Um título que declara algo em vez de prometer",
     },
     // O descritor dá o padrão e o slide decide daí em diante — decisão 25, agora valendo
-    // para as quatro. A capa nasce **sem identidade**: a §11.1 diz que nada compete com o
+    // para as seis. A capa nasce **sem identidade**: a §11.1 diz que nada compete com o
     // título, e isso continua verdadeiro como recomendação, não mais como regra. Nasce
     // com o chevron porque é onde o gesto de deslizar ainda não foi executado.
-    options: { showGrid: true, showLogo: false, showHandle: false, showChevron: true },
+    //
+    // `showLogoPlate` nasce ligado mesmo com a logo desligada: é o tratamento escolhido no
+    // experimento 5, e o padrão existe para que ligar a logo já entregue a peça certa em
+    // vez de a versão solta que o experimento descartou.
+    options: {
+      showGrid: true,
+      showRule: false,
+      showLogo: false,
+      showLogoPlate: true,
+      showHandle: false,
+      showChevron: true,
+    },
   },
 };

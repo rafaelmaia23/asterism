@@ -39,9 +39,10 @@ Todo template ocupa 1080×1350 com padding de 80px em todos os lados, o que dá 
 largura útil de **920px**. Nada de logo ou CTA a menos de 60px da borda.
 
 O rodapé ocupa a última faixa, com a linha de base do conteúdo alinhada a 80px do
-fundo. Composição: `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` à
-esquerda; constelação à direita. A capa é exceção — não tem logo nem handle, só
-constelação e chevron.
+fundo. Composição: `MaiahubGlyph` a 32px em `ink-200`, com ou sem a placa atrás, gap 20px,
+handle em `slide-meta` `ink-400` à esquerda; constelação à direita, e o chevron depois
+dela. Acima da faixa, opcionalmente, a régua. A capa é o único template que **nasce** sem
+logo e sem handle — é padrão, não trava. Ver a §10.5 do design system.
 
 A peça é a **glyph**, escolhida por comparação visual das três só-símbolo a 32px sobre a
 superfície do slide. A escolha contraria a faixa de 16–24px que a documentação da marca
@@ -60,11 +61,26 @@ Os limites de caractere na tabela de campos são **conselho, não trava**. O cam
 mais; o contador fica âmbar ao passar do limite e o guard de transbordo é quem reprova
 de fato, medindo altura real.
 
-**Todo template expõe a opção `showGrid`**, que vem do descritor compartilhado em
-`src/templates/shared/options.ts` e aparece primeiro na lista de opções. O `background`
-do template diz apenas com que valor o slide nasce; a grade em si é escolha de quem edita
-— §4.3 do design system e decisão 25. A tabela de opções de cada template abaixo omite
-`showGrid`, que é comum a todos, e lista só o que é próprio dele.
+**Todo template expõe seis opções compartilhadas**, que vêm dos descritores em
+`src/templates/shared/options.ts` e abrem a lista de opções, nesta ordem:
+
+| Chave | Efeito |
+| --- | --- |
+| `showGrid` | Grade de fundo |
+| `showRule` | Régua entre o conteúdo e o rodapé |
+| `showLogo` | A glyph no rodapé |
+| `showLogoPlate` | O fundo quadrado atrás da glyph |
+| `showHandle` | O `@handle` no rodapé |
+| `showChevron` | A afordância de deslize |
+
+Em todas vale a mesma regra: o descritor do template diz apenas com que valor o slide
+**nasce**, e a escolha é de quem edita — §4.3 e §10.5 do design system, decisão 25. O
+`background` do template é o padrão de `showGrid`, e nada mais.
+
+A ordem é a de leitura da faixa, de fora para dentro, e é a ordem em que o inspector
+desenha os controles. A tabela de opções de cada template abaixo **omite as seis**, que
+são comuns a todos, e lista só o que é próprio dele; a tabela de padrões, no bloco
+`defaults` ao fim de cada seção, traz todas.
 
 ---
 
@@ -72,8 +88,9 @@ do template diz apenas com que valor o slide nasce; a grade em si é escolha de 
 
 **Função** gancho · **Fundo** `grid` · **Grupo** `cover`
 
-Único slide sem rodapé de identidade. O título é a única coisa que importa e nada
-compete com ele.
+O único template que **nasce** sem identidade no rodapé. O título é a única coisa que
+importa e nada compete com ele — recomendação, não trava: `showLogo` e `showHandle` estão
+ali para quem quiser assinar a capa.
 
 #### Regiões
 
@@ -81,7 +98,7 @@ compete com ele.
 | ------ | -------------- | ---------------------------------------------- |
 | Kicker | 80 – 148       | `slide-meta`, `azure-400`                      |
 | Título | 300 – 1160     | `slide-display`, alinhado à **base** da região |
-| Rodapé | 1240 – 1270    | Constelação + chevron, à direita               |
+| Rodapé | 1238 – 1270    | A faixa compartilhada; nasce com constelação e chevron |
 
 O título ser alinhado à base da região é a decisão estrutural do template: com uma linha
 ou com quatro, a última linha pousa sempre na mesma altura. Sem isso, cada capa do
@@ -106,9 +123,9 @@ carrossel teria um ritmo diferente e a série perderia identidade.
 
 #### Opções
 
-| Chave         | Tipo     | Padrão | Efeito                |
-| ------------- | -------- | ------ | --------------------- |
-| `showChevron` | `toggle` | `true` | Afordância de deslize |
+Nenhuma própria — a capa expõe só as seis compartilhadas da §11.0. O `showChevron` era
+próprio dela até a 2B; virou compartilhado, e a capa passou a ser apenas o único template
+que nasce com ele ligado.
 
 #### Comportamento
 
@@ -126,7 +143,11 @@ demais em 96px e não deve ser usado em título.
 ```ts
 defaults: {
   fields:  { kicker: "log/ · 01", heading: "Um título que declara algo em vez de prometer" },
-  options: { showGrid: true, showChevron: true },
+  options: {
+    showGrid: true, showRule: false,
+    showLogo: false, showLogoPlate: true, showHandle: false,
+    showChevron: true,
+  },
 }
 ```
 
@@ -190,7 +211,12 @@ defaults: {
     heading: "Três coisas que eu mudaria",
     items: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
   },
-  options: { showGrid: false, anchor: "center" },
+  options: {
+    showGrid: false, showRule: false,
+    showLogo: true, showLogoPlate: true, showHandle: true,
+    showChevron: false,
+    anchor: "center",
+  },
 }
 ```
 
