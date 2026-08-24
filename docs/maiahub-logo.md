@@ -50,6 +50,32 @@ some ali.
 A regra da faixa continua valendo para interface comum. Este caso é a exceção, e está
 registrada aqui para não parecer descuido.
 
+### O traço engrossado, e por quê
+
+O desenho original saía com `strokeWidth` 1.6 e o traço a 55% de opacidade
+(`stroke-current/55`). O experimento 5 mediu o que isso dá **no rodapé do slide**, que é
+onde a peça é usada aqui:
+
+| Elemento | Traço efetivo no slide de 1080px | Tinta sobre `ink-950` |
+|---|---|---|
+| Glyph a 32px, desenho original | **1,6px** | ≈`#858993`, entre `ink-500` e `ink-400` |
+| Chevron a 40px | 3,75px | `azure-400` |
+| Linha da grade | 2px | `ink-800` |
+
+O traço da glyph é dado em unidades de um `viewBox` de 32, então exibida a 32px cada
+unidade vale exatamente 1px; o chevron, num `viewBox` de 24 exibido a 40px, multiplica o
+dele por 1,67. O resultado é que a peça desenhava **a linha mais fina e mais apagada do
+slide inteiro** — mais escura, inclusive, que o `@handle` em `ink-400` ao lado dela.
+
+Isso é o oposto do que a glyph existe para fazer. Ela quebra a proporção de propósito para
+não sumir em tamanho pequeno, e a correção simplesmente não ia longe o bastante para os
+32px em que o asterism a usa. Passou a **2.25 em opacidade cheia**, com a estrela de 3.4
+para **4.0** — a mesma espessura do chevron em unidades declaradas, escolhida comparando
+nove variantes lado a lado sobre `ink-950` e depois dentro de um slide reduzido a 28%.
+
+Nas miniaturas de 16px que a faixa original prevê, 2.25 dá 1,1px efetivo. A peça continua
+fazendo o que fazia lá; o que mudou é que agora ela também funciona aqui.
+
 ## Componentes
 
 | Componente | Papel | Tamanho mínimo | No asterism |
