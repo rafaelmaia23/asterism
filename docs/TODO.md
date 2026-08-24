@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída; Etapa 2 em
-> curso: 2A concluída — a próxima sessão abre a 2B**
+> curso: 2A e 2B concluídas — a próxima sessão abre a 2C**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 e 2 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -409,13 +409,22 @@ Resolvido na sessão:
   que mede comprimento de título passou a medir o **texto renderizado** — os colchetes não
   chegam ao canvas e não podem contar contra o limite de linha da §11.1.
 
-### 2B — rodapé e `text-bullets`
+### 2B — rodapé e `text-bullets` ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 2.4 | `Footer` em `src/templates/shared/` — o que falta da §10.5 do design system; `Kicker`, `Constellation` e `Chevron` vieram na 1B | `MaiahubGlyph` a 32px, gap 20px, handle em `slide-meta` `ink-400` à esquerda, constelação à direita |
 | 2.4a | Remover as quatro peças de logo não usadas | Sobram `logo-shared.ts`, a glyph e o `index.ts`; `Wordmark`, `Mark`, `Seal` e `Signature` saem do projeto. Quatro peças para nenhum uso é peso morto |
 | 2.8 | `text-bullets` completo — regiões da §11.2 dos templates, marcador travessão, opção `anchor` | `center` centraliza o bloco de itens no miolo, `top` encosta abaixo do cabeçalho; três itens é o alvo, quatro o teto. Nasce `plain` e expõe `showGrid` — o que era a 2.5 |
+
+Quatro tarefas nasceram na própria sessão, da conferência olhando e do PDF:
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.4c | Semente com dois `text-bullets`, um por `anchor` | Sem `addSlide` (2.13) e sem troca de layout (2.11), a semente é o único lugar que decide o que existe na tela, e o select de `anchor` só fica editável na 2C. Sem isto o critério da 2.8 não é conferível |
+| 2.4d | As seis partes do rodapé viram opção do slide — decisões 35 e 36 | Grade, régua, logo, fundo da logo, handle e chevron ligáveis em qualquer template; o descritor dá o padrão. Chevron suprimido no último slide por posição |
+| 2.4e | Experimento 5 — a peça de logo e a faixa do rodapé | Ver abaixo. Decidido, a §10.5 e o `maiahub-logo.md` são atualizados junto |
+| 2.4f | A régua fora do módulo da grade, e a compensação de hairline — decisão 38 | y 1174 em `ink-600`, e `slide-hairline` valendo para qualquer linha fina do canvas. Medido no PDF, não suposto |
 
 O `Footer` finalmente tem consumidor: foi por não ter que ele ficou de fora da 1B, quando
 a capa era o único template e é justamente o que não o tem. A 2.4a vem logo atrás porque
@@ -428,6 +437,43 @@ controles são a 2C.
 `anchor: "center"` centraliza o bloco de itens mantendo o gap de 48px da tabela de
 elementos da §11.2, em vez de distribuir o espaço sobrando entre eles: o gap está
 especificado como valor, não como mínimo.
+
+Resolvido na sessão:
+
+- **O rodapé virou uma peça só, e a capa deixou de ser exceção por regra.** A §10.5 dizia
+  "presente em todos os slides exceto a capa" e "chevron somente na capa"; as duas frases
+  viraram o **padrão** de cada descritor, na forma da decisão 25. São seis opções —
+  decisões 35 e 36 —, e a capa continua nascendo sem identidade porque a §11.1 tem razão,
+  não porque o código a impeça. O `Footer` passou a posicionar a si mesmo, e a capa perdeu
+  a linha de rodapé própria: a faixa dela era 1240–1270 e virou 1238–1270, igual à de todos.
+- **A glyph estava apagada, e a medida disse quanto.** Traço de **1,6px** contra 3,75px do
+  chevron ao lado e 2px da linha da grade, e a 55% de opacidade — tinta resultante
+  ≈`#858993`, mais escura que o `ink-400` do handle. A linha mais fina e mais apagada do
+  slide inteiro. Passou a 2.25 em opacidade cheia com estrela 4.0, decisão 37.
+- **A régua não sumia do PDF: estava camuflada.** Rasterizado a 72 dpi, o arquivo mostrou
+  `#1e293b` nas linhas 1189–1190 com a grade ligada e só em 1190 sem ela. A grade desenha
+  horizontais em `54k + 1` com traço de 2px — em k = 22, exatamente 1189–1190 — e a régua
+  estava em 1190, no mesmo token. Exportação e rasterização estavam corretas o tempo todo.
+  Decisão 38: y 1174 e `ink-600`. **Conferido depois da correção**, no mesmo PDF e com a
+  mesma sonda: régua em 1174 `#475569`, grade em 1189–1190 `#1e293b`, quinze linhas entre
+  as duas. E um sinal a mais, que não estava previsto: a régua tem os **920px** da largura
+  útil e a linha da grade atravessa os **1080px** inteiros, então as duas se distinguem
+  mesmo sem cor.
+- **Fundo chapado com borda atravessa a rasterização** — a placa da logo saiu inteira no
+  PDF: preenchimento `#1e293b`, glyph `#e2e8f0` dentro, e a borda `ink-700` antialiasada
+  pelo raio de 12px nos cantos. É a segunda medida na mesma direção, depois do fundo de
+  `==marca==` na 2A: o que matou a grade na 1E era o **gradiente**, não o fundo.
+- **A compensação de escala da decisão 15 não era um detalhe da grade.** `height: 1px` a
+  k = 0,28 dá 0,28 pixel de dispositivo e o navegador não pinta, então a régua aparecia no
+  PDF e faltava no preview — o inverso do sintoma que se procura. Virou a utility
+  `slide-hairline`, e a §4.3 passou a dizer que a regra vale para qualquer linha fina do
+  canvas.
+- **A placa entra 12px na faixa de padding.** O fundo dela chega a 68px da borda, contra os
+  80px da §4.2, e fica dentro da zona morta de 60px da §11.0. É o preço de a glyph ficar
+  oticamente alinhada com o handle: encostá-la nos 80px desalinharia os dois em 12px.
+- **O `showChevron` mudou de dono sem mudar de chave.** Era próprio da capa, virou
+  compartilhado. Como a chave é a mesma, nenhum deck salvo precisaria de migração — o que
+  importa para a 2.12, que chega na 2D.
 
 ### 2C — `final-cta` e os controles que faltam no inspector
 
@@ -543,13 +589,13 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 ## A resolver por experimento
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
-contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, e a 2A as
-33 e 34. Sobraram
+contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
+33 e 34, e a 2B as 35 a 38. Continuam
 **dois** pontos abertos: o recorte da constelação, que se resolve na 2E, e o foco e raio
 dos controles de formulário, do experimento 3. Nenhum dos dois bloqueia nada.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
-lado a lado e comparando o resultado — de preferência medido, como no experimento 4.
+lado a lado e comparando o resultado — de preferência medido, como nos experimentos 4 e 5.
 
 ### ~~Experimento 1 — a peça de logo do rodapé~~ · resolvido
 
@@ -597,6 +643,34 @@ Uma segunda rodada comparou quatro tratamentos de borda sobre o `<path>` vencedo
 escolha foi a moldura fechada nos quatro lados com módulo de 54px, sem nenhum quadrado
 cortado. Registrado na decisão 28 do documento de contexto, na §4.3 do design system e na
 armadilha da §13.
+
+### ~~Experimento 5 — a peça de logo e a faixa do rodapé~~ · resolvido
+
+Apareceu na 2B, na conferência olhando: "a logo está meio pequena e morta". A medida
+explicou o adjetivo — a glyph desenhava a linha mais fina e mais apagada do slide:
+
+| Elemento | Traço efetivo no slide | Tinta sobre `ink-950` |
+|---|---|---|
+| Glyph a 32px, desenho original | **1,6px** | ≈`#858993` — entre `ink-500` e `ink-400` |
+| Chevron a 40px | 3,75px | `azure-400` |
+| Linha da grade | 2px | `ink-800` |
+| Handle, `slide-meta` | chapado | `#94a3b8` — `ink-400` |
+
+Montado numa rota descartável, no molde do experimento 4: nove desenhos da peça a 1:1
+sobre `ink-950`, uma escada de tamanho com o traço normalizado, dez tratamentos do rodapé
+inteiro na largura real de 1080px, e cada um deles dentro de um slide de verdade a k = 0,28
+e k = 0,5 — a escala do editor é onde "some no feed" se responde, e nenhuma comparação a
+1:1 responde por ela.
+
+Venceram a **peça `f`** — traço 2.25 em opacidade cheia, tinta `ink-200`, estrela 4.0 — e o
+**tratamento 6**, a glyph sobre placa de `slide-raised` com borda de 1px `ink-700` e raio
+12px. A régua entrou como sétima peça a pedido da sessão, e a cor dela foi uma segunda
+rodada com nove candidatas em `ink`, `azure` e `sun`, comparadas em recorte 1:1 sobre a
+grade e em slide reduzido: ficou `ink-600`. As três candidatas `sun` foram descartadas pela
+§2.5 — âmbar é pontuação, e uma linha de 920px não é pontuação.
+
+Registrado nas decisões 35 a 38 do documento de contexto, na §10.5 e na §4.3 do design
+system, na §11.0 e na §11.1 dos templates, e em `maiahub-logo.md`.
 
 ### Experimento 3 — foco e raio dos controles de formulário · a agendar
 

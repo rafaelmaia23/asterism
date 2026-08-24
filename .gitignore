@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# PDFs de conferência — regeráveis pelo botão de exportar, meio megabyte cada
+/docs/tests/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
