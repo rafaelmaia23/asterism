@@ -12,17 +12,47 @@
  *   3  a escada de tamanho, com o traço normalizado
  *   4  o rodapé inteiro, 1:1, na largura real de 1080px
  *   5  o mesmo rodapé dentro de um slide de verdade, nas escalas em que ele é visto
+ *   6  os dois slides completos, com as cinco peças acesas
+ *   7  a cor da régua, depois de a medição do PDF explicar por que ela sumia
  *
- * A seção 5 é a que decide. "Some no feed" é uma percepção da imagem **reduzida**, e é por
- * isso que ela reusa o `SlideFrame` de verdade em vez de desenhar um retângulo: a escala
- * do editor é 0,28, e nenhuma comparação a 1:1 responde por ela.
+ * A seção 5 é a que decidiu a peça. "Some no feed" é uma percepção da imagem **reduzida**,
+ * e é por isso que ela reusa o `SlideFrame` de verdade em vez de desenhar um retângulo: a
+ * escala do editor é 0,28, e nenhuma comparação a 1:1 responde por ela.
  */
 
 import { SlideFrame } from "@/render/slide-frame";
 import { LabGlyph, PUBLISHED, blended, effectiveStroke } from "@/app/lab/footer/lab-glyph";
-import { FOOTERS, FullFooter, GLYPHS, SIZES } from "@/app/lab/footer/variants";
+import {
+  FOOTERS,
+  FullFooter,
+  GLYPHS,
+  RULE_COLORS,
+  SIZES,
+} from "@/app/lab/footer/variants";
 
 const FORMAT = { w: 1080, h: 1350 };
+
+/**
+ * O recorte 1:1 da seção 7: a faixa y 1140–1290 do slide, na resolução em que o PDF sai.
+ *
+ * É um `SlideFrame` a k = 1 dentro de uma janela de 150px de altura, com o slide deslocado
+ * para cima. Assim o que se vê é o pixel de verdade — a régua em 1174 e, 15px abaixo, a
+ * linha da grade em 1189 —, e não uma reconstrução aproximada da faixa.
+ */
+function RuleCrop({ color, grid }: { color: string; grid: boolean }) {
+  return (
+    <div className="relative h-[150px] w-[1080px] overflow-hidden">
+      {/* -1141 e não -1140: o `SlideFrame` põe uma borda de 1px por fora do canvas, então
+          a coordenada 0 do slide começa 1px adiante do topo do quadro externo. */}
+      <div className="absolute top-[-1141px] left-0">
+        <SlideFrame format={FORMAT} scale={1} background={grid ? "grid" : "plain"}>
+          <SlideBody />
+          <FullFooter handle="@rafael" index={3} total={5} ruleColor={color} />
+        </SlideFrame>
+      </div>
+    </div>
+  );
+}
 
 /** Uma amostra de conteúdo real atrás do rodapé, para a seção 5 não julgar no vazio. */
 function SlideBody() {
@@ -299,6 +329,80 @@ export default function FooterLab() {
                   <FullFooter handle="@rafael" index={3} total={5} {...props} />
                 </SlideFrame>
                 <span className="text-xs text-ink-500">{note}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      <Section
+        n={7}
+        title="A régua — a cor, e por que ela sumiu do PDF"
+        lead="Medido no PDF a 72 dpi: a régua estava na linha 1190, dentro do traço de 2px que
+        a grade desenha em 1189–1190, na cor idêntica. Não sumiu — estava camuflada, pixel a
+        pixel. Aqui ela já está na posição nova, 1174, um --slide-gap-block acima da faixa do
+        rodapé, e o que falta escolher é a cor."
+      >
+        <p className="max-w-[70ch] rounded-[8px] border border-sun-800 bg-sun-950 p-4 text-sm text-sun-200">
+          As três candidatas <strong className="font-semibold">sun</strong> contrariam a
+          §2.5 do design system, que reserva o âmbar a pontuação — no máximo um uso por
+          slide, para <code className="font-mono">==marca==</code>, realce de linha em
+          código e avisos. Uma régua de 920px atravessando o slide não é pontuação. Escolher
+          uma delas é legítimo, mas custa uma emenda àquela seção e gasta a única nota
+          quente do sistema numa linha estrutural.
+        </p>
+
+        <div className="flex flex-col gap-8">
+          <span className="text-xs text-ink-500">
+            1 · Recorte 1:1 da faixa y 1140–1290, com grade. A régua em 1174 e a linha da
+            grade 15px abaixo dela. A pergunta: dá para dizer que são dois objetos?
+          </span>
+          <div className="flex flex-col gap-6 overflow-x-auto">
+            {RULE_COLORS.map(({ token, hex, family }) => (
+              <div key={token} className="flex w-[1080px] shrink-0 flex-col gap-2">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-mono text-xs text-azure-radiance-400">{token}</span>
+                  <span className="font-mono text-xs text-ink-500">{hex}</span>
+                  <span className="text-xs text-ink-500">{family}</span>
+                </div>
+                <RuleCrop color={hex} grid />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <span className="text-xs text-ink-500">
+            2 · Slide inteiro a k = 0,28, com grade — a escala do editor, e a que mais se
+            parece com o post reduzido no feed. A pergunta: a diferença sobrevive ao
+            downscale, ou a matiz some antes da luminosidade?
+          </span>
+          <div className="flex flex-wrap gap-6">
+            {RULE_COLORS.map(({ token, hex }) => (
+              <div key={token} className="flex flex-col gap-2">
+                <SlideFrame format={FORMAT} scale={0.28} background="grid">
+                  <SlideBody />
+                  <FullFooter handle="@rafael" index={3} total={5} ruleColor={hex} />
+                </SlideFrame>
+                <span className="font-mono text-xs text-ink-500">{token}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <span className="text-xs text-ink-500">
+            3 · O mesmo, sem grade. A régua sozinha, sem nada com que se confundir. A
+            pergunta: ela ficou alta demais?
+          </span>
+          <div className="flex flex-wrap gap-6">
+            {RULE_COLORS.map(({ token, hex }) => (
+              <div key={token} className="flex flex-col gap-2">
+                <SlideFrame format={FORMAT} scale={0.28}>
+                  <SlideBody />
+                  <FullFooter handle="@rafael" index={3} total={5} ruleColor={hex} />
+                </SlideFrame>
+                <span className="font-mono text-xs text-ink-500">{token}</span>
               </div>
             ))}
           </div>

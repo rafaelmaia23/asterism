@@ -68,6 +68,36 @@ export const CHOSEN: GlyphSpec = {
 };
 
 /**
+ * As candidatas de cor para a régua — seção 7.
+ *
+ * O `ink-800` é a cor atual e está aqui como referência: é **o mesmo token da linha da
+ * grade**, e foi o que fez a régua sumir do PDF. Medida a 72 dpi, ela estava na linha 1190,
+ * dentro do traço de 2px que a grade desenha em 1189–1190, na cor idêntica.
+ *
+ * As três `sun` contrariam a §2.5 do design system, que reserva o âmbar a pontuação — no
+ * máximo um uso por slide, para `==marca==`, realce de linha em código e avisos. Estão aqui
+ * porque foram pedidas para comparação; escolher uma custa uma emenda àquela seção.
+ */
+export const RULE_COLORS: { token: string; hex: string; family: string }[] = [
+  { token: "ink-800", hex: "#1e293b", family: "neutra — é a cor da grade" },
+  { token: "ink-700", hex: "#334155", family: "neutra — é a cor da borda da placa" },
+  { token: "ink-600", hex: "#475569", family: "neutra" },
+  { token: "azure-950", hex: "#172554", family: "azure" },
+  { token: "azure-900", hex: "#1e3a8a", family: "azure" },
+  { token: "azure-800", hex: "#1e40af", family: "azure" },
+  { token: "sun-950", hex: "#441504", family: "sun — contraria a §2.5" },
+  { token: "sun-900", hex: "#762c11", family: "sun — contraria a §2.5" },
+  { token: "sun-800", hex: "#8f3511", family: "sun — contraria a §2.5" },
+];
+
+/**
+ * A posição nova da régua: um `--slide-gap-block` acima do topo da faixa do rodapé, que
+ * fica a `--slide-pad + 32` da base. Dá 1174 em 1350 — 15px acima da linha da grade em
+ * 1189 e 52px acima do topo da placa em 1226.
+ */
+const RULE_BOTTOM = "calc(var(--slide-pad) + 32px + var(--slide-gap-block))";
+
+/**
  * O rodapé com **todas** as partes independentes, que é o modelo que a seção 6 põe à
  * prova: régua, logo, fundo da logo, handle e chevron, cada um com a própria chave.
  *
@@ -86,6 +116,7 @@ export function FullFooter({
   showLogoPlate = true,
   showHandle = true,
   showChevron = true,
+  ruleColor = "#334155",
 }: {
   handle: string;
   index: number;
@@ -95,6 +126,7 @@ export function FullFooter({
   showLogoPlate?: boolean;
   showHandle?: boolean;
   showChevron?: boolean;
+  ruleColor?: string;
 }) {
   const glyph = <LabGlyph spec={CHOSEN} size={32} />;
 
@@ -102,7 +134,15 @@ export function FullFooter({
     <>
       {showRule && (
         <div
-          className="absolute right-[var(--slide-pad)] bottom-[calc(var(--slide-pad)*2)] left-[var(--slide-pad)] h-px bg-ink-800"
+          className="absolute right-[var(--slide-pad)] left-[var(--slide-pad)]"
+          style={{
+            bottom: RULE_BOTTOM,
+            // A mesma compensação que a §4.3 dá à grade: 1px fixo vira 0,28 pixel de
+            // dispositivo a k = 0,28 e o navegador não pinta. Aqui vai inline porque o lab
+            // é descartável; no `Footer` de verdade vira utility, como o `slide-grid`.
+            height: "max(1px, calc(1px / var(--slide-scale, 1)))",
+            backgroundColor: ruleColor,
+          }}
           aria-hidden
         />
       )}
