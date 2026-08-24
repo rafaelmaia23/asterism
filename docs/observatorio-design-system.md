@@ -378,6 +378,21 @@ nenhum.
 da propriedade nativa porque o caminho de exportação precisa do comportamento oposto: lá
 a escala é 1 e vale a espessura de spec, não uma hairline de dispositivo.
 
+**A regra vale para qualquer linha fina dentro do slide, não só para o grid.** A régua do
+rodapé da §10.5 foi a segunda, e reaprendeu a lição do jeito difícil: nascida com
+`height: 1px`, ela aparecia no PDF — que rasteriza a `k = 1` — e faltava no preview, onde
+1px × 0,28 dá 0,28 pixel de dispositivo e o navegador não pinta. O sintoma é traiçoeiro
+porque é o inverso do esperado: some no editor, sobrevive no arquivo.
+
+Toda hairline de 1px do canvas usa a utility `slide-hairline`, que é esta mesma conta com
+base 1px:
+
+```css
+@utility slide-hairline {
+  height: max(1px, calc(1px / var(--slide-scale, 1)));
+}
+```
+
 ---
 
 ## 5. Forma
@@ -603,22 +618,57 @@ Acima de 10 slides, mostre 5 pontos mais um contador `03 / 12` em mono.
 **Afordância de deslize** — chevron duplo (Lucide `chevrons-right`), 40px, traço 2.25,
 `azure-400`, à direita da constelação com gap de 20px.
 
-**Presente somente na capa.** A partir do slide 2 a pessoa já executou o gesto, e o
-rodapé volta a ser apenas progresso. Repetir a seta seria instruir alguém que já sabe.
+**Disponível em todo slide, e nasce ligada só na capa.** A partir do slide 2 a pessoa já
+executou o gesto e o rodapé volta a ser apenas progresso, então repetir a seta seria
+instruir quem já sabe — mas isso é o **padrão**, não uma trava. A única regra que
+permanece é a do fim: **no último slide a seta não é desenhada**, com a opção ligada ou
+não, porque ali não há para onde deslizar. A supressão é por posição no deck, não por
+template.
 
-**Rodapé fixo** — presente em todos os slides exceto a capa. Alinhado à base, dentro do
-padding: `MaiahubGlyph` a 32px, `@handle` em `slide-meta` `ink-400`, constelação à
-direita.
+**Rodapé** — a faixa presente em **todos** os slides. Alinhada à base, dentro do padding.
+Seis peças, e cinco delas são opção do slide:
 
-O `final-cta` **leva o rodapé completo**, com a constelação toda acesa — decisão 29. Esta
-seção dizia "exceto capa e final" e contradizia a tabela de regiões da §11.3 dos
+| Peça | Chave | Descrição |
+| --- | --- | --- |
+| Régua | `showRule` | 1px `ink-600`, a `--slide-pad + 32 + --slide-gap-block` da base (y 1174 em 1350), na largura útil |
+| Logo | `showLogo` | `MaiahubGlyph` a 32px em `ink-200` |
+| Fundo da logo | `showLogoPlate` | Quadrado de 56px, `slide-raised`, borda 1px `ink-700`, raio 12px |
+| Handle | `showHandle` | `slide-meta` `ink-400`, gap 20px após a logo |
+| Constelação | — | Sem opção: progresso é o que a faixa é |
+| Chevron | `showChevron` | À direita da constelação, gap 20px |
+
+Cada template declara com o que o slide **nasce** e quem edita decide daí em diante — a
+forma da decisão 25, a mesma que a grade de fundo tem desde a 1E. Esta seção dizia
+"presente em todos os slides exceto a capa"; o que era regra virou padrão.
+
+**Ligar uma peça não move as outras.** É o que separa seis interruptores de bagunça, e
+custa duas escolhas de geometria: a faixa mantém 32px de altura e a placa da logo, que tem
+56px, cresce simetricamente para fora dela; e a régua se mede da base do slide, não do topo
+da faixa. Ancorada à faixa, ela pularia junto com a placa.
+
+**A régua não pode cair no módulo da grade.** A primeira versão a pôs em `--slide-pad × 2`
+= y 1190, e ela sumia do PDF com a grade ligada: a grade desenha horizontais em `54k + 1`
+com traço de 2px, e em k = 22 isso ocupa exatamente 1189–1190. A régua era pintada dentro
+do traço, no mesmo `ink-800` — camuflada, não perdida. Daí as duas correções: y 1174, 15px
+acima da linha da grade, e `ink-600`, dois degraus acima dela. A cor saiu do experimento 5,
+comparando nove candidatas em `ink`, `azure` e `sun` sobre páginas reais; o âmbar foi
+descartado porque a §2.5 o reserva a pontuação, e uma linha de 920px não é pontuação.
+
+A placa é o único elemento do slide que entra na faixa de padding — o fundo dela chega a
+68px da borda, contra os 80px da §4.2. Continua bem dentro da zona morta de 60px da §11.0
+dos templates, e é o preço de a glyph ficar oticamente alinhada com o handle: encostá-la
+nos 80px desalinharia os dois em 12px.
+
+O `final-cta` **nasce com o rodapé completo**, com a constelação toda acesa — decisão 29.
+Esta seção dizia "exceto capa e final" e contradizia a tabela de regiões da §11.3 dos
 templates, que sempre deu ao final as três peças. O último slide é onde o handle mais
 importa: quem chegou até o fim é quem vai seguir. O bloco de CTA no miolo não compete com
 ele — 36px mono `azure-400` contra 28px `ink-400` no rodapé são hierarquias distintas, e
 é isso que separa este caso do wordmark descartado no experimento 1, que traria "maiahub"
 escrito no mesmo canto que o handle.
 
-A capa continua sendo a única exceção: nem logo nem handle, só constelação e chevron.
+A capa é o único template que **nasce** sem logo e sem handle, e a §11.1 dos templates diz
+por quê. Ligar as duas ali é uma escolha válida, não uma violação.
 
 **Callout** — `border-left: 4px`, raio 0, fundo tingido no tom 950 correspondente,
 padding 24px. Variantes: `info` (azure), `atencao` (sun), `positivo` (pacifika),

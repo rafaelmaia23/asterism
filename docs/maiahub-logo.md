@@ -4,8 +4,16 @@ Cinco componentes React para o sistema de marca, com Tailwind v4 e os tokens do 
 
 ## No asterism
 
-Os componentes vivem em `src/components/maiahub/`. Dependência única: o helper `cn` do
-shadcn, em `@/lib/utils`.
+**O asterism carrega uma das cinco: a `MaiahubGlyph`.** As outras quatro entraram no
+bootstrap junto com o sistema de marca e ficaram sem consumidor — o único lugar da
+ferramenta que mostra a logo é o rodapé do slide, e lá a peça é a glyph. Saíram na
+tarefa 2.4a; a origem delas continua no sistema de marca, e o git guarda o desenho.
+
+A que sobrou vive em `src/components/maiahub/`, com `logo-shared.ts` reduzido à interface
+`MaiahubLogoProps`. Dependência única: o helper `cn` do shadcn, em `@/lib/utils`.
+
+Este documento continua descrevendo as cinco: ele é do sistema de marca, não do asterism.
+A coluna **No asterism** da tabela abaixo diz o que está no repositório.
 
 ### Adaptação ao Observatório
 
@@ -42,28 +50,54 @@ some ali.
 A regra da faixa continua valendo para interface comum. Este caso é a exceção, e está
 registrada aqui para não parecer descuido.
 
+### O traço engrossado, e por quê
+
+O desenho original saía com `strokeWidth` 1.6 e o traço a 55% de opacidade
+(`stroke-current/55`). O experimento 5 mediu o que isso dá **no rodapé do slide**, que é
+onde a peça é usada aqui:
+
+| Elemento | Traço efetivo no slide de 1080px | Tinta sobre `ink-950` |
+|---|---|---|
+| Glyph a 32px, desenho original | **1,6px** | ≈`#858993`, entre `ink-500` e `ink-400` |
+| Chevron a 40px | 3,75px | `azure-400` |
+| Linha da grade | 2px | `ink-800` |
+
+O traço da glyph é dado em unidades de um `viewBox` de 32, então exibida a 32px cada
+unidade vale exatamente 1px; o chevron, num `viewBox` de 24 exibido a 40px, multiplica o
+dele por 1,67. O resultado é que a peça desenhava **a linha mais fina e mais apagada do
+slide inteiro** — mais escura, inclusive, que o `@handle` em `ink-400` ao lado dela.
+
+Isso é o oposto do que a glyph existe para fazer. Ela quebra a proporção de propósito para
+não sumir em tamanho pequeno, e a correção simplesmente não ia longe o bastante para os
+32px em que o asterism a usa. Passou a **2.25 em opacidade cheia**, com a estrela de 3.4
+para **4.0** — a mesma espessura do chevron em unidades declaradas, escolhida comparando
+nove variantes lado a lado sobre `ink-950` e depois dentro de um slide reduzido a 28%.
+
+Nas miniaturas de 16px que a faixa original prevê, 2.25 dá 1,1px efetivo. A peça continua
+fazendo o que fazia lá; o que mudou é que agora ela também funciona aqui.
+
 ## Componentes
 
-| Componente | Papel | Tamanho mínimo |
-|---|---|---|
-| `MaiahubWordmark` | Institucional. Home, open graph, hero. | 200px de largura |
-| `MaiahubMark` | Versão curta. Ícone, marca d'água. | 24px de altura |
-| `MaiahubSeal` | Avatar, contextos circulares. | 40px |
-| `MaiahubGlyph` | Versão simplificada para miniaturas. **No asterism, também o rodapé do slide, a 32px** — ver abaixo. | 16px |
-| `MaiahubSignature` | Uso corrido em texto. Rodapé, cabeçalho. | 120px de largura |
+| Componente | Papel | Tamanho mínimo | No asterism |
+|---|---|---|---|
+| `MaiahubWordmark` | Institucional. Home, open graph, hero. | 200px de largura | não |
+| `MaiahubMark` | Versão curta. Ícone, marca d'água. | 24px de altura | não |
+| `MaiahubSeal` | Avatar, contextos circulares. | 40px | não |
+| `MaiahubGlyph` | Versão simplificada para miniaturas. **No asterism, também o rodapé do slide, a 32px** — ver acima. | 16px | **sim** |
+| `MaiahubSignature` | Uso corrido em texto. Rodapé, cabeçalho. | 120px de largura | não |
 
 ## Uso
 
 ```tsx
-import { MaiahubWordmark, MaiahubMark, MaiahubSignature } from "@/components/maiahub";
+import { MaiahubGlyph } from "@/components/maiahub";
 
-<MaiahubWordmark />                                   // herda text-foreground
-<MaiahubWordmark className="h-14 text-star-600" />
-<MaiahubMark className="h-8 text-muted-foreground" />
-<MaiahubMark className="text-primary-foreground" />   // sobre fundo colorido
-<MaiahubSignature className="text-sm" />
-<MaiahubSignature bare />                             // sem a divisória
+<MaiahubGlyph />                                    // herda text-foreground
+<MaiahubGlyph className="size-[32px] text-ink-100" />  // o rodapé do slide
+<MaiahubGlyph mono />                               // estrela vira currentColor
 ```
+
+As peças que não estão no repositório se usam do mesmo jeito, trocando o tamanho pelo
+mínimo da tabela: `<MaiahubWordmark className="h-14" />`, `<MaiahubSignature bare />`.
 
 ## Como a cor funciona
 
@@ -78,7 +112,9 @@ A estrela é a única exceção: cor fixa em `fill-azure-radiance-400`, para per
 <MaiahubMark mono />   // estrela vira currentColor
 ```
 
-Use `mono` em impressão, PDF, gravação, ou sobre um fundo onde o azul perde contraste.
+Use `mono` em impressão, PDF, gravação, ou sobre um fundo onde o azul perde contraste. No
+rodapé do slide ele fica desligado de propósito: a estrela em `azure-400` é a mesma cor
+dos pontos acesos da constelação, do outro lado da mesma faixa.
 
 ## Escala
 
@@ -88,7 +124,7 @@ O `MaiahubGlyph` existe porque redução linear não funciona em tamanhos pequen
 
 ## Notas de implementação
 
-**O wordmark usa arrays.** São 13 traços e 35 pontos; escritos literalmente o arquivo ficaria ilegível. A geometria vive em `logo-shared.ts`, junto com o grid base (altura de caixa alta 54, letra 36, espaço 16) caso você queira desenhar letras novas para submarcas de projetos.
+**O wordmark usa arrays.** São 13 traços e 35 pontos; escritos literalmente o arquivo ficaria ilegível. A geometria mora ao lado do componente, e no asterism saiu junto com ele na 2.4a — 43 linhas de dado que nada lia. O **grid base** que ela usa fica registrado aqui, que é o que permite redesenhá-la ou desenhar letras novas para submarcas de projetos: altura de caixa alta **54**, largura de letra **36** (o I é 8), espaço **16**.
 
 **A assinatura é HTML, não SVG.** Diferente das outras peças, o nome ali é texto de verdade — selecionável, pesquisável por Ctrl+F, e herda os tokens de fonte do projeto. O SVG equivalente na pasta de assets existe para uso fora do React (e-mail, PDF), onde não dá para compor.
 

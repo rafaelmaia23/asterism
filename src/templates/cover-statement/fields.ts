@@ -7,7 +7,7 @@
  */
 
 import { z } from "zod";
-import { showGridOption } from "@/templates/shared/options";
+import { sharedOptions } from "@/templates/shared/options";
 import type { Field } from "@/templates/types";
 
 /** Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates. */
@@ -29,11 +29,13 @@ export const fields: Field[] = [
   },
 ];
 
-/** A grade vem de `shared/options.ts`: é o mesmo campo em todo template. */
-export const options: Field[] = [
-  showGridOption,
-  { key: "showChevron", type: "toggle", label: "Afordância de deslize" },
-];
+/**
+ * As quatro vêm de `shared/options.ts` — a grade e as três peças do rodapé são os mesmos
+ * campos em todo template, e o `showChevron` deixou de ser próprio da capa na 2B: virou
+ * compartilhado, com a capa apenas nascendo com ele ligado. A chave é a mesma de antes,
+ * então nada no dado muda. A capa não acrescenta opção nenhuma às quatro.
+ */
+export const options: Field[] = [...sharedOptions];
 
 export const coverStatementSchema = z.object({
   fields: z.object({
@@ -42,6 +44,10 @@ export const coverStatementSchema = z.object({
   }),
   options: z.object({
     showGrid: z.boolean(),
+    showRule: z.boolean(),
+    showLogo: z.boolean(),
+    showLogoPlate: z.boolean(),
+    showHandle: z.boolean(),
     showChevron: z.boolean(),
   }),
 });

@@ -1,24 +1,32 @@
 /**
  * O deck com que o editor abre, enquanto não há persistência.
  *
- * Três slides `cover-statement`: com um só, a lista lateral, a troca de slide ativo e o
- * laço de páginas do alvo PDF ficariam sem prova até a Etapa 2 — e é ali que os erros de
- * exportador aparecem. A 1D move este deck para dentro do store sem mexer no módulo.
+ * Cinco slides: três `cover-statement` e dois `text-bullets`. Com um só, a lista lateral,
+ * a troca de slide ativo e o laço de páginas do alvo PDF ficariam sem prova. A 1D moveu
+ * este deck para dentro do store sem mexer no módulo, e a 2.12 o troca pelo que estiver
+ * salvo — até lá é ele quem decide o que existe na tela.
  *
- * Os defaults vêm do registry, e não copiados à mão: o dia em que a capa ganhar um campo,
- * o deck semente o ganha junto. Por isso este módulo mora em `src/editor` e não em
+ * Os defaults vêm do registry, e não copiados à mão: o dia em que um template ganhar um
+ * campo, o deck semente o ganha junto. Por isso este módulo mora em `src/editor` e não em
  * `src/deck`, que não conhece a biblioteca de templates — a seta é `templates → deck`.
  *
- * Os três títulos têm comprimentos deliberadamente diferentes, de uma linha a quatro: é
- * assim que a âncora de base da §11.1 dos templates se confere olhando, alternando o
- * slide ativo e vendo a última linha pousar sempre na mesma altura.
+ * **Por que os dois `text-bullets` têm âncoras diferentes.** Enquanto `addSlide` (2.13) e
+ * a troca de layout (2.11) não existirem, a semente é o único lugar que decide quais
+ * slides existem, e o select de `anchor` é linha inerte no inspector até a 2C. Nascer com
+ * `center` num slide e `top` no outro é o que permite comparar as duas leituras da §11.2
+ * alternando o slide ativo — que é o critério de pronto da 2.8, e ele se confere olhando.
+ *
+ * Os três títulos de capa têm comprimentos deliberadamente diferentes, de uma linha a
+ * quatro: é assim que a âncora de base da §11.1 dos templates se confere, vendo a última
+ * linha pousar sempre na mesma altura.
  */
 
 import { createDeck, createSlide } from "@/deck/factories";
-import type { Deck } from "@/deck/types";
+import type { Deck, FieldValue, OptionValue, Slide } from "@/deck/types";
 import { get } from "@/templates";
 
 const COVER = "cover-statement";
+const BULLETS = "text-bullets";
 
 /**
  * Cada título traz um `[[destaque]]`, que é a marcação da §7 do documento de contexto
@@ -32,21 +40,58 @@ const HEADINGS = [
   "Três semanas de investigação para encontrar um [[bug de uma linha]]",
 ];
 
+/**
+ * Três itens no primeiro, quatro no segundo: o alvo e o teto da §11.2, um em cada slide.
+ * A marcação aparece uma vez por slide, e não em todo item — a regra de um nível de
+ * ênfase por bloco da §3.4 do design system vale dentro da lista também.
+ */
+const BULLET_SLIDES: { heading: string; items: string[]; anchor: OptionValue }[] = [
+  {
+    heading: "O que o log dizia",
+    items: [
+      "A leitura vinha do cache, e o cache [[nunca expirava]]",
+      "O teste passava porque subia com o cache vazio",
+      "Ninguém tinha olhado a métrica de acerto desde a estreia",
+    ],
+    anchor: "center",
+  },
+  {
+    heading: "Três semanas depois",
+    items: [
+      "Uma linha de `ttl` que nunca tinha sido lida",
+      "Duas horas para achar, três semanas para procurar",
+      "O relatório saiu maior que a correção",
+      "E a métrica de acerto virou alarme",
+    ],
+    anchor: "top",
+  },
+];
+
+function withFields(
+  template: string,
+  fields: Record<string, FieldValue>,
+  options: Record<string, OptionValue> = {},
+): Slide {
+  const slide = createSlide(template, get(template).defaults);
+
+  return {
+    ...slide,
+    fields: { ...slide.fields, ...fields },
+    options: { ...slide.options, ...options },
+  };
+}
+
 export function createSeedDeck(): Deck {
-  const { defaults } = get(COVER);
+  const covers = HEADINGS.map((heading, position) =>
+    withFields(COVER, { kicker: `log/ · 0${position + 1}`, heading }),
+  );
 
-  const slides = HEADINGS.map((heading, position) => {
-    const slide = createSlide(COVER, defaults);
+  const bullets = BULLET_SLIDES.map(({ heading, items, anchor }) =>
+    withFields(BULLETS, { heading, items }, { anchor }),
+  );
 
-    return {
-      ...slide,
-      fields: {
-        ...slide.fields,
-        kicker: `log/ · 0${position + 1}`,
-        heading,
-      },
-    };
-  });
-
-  return { ...createDeck({ title: "Carrossel de exemplo" }), slides };
+  return {
+    ...createDeck({ title: "Carrossel de exemplo" }),
+    slides: [...covers, ...bullets],
+  };
 }
