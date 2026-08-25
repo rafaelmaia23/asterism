@@ -11,13 +11,16 @@ describe("setItem", () => {
 
 describe("addItem", () => {
   test("acrescenta um item vazio no fim", () => {
-    expect(addItem(items, 4)).toEqual(["um", "dois", "três", ""]);
+    expect(addItem(items)).toEqual(["um", "dois", "três", ""]);
   });
 
-  /** O teto é o `maxItems` do descritor — aqui ele é trava, não conselho: o controle
-      desabilita o botão, e a função é a segunda linha de defesa. */
-  test("no teto não acrescenta nada", () => {
-    expect(addItem(items, 3)).toEqual(items);
+  /**
+   * Sem teto: `maxItems` é conselho como todo limite do descritor — §8 do documento de
+   * contexto e §11.0 dos templates. O contador avisa, o guard de transbordo reprova
+   * medindo altura, e a função não tem opinião sobre quantos itens são demais.
+   */
+  test("acrescenta mesmo acima do que o descritor aconselha", () => {
+    expect(addItem(["a", "b", "c", "d"])).toHaveLength(5);
   });
 });
 
@@ -59,7 +62,7 @@ describe("nenhuma função muta a entrada", () => {
     const original = [...items];
 
     setItem(items, 1, "outro");
-    addItem(items, 4);
+    addItem(items);
     removeItem(items, 0);
     moveItem(items, 1, -1);
 
@@ -68,7 +71,7 @@ describe("nenhuma função muta a entrada", () => {
 
   test("cada uma devolve um array novo", () => {
     expect(setItem(items, 0, "um")).not.toBe(items);
-    expect(addItem(items, 4)).not.toBe(items);
+    expect(addItem(items)).not.toBe(items);
     expect(removeItem(items, 0)).not.toBe(items);
     expect(moveItem(items, 1, -1)).not.toBe(items);
   });

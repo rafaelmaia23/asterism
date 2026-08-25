@@ -49,9 +49,9 @@ export type InspectorProps = {
  * altura real. Por isso nenhum controle aqui recebe `maxLength`.
  *
  * Conta caracteres num campo de texto e itens num campo `list` — a peça é a mesma porque
- * a leitura é a mesma: quanto do orçamento já foi gasto. A exceção está no que acontece
- * ao estourar: o teto de `maxItems` é trava de verdade, e lá o botão de acrescentar
- * desabilita antes de o contador ficar âmbar.
+ * a leitura é a mesma: quanto do orçamento já foi gasto, e o âmbar quando ele estourou.
+ * Vale para os dois porque `maxItems` também é conselho: um quinto tópico curto pode
+ * caber onde três longos não caberiam, e quem sabe disso é o guard, medindo altura.
  */
 function Counter({ count, max, testId }: { count: number; max?: number; testId: string }) {
   if (max === undefined) {
@@ -203,7 +203,6 @@ function FieldRow({
    */
   if (field.type === "list") {
     const items = Array.isArray(value) ? value : [];
-    const full = items.length >= field.maxItems;
 
     return (
       <div data-testid={`field-${field.key}`} className="flex flex-col gap-2">
@@ -222,13 +221,15 @@ function FieldRow({
           <ListItem key={at} field={field} items={items} at={at} onChange={onChange} />
         ))}
 
+        {/* Sem `disabled` no teto: `maxItems` é conselho como todo limite do descritor —
+            §8 do documento de contexto. O contador acima fica âmbar, e quem reprova de
+            fato é o guard de transbordo, medindo altura. */}
         <Button
           type="button"
           variant="outline"
           size="sm"
           data-testid={`add-${field.key}`}
-          disabled={full}
-          onClick={() => onChange(addItem(items, field.maxItems))}
+          onClick={() => onChange(addItem(items))}
         >
           <Plus />
           Adicionar

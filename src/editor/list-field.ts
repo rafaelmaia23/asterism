@@ -11,9 +11,11 @@
  * inteiro a cada tecla. Uma função que mutasse o array aqui devolveria a mesma referência
  * ao React, que não veria mudança nenhuma.
  *
- * O teto é `maxItems`, do descritor. Ao contrário do limite de caracteres da §11.0 dos
- * templates — que é conselho, e quem reprova é o guard —, este é trava: acrescentar um
- * quinto tópico não é texto longo demais, é uma lista que o template não desenha.
+ * **Nenhuma delas conhece `maxItems`.** O teto do descritor é conselho, como todo limite
+ * da §8 do documento de contexto e da §11.0 dos templates: o contador do inspector avisa,
+ * o guard de transbordo da Etapa 3 reprova medindo altura real, e o sistema informa sem
+ * impedir. Cinco itens curtos podem caber onde três longos não cabem, e só a altura sabe
+ * a diferença — uma trava aqui decidiria isso no escuro.
  */
 
 /** Troca o texto de um item. Posição fora da lista não muda nada. */
@@ -27,12 +29,8 @@ export function setItem(items: string[], at: number, value: string): string[] {
   return next;
 }
 
-/** Acrescenta um item vazio no fim, se ainda couber. */
-export function addItem(items: string[], maxItems: number): string[] {
-  if (items.length >= maxItems) {
-    return [...items];
-  }
-
+/** Acrescenta um item vazio no fim. */
+export function addItem(items: string[]): string[] {
   return [...items, ""];
 }
 

@@ -219,15 +219,23 @@ describe("Inspector — campo list", () => {
     expect(screen.getByLabelText<HTMLTextAreaElement>("Tópicos 3").value).toBe("");
   });
 
-  /** O teto de `maxItems` é trava, não conselho: quatro itens é o que o template desenha. */
-  test("no teto do descritor o botão de acrescentar desabilita", () => {
+  /**
+   * `maxItems` é conselho como todo limite do descritor — §8 do documento de contexto. O
+   * contador fica âmbar no quinto item, o botão continua ativo, e quem reprova de fato é
+   * o guard de transbordo, medindo altura real. Três itens curtos e cinco itens curtos
+   * não são o mesmo problema, e só a altura sabe a diferença.
+   */
+  test("passar do teto do descritor é permitido, e o contador avisa", () => {
     const { store } = renderInspector();
 
     fireEvent.click(screen.getByTestId("add-items"));
     fireEvent.click(screen.getByTestId("add-items"));
+    fireEvent.click(screen.getByTestId("add-items"));
 
-    expect(store.getState().deck.slides[0].fields.items).toHaveLength(4);
-    expect(screen.getByTestId("add-items")).toHaveProperty("disabled", true);
+    expect(store.getState().deck.slides[0].fields.items).toHaveLength(5);
+    expect(screen.getByTestId("add-items")).toHaveProperty("disabled", false);
+    expect(screen.getByTestId("counter-items").textContent).toBe("5/4");
+    expect(screen.getByTestId("counter-items").className).toContain("text-warning");
   });
 
   test("remover tira o item da posição", () => {
