@@ -11,13 +11,21 @@ describe("biblioteca de templates", () => {
     expect(get("text-bullets").label).toBe("Tópicos");
   });
 
+  test("o final-cta está registrado e sai por id", () => {
+    expect(get("final-cta").label).toBe("Fechamento");
+  });
+
   /**
    * A ordem de registro é a ordem em que a biblioteca se apresenta — no seletor de
-   * layout, e em qualquer lista futura. A capa vem primeiro porque é por onde um
-   * carrossel começa.
+   * layout, e em qualquer lista futura. É a narrativa de um carrossel: a capa abre, os
+   * tópicos desenvolvem, o CTA fecha.
    */
-  test("a 2B leva a biblioteca a dois templates, na ordem de registro", () => {
-    expect(list().map((def) => def.id)).toEqual(["cover-statement", "text-bullets"]);
+  test("a 2C fecha a Fase 1 com três templates, na ordem de registro", () => {
+    expect(list().map((def) => def.id)).toEqual([
+      "cover-statement",
+      "text-bullets",
+      "final-cta",
+    ]);
   });
 
   /**

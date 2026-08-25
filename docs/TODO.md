@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída; Etapa 2 em
-> curso: 2A e 2B concluídas — a próxima sessão abre a 2C**
+> curso: 2A, 2B e 2C concluídas — a próxima sessão abre a 2D**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 e 2 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -475,7 +475,7 @@ Resolvido na sessão:
   compartilhado. Como a chave é a mesma, nenhum deck salvo precisaria de migração — o que
   importa para a 2.12, que chega na 2D.
 
-### 2C — `final-cta` e os controles que faltam no inspector
+### 2C — `final-cta` e os controles que faltam no inspector ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
@@ -493,6 +493,44 @@ separou "Conteúdo" de "Apresentação" no formulário; sobra o controle de `sel
 componente shadcn que já está instalado. Reordenar item de `list` é por botão, subir e
 desce — `@dnd-kit` é da Etapa 4, e trazê-lo agora seria instalar dependência de etapa
 futura para o menor dos dois usos que ela vai ter.
+
+Uma tarefa nasceu na própria sessão, da contradição que a 2.6 expôs:
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.6a | O teto de `maxItems` volta a ser conselho | O botão de acrescentar não desabilita; o contador de itens fica âmbar acima do teto. Nenhuma correção de documento — é a §8 do documento de contexto sendo cumprida |
+
+Resolvido na sessão:
+
+- **O CTA em 36px contradizia a escala, e a escala venceu** — decisão 39. A §11.3 dos
+  templates dava "36px JetBrains Mono" ao texto do CTA e a §3.3 do design system não tem
+  esse degrau: o mono dela é `slide-code`, a 34px. Vence a §3.3, porque a decisão 19 diz
+  que o template escreve o token e nunca recompõe a escala, e porque um nono degrau para
+  um uso só seria invenção onde a §1 pede restrição. A §11.3 passou a nomear o token.
+- **A constelação inteira acesa sai de graça, por posição.** A §11.3 prometia "sempre
+  inteira acesa, independentemente da contagem", o que exigiria o template mentir sobre a
+  própria posição — `index = total - 1` no `Footer`. Não foi preciso: como o fechamento é
+  o último slide, a peça compartilhada já acende tudo. É a decisão 36 aplicada à peça
+  vizinha do chevron, e o rodapé nunca discorda da lista lateral.
+- **O gap do lead mora no lead**, não no contêiner. Os dois espaços do miolo são
+  diferentes — 48px do título ao lead, 64px do lead ao CTA — e um `gap` de flex publica
+  um valor só. Como `margin-top` do próprio bloco, apagar o lead leva o gap junto e o CTA
+  sobe para 64px do título, que é o que a §11.3 promete.
+- **`maxItems` era trava e virou conselho** — a 2.6a. A primeira versão desabilitava o
+  botão de acrescentar no quarto tópico, e a §8 do documento de contexto lista `maxItems`
+  entre os limites que são **conselho**. Não houve documento a corrigir: cinco itens
+  curtos podem caber onde três longos não cabem, e quem sabe disso é o guard de
+  transbordo, medindo altura. O `list-field.ts` deixou de conhecer o teto; quem o conhece
+  é o contador.
+- **O `Select` do Base UI é dirigível sob `happy-dom`** — o risco previsto não se
+  confirmou. O popup monta e as opções saem por `getByRole("option")`. O que não passa é
+  o clique: o caminho de ponteiro exige a sequência inteira — `pointerdown`, `pointerup`,
+  `mouseup` e `click` —, que existe para o popup não capturar o clique que o abriu, e o
+  `fireEvent` dispara um evento por vez. A confirmação por teclado é um `keyDown` só, é o
+  mesmo caminho de commit, e é o que o teste usa.
+- **Conferido no navegador e no PDF.** Os três critérios de pronto passaram olhando: o
+  bloco de CTA e o desaparecimento do lead com o gap, os quatro controles da lista com o
+  contador por item, e o `anchor` trocando no select com o canvas respondendo.
 
 ### 2D — troca de layout, composição e persistência
 

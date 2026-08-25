@@ -4,7 +4,7 @@ import { parseInline } from "@/markup/parse";
 import { get } from "@/templates";
 
 describe("createSeedDeck", () => {
-  test("nasce com três capas e dois text-bullets, nessa ordem", () => {
+  test("nasce com três capas, dois text-bullets e um fechamento, nessa ordem", () => {
     const deck = createSeedDeck();
 
     expect(deck.slides.map((slide) => slide.template)).toEqual([
@@ -13,7 +13,29 @@ describe("createSeedDeck", () => {
       "cover-statement",
       "text-bullets",
       "text-bullets",
+      "final-cta",
     ]);
+  });
+
+  /**
+   * O fechamento é o último por definição, e é a posição que faz a constelação sair
+   * inteira acesa e o chevron ser suprimido — decisão 36. Sem ele no fim, os dois
+   * comportamentos da 2.9 não teriam onde ser conferidos olhando.
+   */
+  test("o fechamento é o último slide do deck", () => {
+    expect(createSeedDeck().slides.at(-1)?.template).toBe("final-cta");
+  });
+
+  /** Os limites da §11.3 são conselho, mas a semente não tem por que estourá-los. */
+  test("o fechamento cabe nos limites da §11.3", () => {
+    const final = createSeedDeck().slides.at(-1)!;
+    const rendered = parseInline(String(final.fields.heading))
+      .map((node) => node.v)
+      .join("");
+
+    expect(rendered.length).toBeLessThanOrEqual(55);
+    expect(String(final.fields.lead).length).toBeLessThanOrEqual(90);
+    expect(String(final.fields.cta).length).toBeLessThanOrEqual(40);
   });
 
   test("as opções vêm dos defaults do registry, não de cópia à mão", () => {
@@ -34,9 +56,9 @@ describe("createSeedDeck", () => {
   });
 
   /**
-   * Enquanto o select de `anchor` for linha inerte no inspector — ele chega na 2C —, a
-   * semente é o único lugar que consegue pôr os dois valores na tela. Sem isto, o
-   * critério de pronto da 2.8 não tem como ser conferido olhando.
+   * A 2.7 tornou o `anchor` trocável no inspector, mas a semente continua nascendo com um
+   * de cada: as duas leituras da §11.2 ficam lado a lado na lista lateral, e o critério de
+   * pronto da 2.8 se confere olhando, sem trocar opção nenhuma.
    */
   test("os dois text-bullets trazem âncoras diferentes, para comparar olhando", () => {
     const anchors = createSeedDeck()
@@ -60,7 +82,7 @@ describe("createSeedDeck", () => {
   test("cada slide tem título próprio — é o que torna a lista da 1D verificável", () => {
     const headings = createSeedDeck().slides.map((slide) => slide.fields.heading);
 
-    expect(new Set(headings).size).toBe(5);
+    expect(new Set(headings).size).toBe(6);
   });
 
   test("os títulos vão de uma linha a quatro, para conferir a âncora de base", () => {

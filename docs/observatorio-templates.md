@@ -244,11 +244,17 @@ mesmo gesto tipográfico. A constelação aparece inteira acesa.
 | Título       | `slide-title` (72px Oxanium 700, altura 1.1, tracking -0.02em)                                                  | `ink-100`   |
 | Lead         | `slide-lead` (44px Sora 400, altura 1.45), gap 48px do título                                                   | `ink-400`   |
 | Bloco de CTA | superfície `slide-surface`, `border-left: 4px solid azure-400`, raio **0**, padding 32px 40px, gap 64px do lead | —           |
-| Texto do CTA | 36px JetBrains Mono                                                                                             | `azure-400` |
+| Texto do CTA | `slide-code` (34px JetBrains Mono, altura 1.5)                                                                  | `azure-400` |
 | Prefixo      | `→ `                                                                                                            | `azure-400` |
 
-O CTA reusa a forma do callout em vez de um botão. Num PDF nada é clicável, e desenhar
-algo com aparência de botão promete uma interação que não existe.
+O CTA reusa a forma do callout em vez de um botão, e ocupa a largura útil inteira. Num PDF
+nada é clicável, e desenhar algo com aparência de botão promete uma interação que não
+existe.
+
+Esta linha dizia "36px JetBrains Mono", tamanho que a escala da §3.3 do design system não
+tem — o degrau mono dela é `slide-code`, a 34px. Vence a escala: a decisão 19 diz que o
+template escreve o token e nunca recompõe família, tamanho, altura e peso, e um nono
+degrau para um uso só seria invenção onde o sistema pede restrição. Decisão 39.
 
 #### Campos
 
@@ -272,8 +278,13 @@ entre eles. É a versão mais limpa do template e uma escolha válida.
 **Título longo** — 72px em 920px comporta cerca de 25 caracteres por linha; o limite de
 55 dá duas ou três linhas.
 
-**Constelação** — sempre inteira acesa, independentemente da contagem. Este é o último
-slide por definição.
+**Constelação** — inteira acesa, porque este é o último slide. A contagem sai da
+**posição** no deck, como em todo template: o fechamento não força nada. Um `final-cta`
+parado no meio do carrossel mostra o progresso real, e o rodapé nunca discorda da lista
+lateral — é a decisão 36 aplicada à peça vizinha do chevron.
+
+**Lead** — vazio é string vazia, não campo ausente: o dado continua lá para ser escrito de
+volta, e é o template que decide não desenhar o bloco.
 
 ```ts
 defaults: {
@@ -282,6 +293,11 @@ defaults: {
     lead: "Backend, infra e o que aprendo quebrando os dois.",
     cta: "blog.maiahub.com.br",
   },
-  options: { showGrid: true, showArrow: true },
+  options: {
+    showGrid: true, showRule: false,
+    showLogo: true, showLogoPlate: true, showHandle: true,
+    showChevron: false,
+    showArrow: true,
+  },
 }
 ```

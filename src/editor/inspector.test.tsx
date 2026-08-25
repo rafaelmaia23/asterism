@@ -16,10 +16,25 @@ import "@/templates";
 const fakeFields: Field[] = [
   { key: "kicker", type: "text", label: "Etiqueta", max: 12 },
   { key: "heading", type: "textarea", label: "Título", max: 20, md: true, rows: 3 },
-  { key: "items", type: "list", label: "Tópicos", maxItems: 4 },
+  { key: "items", type: "list", label: "Tópicos", maxItems: 4, maxPerItem: 10, md: true },
+  // Sem limite no descritor, para provar que o contador nasce do descritor e não do tipo.
+  { key: "cta", type: "text", label: "Destino" },
+  // Tipo que continua sem controle depois da 2C — é ele que guarda a linha inerte.
+  { key: "image", type: "image", label: "Imagem" },
 ];
 
-const fakeOptions: Field[] = [{ key: "showChevron", type: "toggle", label: "Chevron" }];
+const fakeOptions: Field[] = [
+  { key: "showChevron", type: "toggle", label: "Chevron" },
+  {
+    key: "anchor",
+    type: "select",
+    label: "Âncora",
+    options: [
+      { value: "center", label: "Centralizado" },
+      { value: "top", label: "No topo" },
+    ],
+  },
+];
 
 register({
   id: "fake-template",
@@ -28,7 +43,10 @@ register({
   background: "plain",
   fields: fakeFields,
   options: fakeOptions,
-  schema: z.object({ fields: z.record(z.string(), z.string()), options: z.record(z.string(), z.boolean()) }),
+  schema: z.object({
+    fields: z.record(z.string(), z.string()),
+    options: z.record(z.string(), z.union([z.string(), z.boolean()])),
+  }),
   defaults: { fields: {}, options: {} },
   Component: () => null,
 } satisfies TemplateDef);
@@ -46,8 +64,14 @@ function makeDeck(): Deck {
       {
         id: SLIDE_ID,
         template: "fake-template",
-        fields: { kicker: "log/ · 01", heading: "Um título", items: ["a", "b"] },
-        options: { showChevron: true },
+        fields: {
+          kicker: "log/ · 01",
+          heading: "Um título",
+          items: ["a", "b"],
+          cta: "blog.maiahub.com.br",
+          image: "",
+        },
+        options: { showChevron: true, anchor: "center" },
       },
     ],
     assets: {},
@@ -146,20 +170,183 @@ describe("Inspector", () => {
   test("campo sem limite no descritor não ganha contador", () => {
     renderInspector();
 
-    expect(screen.queryByTestId("counter-items")).toBeNull();
+    expect(screen.queryByTestId("counter-cta")).toBeNull();
   });
 
   /**
    * Tipo ainda não editável aparece assim mesmo. Pular em silêncio faria o critério
    * "campo novo aparece sozinho" passar por acidente no dia em que o campo novo for uma
-   * lista ou uma imagem.
+   * imagem ou um bloco de código — os dois que sobraram depois da 2C.
    */
   test("tipo não suportado aparece como linha inerte, com o rótulo", () => {
     renderInspector();
 
-    const linha = screen.getByTestId("field-items");
+    const linha = screen.getByTestId("field-image");
 
-    expect(linha.textContent).toContain("Tópicos");
+    expect(linha.textContent).toContain("Imagem");
     expect(linha.querySelector("input, textarea")).toBeNull();
+  });
+});
+
+/**
+ * O controle de `list` da 2.6. A lógica de acrescentar, remover e reordenar mora em
+ * `list-field.ts` e é testada lá; o que se prova aqui é a ligação — cada botão escreve o
+ * array inteiro no store, e o formulário volta a desenhá-lo.
+ */
+describe("Inspector — campo list", () => {
+  test("desenha uma textarea por item, nomeada pela posição", () => {
+    renderInspector();
+
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Tópicos 1").value).toBe("a");
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Tópicos 2").value).toBe("b");
+    expect(screen.queryByLabelText("Tópicos 3")).toBeNull();
+  });
+
+  test("digitar num item escreve só naquele item", () => {
+    const { store } = renderInspector();
+
+    fireEvent.change(screen.getByLabelText("Tópicos 2"), { target: { value: "outro" } });
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["a", "outro"]);
+  });
+
+  test("acrescentar põe um item vazio no fim", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["a", "b", ""]);
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Tópicos 3").value).toBe("");
+  });
+
+  /**
+   * `maxItems` é conselho como todo limite do descritor — §8 do documento de contexto. O
+   * contador fica âmbar no quinto item, o botão continua ativo, e quem reprova de fato é
+   * o guard de transbordo, medindo altura real. Três itens curtos e cinco itens curtos
+   * não são o mesmo problema, e só a altura sabe a diferença.
+   */
+  test("passar do teto do descritor é permitido, e o contador avisa", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("add-items"));
+    fireEvent.click(screen.getByTestId("add-items"));
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].fields.items).toHaveLength(5);
+    expect(screen.getByTestId("add-items")).toHaveProperty("disabled", false);
+    expect(screen.getByTestId("counter-items").textContent).toBe("5/4");
+    expect(screen.getByTestId("counter-items").className).toContain("text-warning");
+  });
+
+  test("remover tira o item da posição", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Remover item 1"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["b"]);
+  });
+
+  test("esvaziar a lista é permitido, e acrescentar é o caminho de volta", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Remover item 1"));
+    fireEvent.click(screen.getByLabelText("Remover item 1"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual([]);
+
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual([""]);
+  });
+
+  test("subir e descer trocam a ordem no store", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Descer item 1"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["b", "a"]);
+
+    fireEvent.click(screen.getByLabelText("Subir item 2"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["a", "b"]);
+  });
+
+  test("nas pontas os botões de ordem ficam desabilitados", () => {
+    renderInspector();
+
+    expect(screen.getByLabelText("Subir item 1")).toHaveProperty("disabled", true);
+    expect(screen.getByLabelText("Descer item 2")).toHaveProperty("disabled", true);
+    expect(screen.getByLabelText("Descer item 1")).toHaveProperty("disabled", false);
+  });
+
+  test("o cabeçalho conta itens contra o teto", () => {
+    renderInspector();
+
+    expect(screen.getByTestId("counter-items").textContent).toBe("2/4");
+  });
+
+  /** Por item o limite volta a ser conselho — quem reprova é o guard, medindo altura. */
+  test("cada item tem contador próprio, e só o que estoura fica âmbar", () => {
+    const { store } = renderInspector();
+    const longo = "x".repeat(14);
+
+    fireEvent.change(screen.getByLabelText("Tópicos 1"), { target: { value: longo } });
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual([longo, "b"]);
+    expect(screen.getByTestId("counter-items-0").textContent).toBe("14/10");
+    expect(screen.getByTestId("counter-items-0").className).toContain("text-warning");
+    expect(screen.getByTestId("counter-items-1").className).not.toContain("text-warning");
+    expect(screen.getByLabelText("Tópicos 1")).not.toHaveProperty("maxLength", 10);
+  });
+
+  test("a lista escreve em fields, não em options", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].options.items).toBeUndefined();
+  });
+});
+
+/**
+ * O controle de `select` da 2.7 — o que liga o `anchor` do `text-bullets`, que a 2B
+ * deixou como linha inerte.
+ */
+describe("Inspector — campo select", () => {
+  test("o gatilho mostra o rótulo do valor corrente, não o valor", () => {
+    renderInspector();
+
+    const trigger = screen.getByTestId("select-anchor");
+
+    expect(trigger.textContent).toContain("Centralizado");
+    expect(trigger).toHaveProperty("disabled", false);
+  });
+
+  /**
+   * A escolha se confirma pelo teclado. O caminho de ponteiro do Base UI exige a sequência
+   * inteira — `pointerdown`, `pointerup`, `mouseup` e `click` —, que existe para o popup
+   * não capturar o clique que o abriu; `fireEvent` dispara um evento por vez e o teclado
+   * é o mesmo caminho de confirmação, com um evento só. O que se prova é a ligação, e ela
+   * é a mesma nos dois.
+   */
+  test("escolher a outra opção escreve em options", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("select-anchor"));
+    fireEvent.keyDown(screen.getByRole("option", { name: "No topo" }), { key: "Enter" });
+
+    expect(store.getState().deck.slides[0].options.anchor).toBe("top");
+    expect(screen.getByTestId("select-anchor").textContent).toContain("No topo");
+  });
+
+  test("as opções do popup saem do descritor, na ordem declarada", () => {
+    renderInspector();
+
+    fireEvent.click(screen.getByTestId("select-anchor"));
+
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "Centralizado",
+      "No topo",
+    ]);
   });
 });

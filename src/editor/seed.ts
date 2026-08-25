@@ -1,10 +1,10 @@
 /**
  * O deck com que o editor abre, enquanto não há persistência.
  *
- * Cinco slides: três `cover-statement` e dois `text-bullets`. Com um só, a lista lateral,
- * a troca de slide ativo e o laço de páginas do alvo PDF ficariam sem prova. A 1D moveu
- * este deck para dentro do store sem mexer no módulo, e a 2.12 o troca pelo que estiver
- * salvo — até lá é ele quem decide o que existe na tela.
+ * Seis slides: três `cover-statement`, dois `text-bullets` e um `final-cta`. Com um só, a
+ * lista lateral, a troca de slide ativo e o laço de páginas do alvo PDF ficariam sem
+ * prova. A 1D moveu este deck para dentro do store sem mexer no módulo, e a 2.12 o troca
+ * pelo que estiver salvo — até lá é ele quem decide o que existe na tela.
  *
  * Os defaults vêm do registry, e não copiados à mão: o dia em que um template ganhar um
  * campo, o deck semente o ganha junto. Por isso este módulo mora em `src/editor` e não em
@@ -12,13 +12,19 @@
  *
  * **Por que os dois `text-bullets` têm âncoras diferentes.** Enquanto `addSlide` (2.13) e
  * a troca de layout (2.11) não existirem, a semente é o único lugar que decide quais
- * slides existem, e o select de `anchor` é linha inerte no inspector até a 2C. Nascer com
- * `center` num slide e `top` no outro é o que permite comparar as duas leituras da §11.2
- * alternando o slide ativo — que é o critério de pronto da 2.8, e ele se confere olhando.
+ * slides existem. Desde a 2.7 o `anchor` é trocável no inspector, mas nascer com `center`
+ * num slide e `top` no outro continua valendo: as duas leituras da §11.2 ficam lado a
+ * lado na lista lateral, comparáveis sem trocar opção nenhuma.
  *
  * Os três títulos de capa têm comprimentos deliberadamente diferentes, de uma linha a
  * quatro: é assim que a âncora de base da §11.1 dos templates se confere, vendo a última
  * linha pousar sempre na mesma altura.
+ *
+ * **Por que a semente termina num `final-cta`.** Mesmo argumento dos dois `text-bullets`
+ * da 2B: sem `addSlide` (2.13) e sem troca de layout (2.11), um template que não está na
+ * semente não aparece na tela, e o critério de pronto da 2.9 se confere olhando. De
+ * quebra, ele é quem põe a constelação inteira acesa e a supressão do chevron por posição
+ * — decisão 36 — sob os olhos, no único lugar do deck onde as duas valem.
  */
 
 import { createDeck, createSlide } from "@/deck/factories";
@@ -27,6 +33,7 @@ import { get } from "@/templates";
 
 const COVER = "cover-statement";
 const BULLETS = "text-bullets";
+const FINAL = "final-cta";
 
 /**
  * Cada título traz um `[[destaque]]`, que é a marcação da §7 do documento de contexto
@@ -67,6 +74,17 @@ const BULLET_SLIDES: { heading: string; items: string[]; anchor: OptionValue }[]
   },
 ];
 
+/**
+ * O fechamento fecha a mesma história das capas e dos tópicos, e traz um `[[destaque]]`
+ * como elas. O `lead` nasce escrito de propósito: apagá-lo no inspector é como se confere
+ * o comportamento que a §11.3 promete — o bloco some junto com o gap.
+ */
+const FINAL_SLIDE = {
+  heading: "Escrevo sobre o que [[quebra]] antes do que funciona",
+  lead: "Backend, infra e os três dias que cada bug de uma linha custa.",
+  cta: "blog.maiahub.com.br",
+};
+
 function withFields(
   template: string,
   fields: Record<string, FieldValue>,
@@ -90,8 +108,10 @@ export function createSeedDeck(): Deck {
     withFields(BULLETS, { heading, items }, { anchor }),
   );
 
+  const final = withFields(FINAL, FINAL_SLIDE);
+
   return {
     ...createDeck({ title: "Carrossel de exemplo" }),
-    slides: [...covers, ...bullets],
+    slides: [...covers, ...bullets, final],
   };
 }
