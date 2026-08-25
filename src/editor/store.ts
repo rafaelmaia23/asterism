@@ -16,8 +16,10 @@
 
 import { useStore } from "zustand";
 import { createStore, type StoreApi } from "zustand/vanilla";
-import type { Deck, FieldValue, OptionValue, Slide, SlideId } from "@/deck/types";
+import type { Deck, FieldValue, OptionValue, Slide, SlideId, TemplateId } from "@/deck/types";
 import { createSeedDeck } from "@/editor/seed";
+import { get } from "@/templates";
+import { migrateFields } from "@/templates/migrate";
 
 export type EditorState = {
   deck: Deck;
@@ -25,6 +27,7 @@ export type EditorState = {
   selectSlide: (id: SlideId) => void;
   setField: (id: SlideId, key: string, value: FieldValue) => void;
   setOption: (id: SlideId, key: string, value: OptionValue) => void;
+  setTemplate: (id: SlideId, template: TemplateId) => void;
 };
 
 /**
@@ -84,6 +87,37 @@ export function createEditorStore(deck: Deck): StoreApi<EditorState> {
             ...slide,
             options: { ...slide.options, [key]: value },
           })),
+        },
+      }));
+    },
+
+    /**
+     * A troca de layout — 2.11. O conteúdo migra pela interseção de chaves que o
+     * vocabulário único da §6 garante, e as opções **sempre** resetam para os defaults do
+     * template novo: são dois objetos separados no modelo justamente para que esta regra
+     * seja possível (decisão 5).
+     *
+     * Escolher o template que o slide já tem não é troca: devolve o mesmo slide, com a
+     * mesma referência, para não custar as opções que a pessoa ajustou.
+     */
+    setTemplate(id, template) {
+      set((state) => ({
+        deck: {
+          ...state.deck,
+          slides: replaceSlide(state.deck.slides, id, (slide) => {
+            if (slide.template === template) {
+              return slide;
+            }
+
+            const to = get(template);
+
+            return {
+              ...slide,
+              template,
+              fields: migrateFields(get(slide.template), to, slide.fields),
+              options: structuredClone(to.defaults.options),
+            };
+          }),
         },
       }));
     },

@@ -4,7 +4,7 @@ import { z } from "zod";
 import type { Deck } from "@/deck/types";
 import { Inspector } from "@/editor/inspector";
 import { createEditorStore } from "@/editor/store";
-import { register } from "@/templates/registry";
+import { list, register } from "@/templates/registry";
 import type { Field, TemplateDef } from "@/templates/types";
 import "@/templates";
 
@@ -85,19 +85,49 @@ function renderInspector() {
 }
 
 describe("Inspector", () => {
-  /**
-   * O seletor de layout da §14 do documento de contexto. A troca de verdade é a 2.11 e
-   * depende do `migrateFields` da 2.10 — até lá o controle mostra o layout do slide e não
-   * oferece troca. Desabilitado de propósito: a 2.8 e a 2.9 registram mais dois templates
-   * **antes** da 2.11, e um select ativo que não trocasse nada mentiria por semanas.
-   */
-  test("o topo mostra o layout do slide ativo, e ainda não troca", () => {
+  /** O seletor de layout da §14 do documento de contexto, no topo do formulário. */
+  test("o topo mostra o layout do slide ativo", () => {
     renderInspector();
 
-    const trigger = screen.getByTestId("layout-trigger");
+    expect(screen.getByTestId("layout-trigger").textContent).toContain("Template de teste");
+  });
 
-    expect(trigger.textContent).toContain("Template de teste");
-    expect(trigger).toHaveProperty("disabled", true);
+  /**
+   * A 2.11: escolher outro layout troca o template do slide e preserva o que já foi
+   * digitado. A confirmação é por teclado pelo mesmo motivo do select de opção — o caminho
+   * de ponteiro do Base UI exige a sequência inteira de eventos e o `fireEvent` dispara um
+   * por vez.
+   */
+  test("escolher outro layout troca o template e preserva o conteúdo", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("layout-trigger"));
+    fireEvent.keyDown(screen.getByRole("option", { name: "Tópicos" }), { key: "Enter" });
+
+    const slide = store.getState().deck.slides[0];
+    expect(slide.template).toBe("text-bullets");
+    expect(slide.fields.heading).toBe("Um título");
+  });
+
+  test("o formulário passa a ser o do template novo", () => {
+    renderInspector();
+
+    fireEvent.click(screen.getByTestId("layout-trigger"));
+    fireEvent.keyDown(screen.getByRole("option", { name: "Tópicos" }), { key: "Enter" });
+
+    // O `text-bullets` chama o título de "Cabeçalho" e não declara etiqueta nenhuma.
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Cabeçalho").value).toBe("Um título");
+    expect(screen.queryByLabelText("Etiqueta")).toBeNull();
+  });
+
+  test("a biblioteca inteira aparece no popup, na ordem do registry", () => {
+    renderInspector();
+
+    fireEvent.click(screen.getByTestId("layout-trigger"));
+
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual(
+      list().map((def) => def.label),
+    );
   });
 
   test("desenha um controle por descritor, com o rótulo do descritor", () => {

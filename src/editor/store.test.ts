@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import type { Deck } from "@/deck/types";
 import { createEditorStore, selectActiveIndex } from "@/editor/store";
+import { get } from "@/templates";
 
 function makeDeck(): Deck {
   return {
@@ -99,11 +100,80 @@ describe("store do editor", () => {
    * registry: nenhuma tela oferece um slide que o deck não tem. Falhar em silêncio
    * esconderia a causa longe do ponto onde ela nasceu.
    */
-  test("id desconhecido lança nas três ações", () => {
+  test("id desconhecido lança em toda ação que recebe um", () => {
     const store = createEditorStore(makeDeck());
 
     expect(() => store.getState().selectSlide("nada")).toThrow(/nada/);
     expect(() => store.getState().setField("nada", "heading", "x")).toThrow(/nada/);
     expect(() => store.getState().setOption("nada", "showChevron", false)).toThrow(/nada/);
+    expect(() => store.getState().setTemplate("nada", "text-bullets")).toThrow(/nada/);
+  });
+
+  /**
+   * A troca de layout — 2.11. O que ela preserva é `fields`, pela interseção de chaves
+   * que o vocabulário único da §6 garante; o que ela reseta é `options`, sempre, pelos
+   * defaults do template novo (decisão 5).
+   */
+  describe("setTemplate", () => {
+    test("troca o template e migra o conteúdo pelas chaves compartilhadas", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().setTemplate("s1", "text-bullets");
+
+      const slide = store.getState().deck.slides[0];
+      expect(slide.template).toBe("text-bullets");
+      expect(slide.fields.heading).toBe("Primeiro");
+      expect("kicker" in slide.fields).toBe(false);
+      expect(slide.fields.items).toEqual(get("text-bullets").defaults.fields.items);
+    });
+
+    test("as opções resetam para os defaults do template novo", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().setTemplate("s1", "text-bullets");
+
+      expect(store.getState().deck.slides[0].options).toEqual(
+        get("text-bullets").defaults.options,
+      );
+    });
+
+    test("as opções resetadas não compartilham referência com o descritor", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().setTemplate("s1", "text-bullets");
+
+      expect(store.getState().deck.slides[0].options).not.toBe(
+        get("text-bullets").defaults.options,
+      );
+    });
+
+    /**
+     * Escolher no select o template que o slide já tem não pode custar as opções que a
+     * pessoa ajustou. Preservar a referência do slide é também o que mantém o `memo` da
+     * lista lateral valendo.
+     */
+    test("trocar pelo template que já está não mexe em nada", () => {
+      const store = createEditorStore(makeDeck());
+      const antes = store.getState().deck.slides[0];
+
+      store.getState().setTemplate("s1", "cover-statement");
+
+      expect(store.getState().deck.slides[0]).toBe(antes);
+    });
+
+    test("não toca nos outros slides", () => {
+      const store = createEditorStore(makeDeck());
+      const antes = store.getState().deck.slides[1];
+
+      store.getState().setTemplate("s1", "text-bullets");
+
+      expect(store.getState().deck.slides[1]).toBe(antes);
+    });
+
+    test("template desconhecido lança, como no registry", () => {
+      const store = createEditorStore(makeDeck());
+
+      expect(() => store.getState().setTemplate("s1", "não-existe")).toThrow(/não-existe/);
+    });
   });
 });

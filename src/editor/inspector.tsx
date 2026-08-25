@@ -310,19 +310,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 /**
  * O seletor de layout da §14 — o topo do inspector.
  *
- * Mostra o layout do slide e **não troca**: a troca é a tarefa 2.11 e depende do
- * `migrateFields` da 2.10, que preserva o que já foi digitado. Fica desabilitado em vez de
- * ativo-sem-efeito porque a 2.8 e a 2.9 registram mais dois templates antes da 2.11 —
- * um select que lista três opções e ignora a escolha mentiria por semanas.
+ * Trocar o layout **preserva o conteúdo** e reseta as opções: quem sabe a regra é o
+ * `setTemplate` do store, sobre o `migrateFields` da 2.10. Aqui só se escolhe.
  *
  * A lista sai do registry, nunca de um array à parte: um template novo aparece aqui pelo
  * mesmo caminho que aparece no resto do sistema.
  */
-function LayoutPicker({ template }: { template: string }) {
+function LayoutPicker({
+  template,
+  onChange,
+}: {
+  template: string;
+  onChange: (template: string) => void;
+}) {
   const labels = Object.fromEntries(list().map((def) => [def.id, def.label]));
 
   return (
-    <Select value={template} items={labels} disabled>
+    <Select value={template} items={labels} onValueChange={(next) => onChange(String(next))}>
       <SelectTrigger data-testid="layout-trigger" className="w-full">
         <SelectValue />
       </SelectTrigger>
@@ -341,14 +345,17 @@ export function Inspector({ store = editorStore }: InspectorProps) {
   const slide = useStore(store, selectActiveSlide);
   const setField = useStore(store, (state) => state.setField);
   const setOption = useStore(store, (state) => state.setOption);
+  const setTemplate = useStore(store, (state) => state.setTemplate);
 
   const def = get(slide.template);
 
   return (
     <div className="flex flex-col gap-8 p-4">
       <Section title="Layout">
-        <LayoutPicker template={slide.template} />
-        <span className="text-xs text-ink-600">Trocar de layout chega na Etapa 2.</span>
+        <LayoutPicker
+          template={slide.template}
+          onChange={(template) => setTemplate(slide.id, template)}
+        />
       </Section>
 
       <Section title="Conteúdo">
