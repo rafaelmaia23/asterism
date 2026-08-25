@@ -56,9 +56,9 @@ describe("createSeedDeck", () => {
   });
 
   /**
-   * Enquanto o select de `anchor` for linha inerte no inspector — ele chega na 2C —, a
-   * semente é o único lugar que consegue pôr os dois valores na tela. Sem isto, o
-   * critério de pronto da 2.8 não tem como ser conferido olhando.
+   * A 2.7 tornou o `anchor` trocável no inspector, mas a semente continua nascendo com um
+   * de cada: as duas leituras da §11.2 ficam lado a lado na lista lateral, e o critério de
+   * pronto da 2.8 se confere olhando, sem trocar opção nenhuma.
    */
   test("os dois text-bullets trazem âncoras diferentes, para comparar olhando", () => {
     const anchors = createSeedDeck()

@@ -552,12 +552,18 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 1E: o centro funciona; o topo tem o nome do deck e a exportação —
+Estado hoje, depois da 2C: o centro funciona; o topo tem o nome do deck e a exportação —
 um botão por alvo do registry, hoje um só, e o menu com escolha de alvo entra quando
 houver mais de um; a direita tem o seletor de layout — desabilitado até a 2.11, que é
 quem o liga ao `migrateFields` — e o formulário derivado dos descritores, com contadores;
 a esquerda lista os slides com miniatura, número e nome, e troca o ativo, sem marca de
 transbordo, arraste, duplicar nem remover.
+
+O formulário desenha cinco dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
+a 1D, `list` e `select` desde a 2C. `image` e `code` continuam aparecendo como linha
+inerte com o rótulo — pular um tipo sem controle em silêncio faria um campo novo sumir do
+formulário sem aviso. No `list`, acrescentar, remover e reordenar são botões: o arraste é
+da Etapa 4, com `@dnd-kit`, e a lista lateral é onde ele se paga.
 
 A miniatura é o mesmo `SlideView` do canvas numa escala fixa, e não uma representação
 própria: um segundo desenho do slide para a lista lateral divergiria do primeiro no

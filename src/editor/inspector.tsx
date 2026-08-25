@@ -264,9 +264,31 @@ function FieldRow({
         />
       )}
 
-      {/* Tipo ainda sem controle — `image`, `code`, e `select` até a 2.7. Aparece assim
-          mesmo: pular em silêncio faria um campo novo sumir do formulário sem aviso. */}
-      {field.type !== "text" && field.type !== "textarea" && (
+      {/* O `items` do Base UI é o mapa valor→rótulo: é ele que faz o gatilho mostrar
+          "Centralizado" fechado, sem o popup precisar ter sido aberto uma vez. */}
+      {field.type === "select" && (
+        <Select
+          value={text}
+          items={Object.fromEntries(field.options.map((option) => [option.value, option.label]))}
+          onValueChange={(next) => onChange(String(next))}
+        >
+          <SelectTrigger id={id} data-testid={`select-${field.key}`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {field.options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {/* Tipo ainda sem controle — `image` e `code`, os dois que sobraram depois da 2C.
+          Aparece assim mesmo: pular em silêncio faria um campo novo sumir do formulário
+          sem aviso. */}
+      {field.type !== "text" && field.type !== "textarea" && field.type !== "select" && (
         <span className="text-sm text-ink-600">Ainda não editável aqui</span>
       )}
     </div>

@@ -12,9 +12,9 @@
  *
  * **Por que os dois `text-bullets` têm âncoras diferentes.** Enquanto `addSlide` (2.13) e
  * a troca de layout (2.11) não existirem, a semente é o único lugar que decide quais
- * slides existem, e o select de `anchor` é linha inerte no inspector até a 2C. Nascer com
- * `center` num slide e `top` no outro é o que permite comparar as duas leituras da §11.2
- * alternando o slide ativo — que é o critério de pronto da 2.8, e ele se confere olhando.
+ * slides existem. Desde a 2.7 o `anchor` é trocável no inspector, mas nascer com `center`
+ * num slide e `top` no outro continua valendo: as duas leituras da §11.2 ficam lado a
+ * lado na lista lateral, comparáveis sem trocar opção nenhuma.
  *
  * Os três títulos de capa têm comprimentos deliberadamente diferentes, de uma linha a
  * quatro: é assim que a âncora de base da §11.1 dos templates se confere, vendo a última

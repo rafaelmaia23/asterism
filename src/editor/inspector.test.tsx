@@ -23,7 +23,18 @@ const fakeFields: Field[] = [
   { key: "image", type: "image", label: "Imagem" },
 ];
 
-const fakeOptions: Field[] = [{ key: "showChevron", type: "toggle", label: "Chevron" }];
+const fakeOptions: Field[] = [
+  { key: "showChevron", type: "toggle", label: "Chevron" },
+  {
+    key: "anchor",
+    type: "select",
+    label: "Âncora",
+    options: [
+      { value: "center", label: "Centralizado" },
+      { value: "top", label: "No topo" },
+    ],
+  },
+];
 
 register({
   id: "fake-template",
@@ -32,7 +43,10 @@ register({
   background: "plain",
   fields: fakeFields,
   options: fakeOptions,
-  schema: z.object({ fields: z.record(z.string(), z.string()), options: z.record(z.string(), z.boolean()) }),
+  schema: z.object({
+    fields: z.record(z.string(), z.string()),
+    options: z.record(z.string(), z.union([z.string(), z.boolean()])),
+  }),
   defaults: { fields: {}, options: {} },
   Component: () => null,
 } satisfies TemplateDef);
@@ -57,7 +71,7 @@ function makeDeck(): Deck {
           cta: "blog.maiahub.com.br",
           image: "",
         },
-        options: { showChevron: true },
+        options: { showChevron: true, anchor: "center" },
       },
     ],
     assets: {},
@@ -283,5 +297,48 @@ describe("Inspector — campo list", () => {
     fireEvent.click(screen.getByTestId("add-items"));
 
     expect(store.getState().deck.slides[0].options.items).toBeUndefined();
+  });
+});
+
+/**
+ * O controle de `select` da 2.7 — o que liga o `anchor` do `text-bullets`, que a 2B
+ * deixou como linha inerte.
+ */
+describe("Inspector — campo select", () => {
+  test("o gatilho mostra o rótulo do valor corrente, não o valor", () => {
+    renderInspector();
+
+    const trigger = screen.getByTestId("select-anchor");
+
+    expect(trigger.textContent).toContain("Centralizado");
+    expect(trigger).toHaveProperty("disabled", false);
+  });
+
+  /**
+   * A escolha se confirma pelo teclado. O caminho de ponteiro do Base UI exige a sequência
+   * inteira — `pointerdown`, `pointerup`, `mouseup` e `click` —, que existe para o popup
+   * não capturar o clique que o abriu; `fireEvent` dispara um evento por vez e o teclado
+   * é o mesmo caminho de confirmação, com um evento só. O que se prova é a ligação, e ela
+   * é a mesma nos dois.
+   */
+  test("escolher a outra opção escreve em options", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("select-anchor"));
+    fireEvent.keyDown(screen.getByRole("option", { name: "No topo" }), { key: "Enter" });
+
+    expect(store.getState().deck.slides[0].options.anchor).toBe("top");
+    expect(screen.getByTestId("select-anchor").textContent).toContain("No topo");
+  });
+
+  test("as opções do popup saem do descritor, na ordem declarada", () => {
+    renderInspector();
+
+    fireEvent.click(screen.getByTestId("select-anchor"));
+
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+      "Centralizado",
+      "No topo",
+    ]);
   });
 });

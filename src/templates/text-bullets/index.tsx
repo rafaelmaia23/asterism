@@ -58,8 +58,8 @@ function TextBullets({
       >
         <ul className="flex flex-col gap-[var(--slide-gap-item)]">
           {content.items.map((item, position) => (
-            // A chave é a posição: item de lista não tem id no modelo, e a reordenação da
-            // 2.6 reescreve o array inteiro de qualquer forma.
+            // A chave é a posição: item de lista não tem id no modelo, e reordenar no
+            // inspector reescreve o array inteiro de qualquer forma.
             <li key={position} className="slide-body flex gap-[32px] text-ink-100">
               <span className="font-mono text-azure-radiance-400" aria-hidden>
                 —
