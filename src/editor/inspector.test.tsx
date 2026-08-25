@@ -16,7 +16,11 @@ import "@/templates";
 const fakeFields: Field[] = [
   { key: "kicker", type: "text", label: "Etiqueta", max: 12 },
   { key: "heading", type: "textarea", label: "Título", max: 20, md: true, rows: 3 },
-  { key: "items", type: "list", label: "Tópicos", maxItems: 4 },
+  { key: "items", type: "list", label: "Tópicos", maxItems: 4, maxPerItem: 10, md: true },
+  // Sem limite no descritor, para provar que o contador nasce do descritor e não do tipo.
+  { key: "cta", type: "text", label: "Destino" },
+  // Tipo que continua sem controle depois da 2C — é ele que guarda a linha inerte.
+  { key: "image", type: "image", label: "Imagem" },
 ];
 
 const fakeOptions: Field[] = [{ key: "showChevron", type: "toggle", label: "Chevron" }];
@@ -46,7 +50,13 @@ function makeDeck(): Deck {
       {
         id: SLIDE_ID,
         template: "fake-template",
-        fields: { kicker: "log/ · 01", heading: "Um título", items: ["a", "b"] },
+        fields: {
+          kicker: "log/ · 01",
+          heading: "Um título",
+          items: ["a", "b"],
+          cta: "blog.maiahub.com.br",
+          image: "",
+        },
         options: { showChevron: true },
       },
     ],
@@ -146,20 +156,132 @@ describe("Inspector", () => {
   test("campo sem limite no descritor não ganha contador", () => {
     renderInspector();
 
-    expect(screen.queryByTestId("counter-items")).toBeNull();
+    expect(screen.queryByTestId("counter-cta")).toBeNull();
   });
 
   /**
    * Tipo ainda não editável aparece assim mesmo. Pular em silêncio faria o critério
    * "campo novo aparece sozinho" passar por acidente no dia em que o campo novo for uma
-   * lista ou uma imagem.
+   * imagem ou um bloco de código — os dois que sobraram depois da 2C.
    */
   test("tipo não suportado aparece como linha inerte, com o rótulo", () => {
     renderInspector();
 
-    const linha = screen.getByTestId("field-items");
+    const linha = screen.getByTestId("field-image");
 
-    expect(linha.textContent).toContain("Tópicos");
+    expect(linha.textContent).toContain("Imagem");
     expect(linha.querySelector("input, textarea")).toBeNull();
+  });
+});
+
+/**
+ * O controle de `list` da 2.6. A lógica de acrescentar, remover e reordenar mora em
+ * `list-field.ts` e é testada lá; o que se prova aqui é a ligação — cada botão escreve o
+ * array inteiro no store, e o formulário volta a desenhá-lo.
+ */
+describe("Inspector — campo list", () => {
+  test("desenha uma textarea por item, nomeada pela posição", () => {
+    renderInspector();
+
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Tópicos 1").value).toBe("a");
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Tópicos 2").value).toBe("b");
+    expect(screen.queryByLabelText("Tópicos 3")).toBeNull();
+  });
+
+  test("digitar num item escreve só naquele item", () => {
+    const { store } = renderInspector();
+
+    fireEvent.change(screen.getByLabelText("Tópicos 2"), { target: { value: "outro" } });
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["a", "outro"]);
+  });
+
+  test("acrescentar põe um item vazio no fim", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["a", "b", ""]);
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Tópicos 3").value).toBe("");
+  });
+
+  /** O teto de `maxItems` é trava, não conselho: quatro itens é o que o template desenha. */
+  test("no teto do descritor o botão de acrescentar desabilita", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("add-items"));
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].fields.items).toHaveLength(4);
+    expect(screen.getByTestId("add-items")).toHaveProperty("disabled", true);
+  });
+
+  test("remover tira o item da posição", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Remover item 1"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["b"]);
+  });
+
+  test("esvaziar a lista é permitido, e acrescentar é o caminho de volta", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Remover item 1"));
+    fireEvent.click(screen.getByLabelText("Remover item 1"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual([]);
+
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual([""]);
+  });
+
+  test("subir e descer trocam a ordem no store", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Descer item 1"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["b", "a"]);
+
+    fireEvent.click(screen.getByLabelText("Subir item 2"));
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual(["a", "b"]);
+  });
+
+  test("nas pontas os botões de ordem ficam desabilitados", () => {
+    renderInspector();
+
+    expect(screen.getByLabelText("Subir item 1")).toHaveProperty("disabled", true);
+    expect(screen.getByLabelText("Descer item 2")).toHaveProperty("disabled", true);
+    expect(screen.getByLabelText("Descer item 1")).toHaveProperty("disabled", false);
+  });
+
+  test("o cabeçalho conta itens contra o teto", () => {
+    renderInspector();
+
+    expect(screen.getByTestId("counter-items").textContent).toBe("2/4");
+  });
+
+  /** Por item o limite volta a ser conselho — quem reprova é o guard, medindo altura. */
+  test("cada item tem contador próprio, e só o que estoura fica âmbar", () => {
+    const { store } = renderInspector();
+    const longo = "x".repeat(14);
+
+    fireEvent.change(screen.getByLabelText("Tópicos 1"), { target: { value: longo } });
+
+    expect(store.getState().deck.slides[0].fields.items).toEqual([longo, "b"]);
+    expect(screen.getByTestId("counter-items-0").textContent).toBe("14/10");
+    expect(screen.getByTestId("counter-items-0").className).toContain("text-warning");
+    expect(screen.getByTestId("counter-items-1").className).not.toContain("text-warning");
+    expect(screen.getByLabelText("Tópicos 1")).not.toHaveProperty("maxLength", 10);
+  });
+
+  test("a lista escreve em fields, não em options", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("add-items"));
+
+    expect(store.getState().deck.slides[0].options.items).toBeUndefined();
   });
 });

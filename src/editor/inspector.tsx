@@ -19,10 +19,13 @@
  */
 
 import { useId } from "react";
+import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
 import type { StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
 import type { FieldValue, OptionValue } from "@/deck/types";
+import { addItem, moveItem, removeItem, setItem } from "@/editor/list-field";
 import { editorStore, selectActiveSlide, type EditorState } from "@/editor/store";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -44,23 +47,115 @@ export type InspectorProps = {
  * O contador da §11.0 dos templates: o limite é **conselho**, não trava. O campo aceita
  * mais, o contador fica âmbar, e quem reprova de fato é o guard de transbordo, medindo
  * altura real. Por isso nenhum controle aqui recebe `maxLength`.
+ *
+ * Conta caracteres num campo de texto e itens num campo `list` — a peça é a mesma porque
+ * a leitura é a mesma: quanto do orçamento já foi gasto. A exceção está no que acontece
+ * ao estourar: o teto de `maxItems` é trava de verdade, e lá o botão de acrescentar
+ * desabilita antes de o contador ficar âmbar.
  */
-function Counter({ field, value }: { field: Field; value: string }) {
-  if (!("max" in field) || field.max === undefined) {
+function Counter({ count, max, testId }: { count: number; max?: number; testId: string }) {
+  if (max === undefined) {
     return null;
   }
 
-  const over = value.length > field.max;
-
   return (
     <span
-      data-testid={`counter-${field.key}`}
+      data-testid={testId}
       className={`font-mono text-xs font-medium tracking-[0.08em] tabular-nums ${
-        over ? "text-warning" : "text-ink-500"
+        count > max ? "text-warning" : "text-ink-500"
       }`}
     >
-      {value.length}/{field.max}
+      {count}/{max}
     </span>
+  );
+}
+
+/** O limite de caracteres do descritor, para os tipos que têm um. */
+function maxOf(field: Field): number | undefined {
+  return "max" in field ? field.max : undefined;
+}
+
+/**
+ * Um item de campo `list`: a textarea com o texto, os três botões de ordem e remoção, e o
+ * contador contra `maxPerItem`.
+ *
+ * Reordenar é por botão, e não por arraste: `@dnd-kit` é da Etapa 4, e trazê-lo agora
+ * seria instalar dependência de etapa futura para o menor dos dois usos que ela vai ter —
+ * a lista lateral é o outro, e é lá que o arraste se paga.
+ *
+ * A textarea tem duas linhas porque o item tem duas no slide: o limite da §11.2 é de 80
+ * caracteres, que em 40px sobre a largura útil rende até duas linhas. Um input de uma
+ * linha esconderia o fim do item enquanto se digita, justo onde a marcação inline costuma
+ * fechar.
+ */
+function ListItem({
+  field,
+  items,
+  at,
+  onChange,
+}: {
+  field: Extract<Field, { type: "list" }>;
+  items: string[];
+  at: number;
+  onChange: (items: string[]) => void;
+}) {
+  const item = items[at];
+
+  return (
+    <div data-testid={`item-${field.key}-${at}`} className="flex flex-col gap-1">
+      <div className="flex items-start gap-1">
+        {/* Rótulo por `aria-label`, não por `htmlFor`: a etiqueta do campo é uma só e os
+            controles são muitos, então cada item se nomeia pela posição. */}
+        <Textarea
+          aria-label={`${field.label} ${at + 1}`}
+          rows={2}
+          value={item}
+          className="flex-1"
+          onChange={(event) => onChange(setItem(items, at, event.target.value))}
+        />
+
+        <div className="flex flex-col">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Subir item ${at + 1}`}
+            disabled={at === 0}
+            onClick={() => onChange(moveItem(items, at, -1))}
+          >
+            <ArrowUp />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Descer item ${at + 1}`}
+            disabled={at === items.length - 1}
+            onClick={() => onChange(moveItem(items, at, 1))}
+          >
+            <ArrowDown />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Remover item ${at + 1}`}
+            onClick={() => onChange(removeItem(items, at))}
+          >
+            <X />
+          </Button>
+        </div>
+      </div>
+
+      {/* O contador alinha com a textarea, não com a coluna de botões. */}
+      <div className="flex justify-end pr-7">
+        <Counter
+          testId={`counter-${field.key}-${at}`}
+          count={item.length}
+          max={field.maxPerItem}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -101,13 +196,54 @@ function FieldRow({
     );
   }
 
+  /**
+   * A lista tem controle por item, então a etiqueta do campo não aponta para um controle
+   * só: vira texto, e cada item se nomeia pela posição. O contador do cabeçalho conta
+   * **itens** contra `maxItems`; o de cada item conta caracteres contra `maxPerItem`.
+   */
+  if (field.type === "list") {
+    const items = Array.isArray(value) ? value : [];
+    const full = items.length >= field.maxItems;
+
+    return (
+      <div data-testid={`field-${field.key}`} className="flex flex-col gap-2">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-sm text-ink-300">{field.label}</span>
+          <Counter
+            testId={`counter-${field.key}`}
+            count={items.length}
+            max={field.maxItems}
+          />
+        </div>
+
+        {items.map((item, at) => (
+          // A chave é a posição: item de lista não tem id no modelo, e reordenar reescreve
+          // o array inteiro — a mesma escolha que o `text-bullets` faz ao desenhá-los.
+          <ListItem key={at} field={field} items={items} at={at} onChange={onChange} />
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          data-testid={`add-${field.key}`}
+          disabled={full}
+          onClick={() => onChange(addItem(items, field.maxItems))}
+        >
+          <Plus />
+          Adicionar
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div data-testid={`field-${field.key}`} className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-2">
         <label htmlFor={id} className="text-sm text-ink-300">
           {field.label}
         </label>
-        <Counter field={field} value={text} />
+        <Counter testId={`counter-${field.key}`} count={text.length} max={maxOf(field)} />
       </div>
 
       {field.type === "text" && (
@@ -128,7 +264,7 @@ function FieldRow({
         />
       )}
 
-      {/* Tipo ainda sem controle — `list`, `image`, `code`, `select`. Aparece assim
+      {/* Tipo ainda sem controle — `image`, `code`, e `select` até a 2.7. Aparece assim
           mesmo: pular em silêncio faria um campo novo sumir do formulário sem aviso. */}
       {field.type !== "text" && field.type !== "textarea" && (
         <span className="text-sm text-ink-600">Ainda não editável aqui</span>
