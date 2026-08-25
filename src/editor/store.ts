@@ -10,12 +10,14 @@
  * global; a aplicação usa o singleton. Um provider só se paga quando há dois decks vivos
  * ao mesmo tempo, que é assunto da tela de listagem da Etapa 4.
  *
- * O ativo é guardado por **id**, não por índice: reordenar e remover chegam na Etapa 4 e
- * um índice guardado passaria a apontar para outro slide sem que nada avisasse.
+ * O ativo é guardado por **id**, não por índice: remover já existe e a reordenação chega
+ * na Etapa 4, e um índice guardado passaria a apontar para outro slide sem que nada
+ * avisasse.
  */
 
 import { useStore } from "zustand";
 import { createStore, type StoreApi } from "zustand/vanilla";
+import { createSlide } from "@/deck/factories";
 import type { Deck, FieldValue, OptionValue, Slide, SlideId, TemplateId } from "@/deck/types";
 import { createSeedDeck } from "@/editor/seed";
 import { get } from "@/templates";
@@ -28,7 +30,16 @@ export type EditorState = {
   setField: (id: SlideId, key: string, value: FieldValue) => void;
   setOption: (id: SlideId, key: string, value: OptionValue) => void;
   setTemplate: (id: SlideId, template: TemplateId) => void;
+  addSlide: () => void;
+  removeSlide: (id: SlideId) => void;
 };
+
+/**
+ * Com que layout um slide novo nasce. É o mais usado do carrossel — a estrutura da §8 é
+ * `capa → contexto → desenvolvimento (n) → payoff → cta`, e o `n` é este —, e o seletor de
+ * layout está a um clique de trocá-lo.
+ */
+const NEW_SLIDE_TEMPLATE = "text-bullets";
 
 /**
  * A posição de um slide, ou erro. Id fora do deck lança, como o registry faz com template
@@ -120,6 +131,50 @@ export function createEditorStore(deck: Deck): StoreApi<EditorState> {
           }),
         },
       }));
+    },
+
+    /**
+     * Acrescenta no fim e torna o novo o ativo — 2.13. Acrescentar sem ir para lá deixaria
+     * a pessoa clicando duas vezes para fazer uma coisa só, e o slide novo é exatamente
+     * onde ela vai escrever em seguida.
+     */
+    addSlide() {
+      set((state) => {
+        const slide = createSlide(NEW_SLIDE_TEMPLATE, get(NEW_SLIDE_TEMPLATE).defaults);
+
+        return {
+          deck: { ...state.deck, slides: [...state.deck.slides, slide] },
+          activeId: slide.id,
+        };
+      });
+    },
+
+    /**
+     * Tira o slide e escolhe o vizinho como ativo — o seguinte, ou o anterior quando o
+     * removido era o último. Remover um slide que não estava ativo não mexe no ativo.
+     *
+     * **O deck nunca fica sem slides** (§11): com um só, remover é recusado. Deck vazio
+     * pediria um estado vazio, que é da Etapa 5. O controle da lista lateral já fica
+     * desabilitado ali, então esta é a última linha de defesa e não a primeira — por isso
+     * recusa em silêncio em vez de lançar, ao contrário do id desconhecido, que é erro de
+     * programação.
+     */
+    removeSlide(id) {
+      set((state) => {
+        const at = indexOf(state.deck.slides, id);
+
+        if (state.deck.slides.length === 1) {
+          return {};
+        }
+
+        const slides = state.deck.slides.filter((slide) => slide.id !== id);
+        const vizinho = slides[Math.min(at, slides.length - 1)];
+
+        return {
+          deck: { ...state.deck, slides },
+          activeId: state.activeId === id ? vizinho.id : state.activeId,
+        };
+      });
     },
   }));
 }

@@ -39,7 +39,9 @@ export function EditorShell() {
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="w-64 shrink-0 overflow-y-auto border-r border-ink-800 bg-card">
+        {/* Quem rola é a lista, não a coluna: a barra de acrescentar e remover fica presa
+            no pé, onde ela não passa despercebida num deck de doze slides. */}
+        <aside className="flex w-64 shrink-0 flex-col border-r border-ink-800 bg-card">
           <SlideList />
         </aside>
 

@@ -107,6 +107,96 @@ describe("store do editor", () => {
     expect(() => store.getState().setField("nada", "heading", "x")).toThrow(/nada/);
     expect(() => store.getState().setOption("nada", "showChevron", false)).toThrow(/nada/);
     expect(() => store.getState().setTemplate("nada", "text-bullets")).toThrow(/nada/);
+    expect(() => store.getState().removeSlide("nada")).toThrow(/nada/);
+  });
+
+  /**
+   * `addSlide` e `removeSlide` — decisão 30 da §16, antecipados da Etapa 4. Sem eles o
+   * "pronto quando" da Etapa 2 é inalcançável: o store da 1D não tinha como acrescentar
+   * um slide sequer, e o critério pede um carrossel de 8 a 12.
+   */
+  describe("addSlide", () => {
+    test("acrescenta no fim e torna o novo slide ativo", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().addSlide();
+
+      const slides = store.getState().deck.slides;
+      expect(slides).toHaveLength(3);
+      expect(store.getState().activeId).toBe(slides[2].id);
+    });
+
+    test("o slide novo nasce `text-bullets`, com os defaults do descritor", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().addSlide();
+
+      const novo = store.getState().deck.slides[2];
+      expect(novo.template).toBe("text-bullets");
+      expect(novo.fields).toEqual(get("text-bullets").defaults.fields);
+      expect(novo.options).toEqual(get("text-bullets").defaults.options);
+    });
+
+    test("dois slides novos não compartilham o array do campo `list`", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().addSlide();
+      store.getState().addSlide();
+
+      const [, , terceiro, quarto] = store.getState().deck.slides;
+      expect(terceiro.fields.items).not.toBe(quarto.fields.items);
+    });
+  });
+
+  describe("removeSlide", () => {
+    test("tira o slide do deck", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().removeSlide("s2");
+
+      expect(store.getState().deck.slides.map((slide) => slide.id)).toEqual(["s1"]);
+    });
+
+    test("removendo o ativo, o vizinho seguinte assume", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().removeSlide("s1");
+
+      expect(store.getState().activeId).toBe("s2");
+    });
+
+    test("removendo o último, o anterior assume", () => {
+      const store = createEditorStore(makeDeck());
+      store.getState().selectSlide("s2");
+
+      store.getState().removeSlide("s2");
+
+      expect(store.getState().activeId).toBe("s1");
+    });
+
+    test("removendo um slide que não é o ativo, o ativo não muda", () => {
+      const store = createEditorStore(makeDeck());
+
+      store.getState().removeSlide("s2");
+
+      expect(store.getState().activeId).toBe("s1");
+    });
+
+    /**
+     * O deck nunca fica sem slides — §11. Deck vazio pediria um estado vazio, que é da
+     * Etapa 5; e o controle da lista lateral já fica desabilitado, então isto é a última
+     * linha de defesa, não a primeira.
+     */
+    test("com um slide só, remover é recusado", () => {
+      const store = createEditorStore(makeDeck());
+      store.getState().removeSlide("s2");
+      const antes = store.getState().deck;
+
+      store.getState().removeSlide("s1");
+
+      expect(store.getState().deck).toBe(antes);
+      expect(store.getState().activeId).toBe("s1");
+    });
   });
 
   /**

@@ -416,7 +416,8 @@ compra nada neste domínio.
 
 O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`, e nada
 mais — autosave e undo sobre um estado que ainda não sabe editar não teriam o que
-guardar. O `persist` entra na **Etapa 2**, tarefa 2.12, por cima deste mesmo store: a
+guardar. A 2D acrescentou `setTemplate`, `addSlide` e `removeSlide`, que são o que faz
+compor. O `persist` entra na **Etapa 2**, tarefa 2.12, por cima deste mesmo store: a
 Fase 1 do §15 promete um carrossel publicável e um deck que some no reload não cumpre a
 promessa. `zundo` e o IndexedDB ficam para a **Etapa 4**, junto com o resto do editor.
 
@@ -433,12 +434,18 @@ Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory
 deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
 reset global; a aplicação usa o singleton. Ver decisão 24.
 
-O slide ativo é guardado por **id**, não por índice: acrescentar e remover chegam na
-Etapa 2 e a reordenação na Etapa 4, e um índice guardado passaria a apontar para outro
+O slide ativo é guardado por **id**, não por índice: acrescentar e remover existem desde a
+2D e a reordenação chega na Etapa 4, e um índice guardado passaria a apontar para outro
 slide sem que nada avisasse. `addSlide` e `removeSlide` foram antecipados da Etapa 4 pela
 decisão 30 — sem eles a Etapa 2 não tem como compor os 8 a 12 slides que o próprio
 critério dela exige. O deck nunca fica sem slides: remover o último é recusado, porque
 deck vazio pediria um estado vazio, que é da Etapa 5.
+
+Acrescentar põe o slide **no fim** e o torna ativo — é onde a pessoa vai escrever em
+seguida —, e ele nasce `text-bullets`, que é o `n` da estrutura `capa → contexto →
+desenvolvimento (n) → payoff → cta` da §8; trocar o layout está a um clique. Remover passa
+o ativo ao vizinho seguinte, ou ao anterior quando o removido era o último; remover um
+slide que não estava ativo não mexe no ativo.
 
 ### Imagens: escopo fechado
 
@@ -552,12 +559,17 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 2.11: o centro funciona; o topo tem o nome do deck e a exportação —
+Estado hoje, depois da 2.13: o centro funciona; o topo tem o nome do deck e a exportação —
 um botão por alvo do registry, hoje um só, e o menu com escolha de alvo entra quando
 houver mais de um; a direita tem o seletor de layout, que troca o template do slide
 preservando o conteúdo, e o formulário derivado dos descritores, com contadores;
-a esquerda lista os slides com miniatura, número e nome, e troca o ativo, sem marca de
-transbordo, arraste, duplicar nem remover.
+a esquerda lista os slides com miniatura, número e nome, troca o ativo e tem, no pé, a
+barra que acrescenta e remove — sem marca de transbordo, arraste nem duplicar.
+
+Acrescentar e remover ficam numa barra fixa no pé da coluna, agindo sobre o slide ativo, e
+não como um controle por miniatura: o item da lista é um `<button>` inteiro, e botão dentro
+de botão é HTML inválido; e a §6 do design system diz que ícone nunca substitui rótulo em
+ação destrutiva, o que um X pendurado em cada uma das doze miniaturas seria.
 
 O formulário desenha cinco dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
 a 1D, `list` e `select` desde a 2C. `image` e `code` continuam aparecendo como linha
