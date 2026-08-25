@@ -16,9 +16,11 @@
  */
 
 import { useStore } from "zustand";
-import { createStore, type StoreApi } from "zustand/vanilla";
+import { createStore, type StateCreator, type StoreApi } from "zustand/vanilla";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import { createSlide } from "@/deck/factories";
 import type { Deck, FieldValue, OptionValue, Slide, SlideId, TemplateId } from "@/deck/types";
+import { reviveDeck } from "@/editor/rehydrate";
 import { createSeedDeck } from "@/editor/seed";
 import { get } from "@/templates";
 import { migrateFields } from "@/templates/migrate";
@@ -66,8 +68,13 @@ function replaceSlide(slides: Slide[], id: SlideId, change: (slide: Slide) => Sl
   return next;
 }
 
-export function createEditorStore(deck: Deck): StoreApi<EditorState> {
-  return createStore<EditorState>()((set) => ({
+/**
+ * O estado e as ações, separados da criação do store: é a mesma coisa que o store cru dos
+ * testes e o store persistido da aplicação inicializam, e escrevê-la duas vezes seria
+ * divergência garantida no primeiro ajuste.
+ */
+function editorState(deck: Deck): StateCreator<EditorState> {
+  return (set) => ({
     deck,
     activeId: deck.slides[0]?.id ?? "",
 
@@ -176,7 +183,52 @@ export function createEditorStore(deck: Deck): StoreApi<EditorState> {
         };
       });
     },
-  }));
+  });
+}
+
+/**
+ * Um store cru, sem middleware. É o que o teste usa: um store isolado por deck de
+ * fixture, sem React, sem reset global e sem storage nenhum atravessando de um caso para
+ * o outro.
+ */
+export function createEditorStore(deck: Deck): StoreApi<EditorState> {
+  return createStore<EditorState>()(editorState(deck));
+}
+
+/** A chave sob a qual o deck fica no localStorage. */
+const STORAGE_KEY = "asterism.deck";
+
+/**
+ * O store da aplicação: o mesmo estado, com autosave em localStorage — 2.12.
+ *
+ * **Guarda o deck e não o `activeId`** (§11): recarregar volta ao primeiro slide. Um id
+ * salvo teria de ser validado contra o deck reidratado, e a reordenação da Etapa 4 o
+ * invalidaria de qualquer jeito.
+ *
+ * **`skipHydration`, com a reidratação disparada em efeito.** O `persist` reidrata de
+ * forma síncrona na criação do store, e a página é pré-renderizada estaticamente: o
+ * servidor desenharia o deck semente e o cliente o deck salvo, que é divergência de
+ * hidratação — a mesma família do `crypto.randomUUID()` que a 1D pegou. Quem chama
+ * `rehydrate()` é o `EditorShell`, depois da montagem. Ver a §13 do documento de contexto.
+ *
+ * O `merge` é onde a decisão 31 entra: o que volta do storage passa pelo `reviveDeck`
+ * antes de virar estado. Ele recompõe o estado inteiro porque o `persist` **substitui** o
+ * que existe em vez de mesclar — sem espalhar o `current`, as ações se perderiam.
+ */
+export function createPersistentStore(deck: Deck, storage?: StateStorage) {
+  return createStore<EditorState>()(
+    persist(editorState(deck), {
+      name: STORAGE_KEY,
+      storage: createJSONStorage(() => storage ?? window.localStorage),
+      partialize: (state) => ({ deck: state.deck }),
+      skipHydration: true,
+      merge: (persisted, current) => {
+        const revived = reviveDeck((persisted as { deck?: unknown })?.deck, current.deck);
+
+        return { ...current, deck: revived, activeId: revived.slides[0].id };
+      },
+    }),
+  );
 }
 
 /** A posição do slide ativo — o que a constelação do rodapé precisa saber. */
@@ -188,7 +240,7 @@ export function selectActiveSlide(state: EditorState): Slide {
   return state.deck.slides[selectActiveIndex(state)];
 }
 
-export const editorStore = createEditorStore(createSeedDeck());
+export const editorStore = createPersistentStore(createSeedDeck());
 
 export function useEditor<T>(selector: (state: EditorState) => T): T {
   return useStore(editorStore, selector);

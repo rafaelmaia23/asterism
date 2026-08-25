@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { EditorShell } from "@/editor/editor-shell";
 import { editorStore } from "@/editor/store";
@@ -14,6 +14,10 @@ import "@/templates";
  * nunca dispara, a escala fica em 0 e nenhum quadro é desenhado. Ver `slide-canvas.test`.
  */
 describe("EditorShell", () => {
+  // O shell reidrata o deck salvo ao montar, desde a 2.12. Sem limpar o storage, o que um
+  // caso digita voltaria no caso seguinte.
+  beforeEach(() => localStorage.clear());
+
   test("a lista troca o slide que o inspector edita", () => {
     render(<EditorShell />);
 

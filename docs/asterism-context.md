@@ -417,9 +417,9 @@ compra nada neste domínio.
 O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`, e nada
 mais — autosave e undo sobre um estado que ainda não sabe editar não teriam o que
 guardar. A 2D acrescentou `setTemplate`, `addSlide` e `removeSlide`, que são o que faz
-compor. O `persist` entra na **Etapa 2**, tarefa 2.12, por cima deste mesmo store: a
-Fase 1 do §15 promete um carrossel publicável e um deck que some no reload não cumpre a
-promessa. `zundo` e o IndexedDB ficam para a **Etapa 4**, junto com o resto do editor.
+compor, e o `persist` por cima deste mesmo store — tarefa 2.12: a Fase 1 do §15 promete um
+carrossel publicável e um deck que some no reload não cumpre a promessa. `zundo` e o
+IndexedDB ficam para a **Etapa 4**, junto com o resto do editor.
 
 **Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
 deixa de bater com o código quando um template some ou muda de chave, e a resposta é
@@ -429,6 +429,14 @@ tela branca; reiniciar do semente apagaria o carrossel por causa de um slide. O 
 guarda é o **deck**, não o `activeId`: recarregar volta ao primeiro slide, e um id salvo
 teria de ser validado contra o deck reidratado que a reordenação da Etapa 4 invalidaria
 de qualquer jeito.
+
+São duas perguntas por slide, e a segunda sai de graça: o template ainda existe? e o
+conteúdo passa no schema que **ele próprio** declara? Cada template carrega o seu desde a
+1B. Quem responde é o `reviveDeck` de `src/editor/rehydrate.ts`, chamado no `merge` do
+`persist`; ele mora em `src/editor` porque `src/deck/types.ts` não importa nada, nem de
+biblioteca, e porque a validação por slide precisa do registry — a seta é
+`templates → deck`. Deck de forma errada e deck sem nenhum slide sobrevivente voltam ao
+semente, pela mesma regra que recusa remover o último slide.
 
 Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory é o que
 deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
@@ -542,6 +550,16 @@ atributo: ele avisa no console e segue com o valor do cliente. Identificador de 
 sai de `useId`, que o React gera pela posição na árvore e por isso casa dos dois lados.
 Aconteceu na 1D, no inspector. Vale para o palco de exportação da 1E e para a lista de
 arraste da Etapa 4, que também vão querer marcar nós.
+
+**Estado que vem do navegador não pode chegar no primeiro render.** É a mesma família da
+armadilha acima, e o `persist` do zustand cai nela por padrão: ele lê o storage de forma
+**síncrona**, na criação do store, e a página é pré-renderizada estaticamente — o HTML do
+build traz o deck semente e o primeiro render do cliente traria o deck salvo. O caminho é
+`skipHydration: true` na configuração do middleware e `store.persist.rehydrate()` num
+efeito, que só roda no navegador e depois do primeiro quadro. O deck salvo entra no
+segundo render, e os dois lados concordam no primeiro. Não chegou a virar defeito na 2D
+porque o store já nasceu assim; vale para qualquer estado que venha de `localStorage`,
+`IndexedDB` ou `matchMedia` daqui em diante.
 
 ## 14. Interface
 

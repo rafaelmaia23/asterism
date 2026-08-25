@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
+import type { StateStorage } from "zustand/middleware";
 import type { Deck } from "@/deck/types";
-import { createEditorStore, selectActiveIndex } from "@/editor/store";
+import { createEditorStore, createPersistentStore, selectActiveIndex } from "@/editor/store";
 import { get } from "@/templates";
 
 function makeDeck(): Deck {
@@ -11,17 +12,20 @@ function makeDeck(): Deck {
     format: { w: 1080, h: 1350 },
     meta: { handle: "@rafael", pillar: "log" },
     slides: [
+      // As opções saem inteiras do descritor, e não só a que cada caso olha: é a forma que
+      // um slide de verdade tem, e o `reviveDeck` da 2.12 valida contra o schema do
+      // template — um fixture pela metade reprovaria lá e em nenhum outro lugar.
       {
         id: "s1",
         template: "cover-statement",
         fields: { kicker: "log/ · 01", heading: "Primeiro" },
-        options: { showChevron: true },
+        options: { ...get("cover-statement").defaults.options },
       },
       {
         id: "s2",
         template: "cover-statement",
         fields: { kicker: "log/ · 02", heading: "Segundo" },
-        options: { showChevron: true },
+        options: { ...get("cover-statement").defaults.options },
       },
     ],
     assets: {},
@@ -264,6 +268,86 @@ describe("store do editor", () => {
       const store = createEditorStore(makeDeck());
 
       expect(() => store.getState().setTemplate("s1", "não-existe")).toThrow(/não-existe/);
+    });
+  });
+
+  /**
+   * O autosave — 2.12. O storage entra por argumento para o teste não depender do
+   * `localStorage` do ambiente, que é global e atravessaria de um caso para o outro.
+   */
+  describe("createPersistentStore", () => {
+    function memoryStorage(): StateStorage & { data: Map<string, string> } {
+      const data = new Map<string, string>();
+
+      return {
+        data,
+        getItem: (name) => data.get(name) ?? null,
+        setItem: (name, value) => void data.set(name, value),
+        removeItem: (name) => void data.delete(name),
+      };
+    }
+
+    test("editar grava o deck no storage", () => {
+      const storage = memoryStorage();
+      const store = createPersistentStore(makeDeck(), storage);
+
+      store.getState().setField("s1", "heading", "Escrito e salvo");
+
+      expect(storage.data.get("asterism.deck")).toContain("Escrito e salvo");
+    });
+
+    test("um store novo sobre o mesmo storage reidrata o que foi escrito", async () => {
+      const storage = memoryStorage();
+      const primeiro = createPersistentStore(makeDeck(), storage);
+      primeiro.getState().setField("s1", "heading", "Escrito e salvo");
+
+      const segundo = createPersistentStore(makeDeck(), storage);
+      await segundo.persist.rehydrate();
+
+      expect(segundo.getState().deck.slides[0].fields.heading).toBe("Escrito e salvo");
+    });
+
+    /** O que se guarda é o deck, não o `activeId`: recarregar volta ao primeiro slide. */
+    test("o slide ativo não é persistido", async () => {
+      const storage = memoryStorage();
+      const primeiro = createPersistentStore(makeDeck(), storage);
+      primeiro.getState().selectSlide("s2");
+
+      const segundo = createPersistentStore(makeDeck(), storage);
+      await segundo.persist.rehydrate();
+
+      expect(segundo.getState().activeId).toBe("s1");
+    });
+
+    /** Nada salvo é o primeiro uso: fica o deck com que o store nasceu. */
+    test("storage vazio deixa o deck semente de pé, com as ações vivas", async () => {
+      const store = createPersistentStore(makeDeck(), memoryStorage());
+
+      await store.persist.rehydrate();
+
+      expect(store.getState().deck.title).toBe("Deck de teste");
+      expect(store.getState().activeId).toBe("s1");
+
+      store.getState().setField("s1", "heading", "Ainda edita");
+      expect(store.getState().deck.slides[0].fields.heading).toBe("Ainda edita");
+    });
+
+    /**
+     * A decisão 31 pela porta da frente: o slide que não passa cai e o carrossel continua.
+     * Quem decide é o `reviveDeck`, que tem teste próprio; aqui se prova que o `merge` o
+     * consulta em vez de confiar no que estava salvo.
+     */
+    test("slide salvo com template desconhecido perde só aquele slide", async () => {
+      const storage = memoryStorage();
+      const salvo = makeDeck();
+      salvo.slides[0].template = "template-que-nao-existe-mais";
+      storage.setItem("asterism.deck", JSON.stringify({ state: { deck: salvo }, version: 0 }));
+
+      const store = createPersistentStore(makeDeck(), storage);
+      await store.persist.rehydrate();
+
+      expect(store.getState().deck.slides.map((slide) => slide.id)).toEqual(["s2"]);
+      expect(store.getState().activeId).toBe("s2");
     });
   });
 });
