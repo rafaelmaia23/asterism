@@ -577,7 +577,7 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 2.13: o centro funciona; o topo tem o nome do deck e a exportação —
+Estado hoje, depois da 2D: o centro funciona; o topo tem o nome do deck e a exportação —
 um botão por alvo do registry, hoje um só, e o menu com escolha de alvo entra quando
 houver mais de um; a direita tem o seletor de layout, que troca o template do slide
 preservando o conteúdo, e o formulário derivado dos descritores, com contadores;
