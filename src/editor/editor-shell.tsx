@@ -11,16 +11,30 @@
  * distribui.
  */
 
+import { useEffect } from "react";
 import { ExportButtons } from "@/editor/export-button";
 import { Inspector } from "@/editor/inspector";
 import { SlideCanvas } from "@/editor/slide-canvas";
 import { SlideList } from "@/editor/slide-list";
-import { selectActiveIndex, selectActiveSlide, useEditor } from "@/editor/store";
+import { editorStore, selectActiveIndex, selectActiveSlide, useEditor } from "@/editor/store";
 
 export function EditorShell() {
   const deck = useEditor((state) => state.deck);
   const active = useEditor(selectActiveSlide);
   const index = useEditor(selectActiveIndex);
+
+  /**
+   * A reidratação do deck salvo, depois da montagem — 2.12.
+   *
+   * O `persist` reidrataria sozinho na criação do store, e é justamente o que não pode
+   * acontecer: esta página é pré-renderizada estaticamente, então o servidor desenharia o
+   * deck semente e o cliente o deck salvo. Divergência de hidratação, da mesma família da
+   * armadilha de id da §13. O store nasce com `skipHydration` e quem pede a leitura é este
+   * efeito, que só roda no navegador e depois do primeiro quadro.
+   */
+  useEffect(() => {
+    void editorStore.persist.rehydrate();
+  }, []);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -39,7 +53,9 @@ export function EditorShell() {
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="w-64 shrink-0 overflow-y-auto border-r border-ink-800 bg-card">
+        {/* Quem rola é a lista, não a coluna: a barra de acrescentar e remover fica presa
+            no pé, onde ela não passa despercebida num deck de doze slides. */}
+        <aside className="flex w-64 shrink-0 flex-col border-r border-ink-800 bg-card">
           <SlideList />
         </aside>
 

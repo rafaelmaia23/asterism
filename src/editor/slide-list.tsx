@@ -14,11 +14,12 @@
  * traria de volta o laço da 1C. A largura é constante do módulo, e a escala sai dela com
  * `deck.format` — nunca com 1080 escrito à mão, §12.
  *
- * Somente leitura nesta etapa: clicar troca o ativo e nada mais. Marca de transbordo,
- * reordenação por arraste, duplicar e remover são das etapas seguintes.
+ * Clicar troca o ativo; a barra do pé acrescenta e remove — 2.13, decisão 30. Marca de
+ * transbordo, reordenação por arraste e duplicar são das etapas seguintes.
  */
 
 import { memo } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import type { StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
 import type { Deck, DeckMeta, Slide, SlideId } from "@/deck/types";
@@ -26,6 +27,7 @@ import type { EditorState } from "@/editor/store";
 import { editorStore } from "@/editor/store";
 import { SlideView } from "@/render/slide-view";
 import { get } from "@/templates/registry";
+import { Button } from "@/components/ui/button";
 
 /** Largura da miniatura em px. A altura sai da proporção do formato do deck. */
 export const THUMBNAIL_WIDTH = 216;
@@ -99,22 +101,55 @@ export function SlideList({ store = editorStore }: SlideListProps) {
   const deck = useStore(store, (state) => state.deck);
   const activeId = useStore(store, (state) => state.activeId);
   const selectSlide = useStore(store, (state) => state.selectSlide);
+  const addSlide = useStore(store, (state) => state.addSlide);
+  const removeSlide = useStore(store, (state) => state.removeSlide);
 
   return (
-    <ol className="flex flex-col gap-1 p-2">
-      {deck.slides.map((slide, position) => (
-        <li key={slide.id}>
-          <Item
-            slide={slide}
-            position={position}
-            total={deck.slides.length}
-            deck={deck.meta}
-            format={deck.format}
-            active={slide.id === activeId}
-            onSelect={selectSlide}
-          />
-        </li>
-      ))}
-    </ol>
+    <div className="flex h-full flex-col">
+      {/* O testid distingue esta lista das que os próprios slides desenham dentro das
+          miniaturas — um `text-bullets` na lista lateral também tem um `<ul>`. */}
+      <ol
+        data-testid="slide-list"
+        className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-2"
+      >
+        {deck.slides.map((slide, position) => (
+          <li key={slide.id}>
+            <Item
+              slide={slide}
+              position={position}
+              total={deck.slides.length}
+              deck={deck.meta}
+              format={deck.format}
+              active={slide.id === activeId}
+              onSelect={selectSlide}
+            />
+          </li>
+        ))}
+      </ol>
+
+      {/* Os dois controles agem sobre o **ativo** e ficam no pé, e não um X por miniatura,
+          por duas razões. O item é um `<button>` inteiro, e botão dentro de botão é HTML
+          inválido; e a §6 do design system diz que ícone nunca substitui rótulo em ação
+          destrutiva — doze X pendurados nas miniaturas seriam exatamente isso. */}
+      <div className="flex shrink-0 items-center gap-2 border-t border-ink-800 p-2">
+        <Button type="button" variant="outline" size="sm" className="flex-1" onClick={addSlide}>
+          <Plus />
+          Slide
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:text-destructive"
+          // Recusar em silêncio no store não basta: o controle precisa dizer, antes do
+          // clique, que o deck não fica sem slides — §11.
+          disabled={deck.slides.length === 1}
+          onClick={() => removeSlide(activeId)}
+        >
+          <Trash2 />
+          Remover
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída; Etapa 2 em
-> curso: 2A, 2B e 2C concluídas — a próxima sessão abre a 2D**
+> curso: 2A, 2B, 2C e 2D concluídas — a próxima sessão abre a 2E**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 e 2 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -532,7 +532,7 @@ Resolvido na sessão:
   bloco de CTA e o desaparecimento do lead com o gap, os quatro controles da lista com o
   contador por item, e o `anchor` trocando no select com o canvas respondendo.
 
-### 2D — troca de layout, composição e persistência
+### 2D — troca de layout, composição e persistência ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
@@ -556,6 +556,49 @@ cliente desenha o deck salvo. É divergência de hidratação, da mesma família
 `crypto.randomUUID()` que a 1D pegou, e o caminho é `skipHydration` com a reidratação
 disparada em efeito. Se a sessão confirmar, a §13 do documento de contexto ganha a
 armadilha no mesmo commit.
+
+Três decisões de produto foram fechadas antes de escrever a primeira linha, e as três
+couberam no que os documentos já diziam — nenhuma virou decisão da §16:
+
+| Pergunta | Resposta |
+|---|---|
+| Chave que só o template novo declara, na troca de layout | Nasce com o **default do descritor**, que é o mesmo que um slide recém-criado recebe |
+| As seis opções compartilhadas resetam junto com as outras? | **Resetam**, como a §6 e a decisão 5 escrevem |
+| Onde ficam acrescentar e remover | Numa **barra no pé da lista lateral**, agindo sobre o ativo |
+
+Resolvido na sessão:
+
+- **A migração compara forma de valor, não só chave.** O vocabulário canônico da §6
+  promete a mesma chave para o mesmo **papel**, e não a mesma forma: nada impede que um
+  template declare `items` como `list` e outro como `text`. Migrar por cima disso
+  entregaria ao componente um array onde ele espera string. A interseção passou a ser de
+  chave **e** de forma — `list` guarda array, todo o resto guarda string —, e quem não
+  bate fica com o default do destino.
+- **O `migrateFields` mora em `src/templates`, e não em `src/editor`.** A regra é
+  propriedade do vocabulário, não do formulário: ela conhece dois descritores e um mapa de
+  valores, nem o registry. `src/deck` estava fora de questão pela seta de dependência.
+- **A barra do pé não foi escolha estética.** O item da lista é um `<button>` inteiro
+  desde a 1D, e um X por miniatura seria botão dentro de botão, que é HTML inválido; e a
+  §6 do design system diz que ícone nunca substitui rótulo em ação destrutiva, o que doze
+  X pendurados nas miniaturas seriam exatamente. A barra resolve os dois de uma vez e dá
+  um lugar só para o "desabilitado com um slide só".
+- **Fixture pela metade reprova na reidratação e em nenhum outro lugar.** Os slides de
+  `store.test.ts` carregavam só a opção que cada caso olhava, e passavam — até o
+  `reviveDeck` validá-los contra o schema do template, que pede as seis. O fixture passou
+  a sair do descritor. É a decisão 31 cobrando de volta o preço que ela promete: o que
+  está salvo tem de ser um slide de verdade, e o teste também.
+- **`removeSlide` recusa em silêncio, `id` desconhecido lança.** São dois erros de
+  natureza diferente: id fora do deck é erro de programação, como o template desconhecido
+  do registry; remover o último slide é uma tela que insiste, e o controle já está
+  desabilitado antes do clique. Lançar ali derrubaria o editor por um clique legítimo.
+- **A armadilha da 2.12 não chegou a acontecer** porque o store nasceu com
+  `skipHydration`. A §13 do documento de contexto ganhou a armadilha assim mesmo, na forma
+  geral: estado que vem do navegador não pode chegar no primeiro render — vale para
+  `localStorage` hoje e para o IndexedDB da Etapa 4.
+- **Conferido no navegador.** Os quatro critérios de pronto passaram olhando: a troca de
+  layout preservando o título e resetando as opções, a barra acrescentando e removendo com
+  a escolha do vizinho, o deck sobrevivendo ao reload sem aviso de hidratação no console, e
+  o slide corrompido à mão no localStorage caindo sozinho.
 
 ### 2E — constelação e fecho da etapa
 

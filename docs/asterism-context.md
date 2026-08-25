@@ -416,9 +416,10 @@ compra nada neste domínio.
 
 O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`, e nada
 mais — autosave e undo sobre um estado que ainda não sabe editar não teriam o que
-guardar. O `persist` entra na **Etapa 2**, tarefa 2.12, por cima deste mesmo store: a
-Fase 1 do §15 promete um carrossel publicável e um deck que some no reload não cumpre a
-promessa. `zundo` e o IndexedDB ficam para a **Etapa 4**, junto com o resto do editor.
+guardar. A 2D acrescentou `setTemplate`, `addSlide` e `removeSlide`, que são o que faz
+compor, e o `persist` por cima deste mesmo store — tarefa 2.12: a Fase 1 do §15 promete um
+carrossel publicável e um deck que some no reload não cumpre a promessa. `zundo` e o
+IndexedDB ficam para a **Etapa 4**, junto com o resto do editor.
 
 **Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
 deixa de bater com o código quando um template some ou muda de chave, e a resposta é
@@ -429,16 +430,30 @@ guarda é o **deck**, não o `activeId`: recarregar volta ao primeiro slide, e u
 teria de ser validado contra o deck reidratado que a reordenação da Etapa 4 invalidaria
 de qualquer jeito.
 
+São duas perguntas por slide, e a segunda sai de graça: o template ainda existe? e o
+conteúdo passa no schema que **ele próprio** declara? Cada template carrega o seu desde a
+1B. Quem responde é o `reviveDeck` de `src/editor/rehydrate.ts`, chamado no `merge` do
+`persist`; ele mora em `src/editor` porque `src/deck/types.ts` não importa nada, nem de
+biblioteca, e porque a validação por slide precisa do registry — a seta é
+`templates → deck`. Deck de forma errada e deck sem nenhum slide sobrevivente voltam ao
+semente, pela mesma regra que recusa remover o último slide.
+
 Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory é o que
 deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
 reset global; a aplicação usa o singleton. Ver decisão 24.
 
-O slide ativo é guardado por **id**, não por índice: acrescentar e remover chegam na
-Etapa 2 e a reordenação na Etapa 4, e um índice guardado passaria a apontar para outro
+O slide ativo é guardado por **id**, não por índice: acrescentar e remover existem desde a
+2D e a reordenação chega na Etapa 4, e um índice guardado passaria a apontar para outro
 slide sem que nada avisasse. `addSlide` e `removeSlide` foram antecipados da Etapa 4 pela
 decisão 30 — sem eles a Etapa 2 não tem como compor os 8 a 12 slides que o próprio
 critério dela exige. O deck nunca fica sem slides: remover o último é recusado, porque
 deck vazio pediria um estado vazio, que é da Etapa 5.
+
+Acrescentar põe o slide **no fim** e o torna ativo — é onde a pessoa vai escrever em
+seguida —, e ele nasce `text-bullets`, que é o `n` da estrutura `capa → contexto →
+desenvolvimento (n) → payoff → cta` da §8; trocar o layout está a um clique. Remover passa
+o ativo ao vizinho seguinte, ou ao anterior quando o removido era o último; remover um
+slide que não estava ativo não mexe no ativo.
 
 ### Imagens: escopo fechado
 
@@ -536,6 +551,16 @@ sai de `useId`, que o React gera pela posição na árvore e por isso casa dos d
 Aconteceu na 1D, no inspector. Vale para o palco de exportação da 1E e para a lista de
 arraste da Etapa 4, que também vão querer marcar nós.
 
+**Estado que vem do navegador não pode chegar no primeiro render.** É a mesma família da
+armadilha acima, e o `persist` do zustand cai nela por padrão: ele lê o storage de forma
+**síncrona**, na criação do store, e a página é pré-renderizada estaticamente — o HTML do
+build traz o deck semente e o primeiro render do cliente traria o deck salvo. O caminho é
+`skipHydration: true` na configuração do middleware e `store.persist.rehydrate()` num
+efeito, que só roda no navegador e depois do primeiro quadro. O deck salvo entra no
+segundo render, e os dois lados concordam no primeiro. Não chegou a virar defeito na 2D
+porque o store já nasceu assim; vale para qualquer estado que venha de `localStorage`,
+`IndexedDB` ou `matchMedia` daqui em diante.
+
 ## 14. Interface
 
 Três colunas, sem invenção:
@@ -552,12 +577,17 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 2C: o centro funciona; o topo tem o nome do deck e a exportação —
+Estado hoje, depois da 2D: o centro funciona; o topo tem o nome do deck e a exportação —
 um botão por alvo do registry, hoje um só, e o menu com escolha de alvo entra quando
-houver mais de um; a direita tem o seletor de layout — desabilitado até a 2.11, que é
-quem o liga ao `migrateFields` — e o formulário derivado dos descritores, com contadores;
-a esquerda lista os slides com miniatura, número e nome, e troca o ativo, sem marca de
-transbordo, arraste, duplicar nem remover.
+houver mais de um; a direita tem o seletor de layout, que troca o template do slide
+preservando o conteúdo, e o formulário derivado dos descritores, com contadores;
+a esquerda lista os slides com miniatura, número e nome, troca o ativo e tem, no pé, a
+barra que acrescenta e remove — sem marca de transbordo, arraste nem duplicar.
+
+Acrescentar e remover ficam numa barra fixa no pé da coluna, agindo sobre o slide ativo, e
+não como um controle por miniatura: o item da lista é um `<button>` inteiro, e botão dentro
+de botão é HTML inválido; e a §6 do design system diz que ícone nunca substitui rótulo em
+ação destrutiva, o que um X pendurado em cada uma das doze miniaturas seria.
 
 O formulário desenha cinco dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
 a 1D, `list` e `select` desde a 2C. `image` e `code` continuam aparecendo como linha
