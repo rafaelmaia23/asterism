@@ -457,9 +457,19 @@ Respeite `prefers-reduced-motion`. Nada anima posição por mais de 8px.
 | Ativo        | `scale(0.98)`, sem mudança de cor                             |
 | Desabilitado | Texto `ink-600`, superfície inalterada, `cursor: not-allowed` |
 | Inválido     | Borda `crown-400`, mensagem em `crown-400` abaixo do campo    |
-| Carregando   | Texto do botão trocado, largura preservada                    |
+| Carregando   | Conteúdo do botão trocado, largura preservada                 |
 
 Evite botão desabilitado. Prefira mantê-lo ativo e responder no clique.
+
+**Carregando é o ícone, não o rótulo.** Esta linha dizia "texto do botão trocado", e o botão
+de exportar mostrou por que a versão mais forte é pior: trocar `PDF` por `Exportando` muda a
+largura, e preservá-la exigiria uma largura mínima escrita à mão que passa a existir para o
+estado que dura três segundos. Trocar o **ícone** por um `loader-circle` girando dá o mesmo
+sinal e a largura fica de graça. O rótulo é a identidade do botão e não muda de estado.
+
+Um botão que carrega leva `aria-busy`. É o que diz a mesma coisa a quem não vê o ícone, e é
+o que continua dizendo com `prefers-reduced-motion: reduce`, em que o spinner não gira — o
+ícone diferente ainda é um segundo sinal, e nenhum dos dois depende de movimento.
 
 ---
 
