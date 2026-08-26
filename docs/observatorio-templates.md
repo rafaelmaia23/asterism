@@ -38,6 +38,17 @@ de `defaults`.
 Todo template ocupa 1080×1350 com padding de 80px em todos os lados, o que dá uma
 largura útil de **920px**. Nada de logo ou CTA a menos de 60px da borda.
 
+**O padding vale para conteúdo. Imagem pode sangrar** — e só ela, nos dois templates de
+mídia: o `split-vertical` sangra pelo topo e pela direita, o `image-caption` pelo topo,
+pela esquerda e pela direita. Contida, com raio de 12px como o bloco de código, a imagem
+vira figura ilustrando um slide de texto, e os dois deixam de se distinguir do `context`.
+A zona morta de 60px continua valendo para o que ela sempre valeu — logo e CTA. Decisão 46.
+
+O sangramento tem um limite, e ele é geométrico: **nenhuma imagem entra na faixa do
+rodapé**. O rodapé precisa dos 920px inteiros — a identidade à esquerda mais doze pontos
+de constelação não cabem numa coluna de 440px —, então a imagem do `split-vertical` para
+em y 1174, que é a linha da régua da §10.5 do design system.
+
 **Todo template tem duas faixas, e as duas são opção do slide.**
 
 O **cabeçalho** ocupa 80–148 e traz o kicker em `slide-meta` `azure-400`. A capa é o único
@@ -93,6 +104,15 @@ campos de todo template:
 | --- | --- | --- | --- | --- | --- |
 | `kicker` | `text` | 12 | não | `header` | Pilar e índice, ex. `api/ · 04` |
 
+**E uma segunda chave que os dez declaram, sem descritor compartilhado.** `heading` é o
+título em qualquer template — §6 do documento de contexto —, e desde a 3A é declarado
+pelos dez, inclusive onde o layout não o desenha por padrão. O descritor **não** mora em
+`shared/fields.ts` como o do kicker: o limite de caractere acompanha a região, e a região é
+do template. O que é comum é o rótulo, **"Título"**, nos dez.
+
+Onde o valor está vazio, a região some junto com o gap — o comportamento que o `lead` do
+`final-cta` já tinha. Um título vazio não deixa buraco no slide; deixa o resto subir.
+
 Em todas vale a mesma regra: o descritor do template diz apenas com que valor o slide
 **nasce**, e a escolha é de quem edita — §4.3 e §10.5 do design system, decisão 25. O
 `background` do template é o padrão de `showGrid`, e nada mais.
@@ -106,6 +126,17 @@ A ordem é a de leitura vertical do slide, e dentro do rodapé a da faixa de for
 dentro; é a ordem em que o inspector desenha os controles. A tabela de campos e a de opções
 de cada template abaixo **omitem os compartilhados**, e listam só o que é próprio dele; as
 tabelas de padrões, no bloco `defaults` ao fim de cada seção, trazem tudo.
+
+**Toda seção nomeia a região que o guard de transbordo mede.** O guard da §9 do documento
+de contexto não é um recurso de um template: é uma convenção que os dez declaram, e a
+tabela de regiões de cada §11.x marca com **⌐** a região — ou as regiões — cuja altura real
+é comparada com a altura da faixa. É sempre a região de conteúdo variável, nunca a faixa do
+cabeçalho, nunca a do rodapé e nunca uma imagem, que se ajusta em vez de crescer.
+
+A marca fica no documento porque a alternativa é descobri-la template a template na hora de
+implementar, e aí ela vira dez decisões em vez de uma. Vale a armadilha da §13 do contexto:
+**a região medida tem altura de faixa, não altura de conteúdo** — o que a mede não pode ser
+dimensionado pelo que ela contém, senão a escala se realimenta.
 
 ---
 
@@ -122,7 +153,7 @@ ali para quem quiser assinar a capa.
 | Região    | Faixa vertical | Conteúdo                                       |
 | --------- | -------------- | ---------------------------------------------- |
 | Cabeçalho | 80 – 148       | A faixa compartilhada; nasce **ligada** — o único template em que isso acontece |
-| Título    | 300 – 1160     | `slide-display`, alinhado à **base** da região |
+| Título ⌐  | 300 – 1160     | `slide-display`, alinhado à **base** da região |
 | Rodapé    | 1238 – 1270    | A faixa compartilhada; nasce com constelação e chevron |
 
 O título ser alinhado à base da região é a decisão estrutural do template: com uma linha
@@ -196,7 +227,7 @@ O template mais usado de um carrossel. Título no topo, itens no miolo, rodapé 
 | Região | Faixa vertical | Conteúdo                                    |
 | ------ | -------------- | ------------------------------------------- |
 | Título | 80 – 230       | `slide-heading`, até duas linhas            |
-| Itens  | 294 – 1160     | Lista, centralizada verticalmente na região |
+| Itens ⌐ | 294 – 1160    | Lista, centralizada verticalmente na região |
 | Rodapé | 1238 – 1270    | Logo, handle, constelação                   |
 
 **Com o cabeçalho ligado**, as duas regiões de baixo descem um `--slide-gap-block`:
@@ -205,7 +236,7 @@ O template mais usado de um carrossel. Título no topo, itens no miolo, rodapé 
 | --------- | -------------- | -------------------------------------------- |
 | Cabeçalho | 80 – 148       | A faixa compartilhada, com o kicker           |
 | Título    | 212 – 362      | A mesma altura de 150px, 132px abaixo         |
-| Itens     | 426 – 1160     | O mesmo fim, 734px de altura em vez de 866    |
+| Itens ⌐   | 426 – 1160     | O mesmo fim, 734px de altura em vez de 866    |
 | Rodapé    | 1238 – 1270    | Sem mudança                                   |
 
 É o único dos três templates em que ligar o cabeçalho move alguma coisa, e a única quebra
@@ -290,7 +321,7 @@ mesmo gesto tipográfico. A constelação aparece inteira acesa.
 | Região   | Faixa vertical | Conteúdo                                 |
 | -------- | -------------- | ---------------------------------------- |
 | Vazio    | 80 – 400       | Respiro                                  |
-| Conteúdo | 400 – 1160     | Título, lead e CTA, alinhados à **base** |
+| Conteúdo ⌐ | 400 – 1160   | Título, lead e CTA, alinhados à **base** |
 | Rodapé   | 1238 – 1270    | Logo, handle, constelação toda acesa     |
 
 **O respiro é o que a região é com o cabeçalho desligado**, que é como o template nasce. A
