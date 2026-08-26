@@ -723,11 +723,16 @@ padding 24px. Variantes: `info` (azure), `atencao` (sun), `positivo` (pacifika),
 
 Movida para `observatorio-templates.md`, com a numeração preservada — as referências
 `§11.x` continuam válidas, mudou só o arquivo onde a seção mora. São dez templates
-organizados por função narrativa; os três da Fase 1 do `asterism` estão especificados lá,
-com regiões, elementos, campos, opções e comportamento.
+organizados por função narrativa, **os dez especificados lá** desde a 3A, com regiões,
+elementos, campos, opções e comportamento.
 
 O que vale para todos eles continua aqui: a grade do slide na §4.2, a escala tipográfica
 do carrossel na §3.3 e os componentes recorrentes na §10.5.
+
+Duas regras deste documento ganharam exceção nomeada quando a biblioteca fechou, e as duas
+estão na §11.0 de lá: o padding de 80px passa a valer para conteúdo, porque imagem sangra
+até a borda nos dois templates de mídia; e o alinhamento à esquerda da §3.4 abre para o
+`text-impact`, que já era a exceção que aquela seção previa.
 
 ---
 

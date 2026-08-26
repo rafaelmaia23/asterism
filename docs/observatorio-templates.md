@@ -16,22 +16,30 @@
 Dez templates organizados por função narrativa. Estrutura de deck:
 `capa → contexto → desenvolvimento (n) → payoff → cta`, alvo de 8 a 12 slides.
 
-| §    | Template          | Função                 | Fundo   | Status        |
-| ---- | ----------------- | ---------------------- | ------- | ------------- |
-| 11.1 | `cover-statement` | Gancho                 | `grid`  | especificado  |
-| 11.2 | `text-bullets`    | Desenvolvimento        | `plain` | especificado  |
-| 11.3 | `final-cta`       | Fechamento             | `grid`  | especificado  |
-| —    | `context`         | Segurar o leitor       | `plain` | a especificar |
-| —    | `text-impact`     | Respiro                | `grid`  | a especificar |
-| —    | `code-window`     | Código puro            | `plain` | a especificar |
-| —    | `code-annotated`  | Código com explicação  | `plain` | a especificar |
-| —    | `compare-2col`    | Antes/depois           | `plain` | a especificar |
-| —    | `split-vertical`  | Texto + imagem         | `plain` | a especificar |
-| —    | `image-caption`   | Imagem dominante       | `plain` | a especificar |
+| §     | Template          | Função                 | Fundo   | Grupo     | Status       |
+| ----- | ----------------- | ---------------------- | ------- | --------- | ------------ |
+| 11.1  | `cover-statement` | Gancho                 | `grid`  | `cover`   | especificado |
+| 11.4  | `context`         | Segurar o leitor       | `plain` | `content` | especificado |
+| 11.2  | `text-bullets`    | Desenvolvimento        | `plain` | `content` | especificado |
+| 11.5  | `text-impact`     | Respiro                | `grid`  | `content` | especificado |
+| 11.6  | `code-window`     | Código puro            | `plain` | `code`    | especificado |
+| 11.7  | `code-annotated`  | Código com explicação  | `plain` | `code`    | especificado |
+| 11.8  | `compare-2col`    | Antes/depois           | `plain` | `content` | especificado |
+| 11.9  | `split-vertical`  | Texto + imagem         | `plain` | `media`   | especificado |
+| 11.10 | `image-caption`   | Imagem dominante       | `plain` | `media`   | especificado |
+| 11.3  | `final-cta`       | Fechamento             | `grid`  | `final`   | especificado |
 
-Os três especificados são os da Fase 1 do `asterism`. Os demais seguem o mesmo formato
-quando forem implementados: regiões, elementos, campos, opções, comportamento e o bloco
-de `defaults`.
+A tabela está na ordem de **função narrativa** — a da estrutura de deck acima —, e não na
+das seções: a numeração §11.1–§11.3 é a dos três primeiros a serem escritos, na Fase 1, e
+ficou como está porque referências de outros documentos apontam para ela.
+
+**A biblioteca fechou na 3A**, e fechou como conjunto: os dez de uma vez, num documento só,
+antes de qualquer linha de código dos sete últimos. O motivo é a migração de conteúdo na
+troca de layout, que é uma interseção de chave **e** de forma — uma chave decidida no
+sétimo template obrigaria a voltar no terceiro. Decisão 45 da §16 do documento de contexto.
+
+Onde a §11.x diz uma coisa e o código diz outra, a §11.x vence: é a Regra 2 do `CLAUDE.md`,
+e é o que faz o critério de pronto de cada sub-etapa de template ser conferível.
 
 ### 11.0 Regras comuns
 
