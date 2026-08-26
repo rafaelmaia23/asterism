@@ -1,30 +1,32 @@
 /**
- * O deck com que o editor abre, enquanto não há persistência.
+ * O carrossel de referência — o deck com que o editor abre na primeira execução, antes de
+ * haver qualquer coisa salva no `localStorage`.
  *
- * Seis slides: três `cover-statement`, dois `text-bullets` e um `final-cta`. Com um só, a
- * lista lateral, a troca de slide ativo e o laço de páginas do alvo PDF ficariam sem
- * prova. A 1D moveu este deck para dentro do store sem mexer no módulo, e a 2.12 o troca
- * pelo que estiver salvo — até lá é ele quem decide o que existe na tela.
+ * Até a 2D isto era um deck de seis slides que existia só para dar o que olhar: sem
+ * `addSlide` e sem troca de layout, a semente era o único lugar que decidia quais slides
+ * existiam. A 2E o trocou pelo **carrossel de verdade** que o critério de pronto da Etapa
+ * 2 pede — 8 a 12 slides compostos com os três templates, usando marcação. São doze, que
+ * é o teto da etapa: se a ferramenta se comporta no deck mais longo que ela promete, os
+ * mais curtos vêm de graça.
  *
  * Os defaults vêm do registry, e não copiados à mão: o dia em que um template ganhar um
  * campo, o deck semente o ganha junto. Por isso este módulo mora em `src/editor` e não em
  * `src/deck`, que não conhece a biblioteca de templates — a seta é `templates → deck`.
  *
- * **Por que os dois `text-bullets` têm âncoras diferentes.** Enquanto `addSlide` (2.13) e
- * a troca de layout (2.11) não existirem, a semente é o único lugar que decide quais
- * slides existem. Desde a 2.7 o `anchor` é trocável no inspector, mas nascer com `center`
- * num slide e `top` no outro continua valendo: as duas leituras da §11.2 ficam lado a
- * lado na lista lateral, comparáveis sem trocar opção nenhuma.
+ * **Quatro capas, e uma delas no miolo.** A §11.1 dá ao `cover-statement` a função de
+ * gancho, e num carrossel de doze slides a narrativa pede mais de um momento de frase
+ * isolada — a virada no slide 6 e o fecho do argumento no 11. O template que existe para
+ * isso é o `text-impact`, que é da Etapa 3; enquanto ele não existe, a capa faz o papel.
+ * É limitação de biblioteca, não escolha de arquitetura, e some quando a biblioteca
+ * fechar.
  *
- * Os três títulos de capa têm comprimentos deliberadamente diferentes, de uma linha a
- * quatro: é assim que a âncora de base da §11.1 dos templates se confere, vendo a última
- * linha pousar sempre na mesma altura.
+ * **O kicker numera a posição no deck**, não a ordem entre as capas. É a convenção da
+ * §10.5 do design system, e com capa no miolo ela deixou de ser trivial: numerar as capas
+ * entre si faria o slide 6 se anunciar como o terceiro.
  *
- * **Por que a semente termina num `final-cta`.** Mesmo argumento dos dois `text-bullets`
- * da 2B: sem `addSlide` (2.13) e sem troca de layout (2.11), um template que não está na
- * semente não aparece na tela, e o critério de pronto da 2.9 se confere olhando. De
- * quebra, ele é quem põe a constelação inteira acesa e a supressão do chevron por posição
- * — decisão 36 — sob os olhos, no único lugar do deck onde as duas valem.
+ * **A marcação aparece uma vez por bloco**, nunca duas. É a regra de um nível de ênfase
+ * por bloco da §3.4 do design system, e ela vale dentro da lista também: um item marcado
+ * por slide, não um por item.
  */
 
 import { createDeck, createSlide } from "@/deck/factories";
@@ -35,55 +37,108 @@ const COVER = "cover-statement";
 const BULLETS = "text-bullets";
 const FINAL = "final-cta";
 
-/**
- * Cada título traz um `[[destaque]]`, que é a marcação da §7 do documento de contexto
- * chegando pronta na primeira tela: abrir a ferramenta já mostra o que ela faz, sem
- * ninguém precisar digitar nada. O comprimento que a §11.1 dos templates limita é o do
- * texto **renderizado** — 15, 39 e 63 caracteres —, não o da string com os colchetes.
- */
-const HEADINGS = [
-  "Ninguém [[lê docs]]",
-  "O cache [[mentiu]] sobre o que ele guardava",
-  "Três semanas de investigação para encontrar um [[bug de uma linha]]",
-];
+type Spec =
+  | { template: typeof COVER; heading: string }
+  | { template: typeof BULLETS; heading: string; items: string[]; anchor: OptionValue }
+  | { template: typeof FINAL; heading: string; lead: string; cta: string };
 
 /**
- * Três itens no primeiro, quatro no segundo: o alvo e o teto da §11.2, um em cada slide.
- * A marcação aparece uma vez por slide, e não em todo item — a regra de um nível de
- * ênfase por bloco da §3.4 do design system vale dentro da lista também.
+ * A história é a mesma desde a primeira semente — um `ttl` em segundos passado para uma
+ * API em milissegundos —, agora contada inteira: gancho, premissa, sintomas, investigação,
+ * achado, correção, o que mudou depois e a lição.
+ *
+ * Os títulos de capa têm comprimentos deliberadamente diferentes, de uma linha a quatro:
+ * é assim que a âncora de base da §11.1 se confere, vendo a última linha pousar sempre na
+ * mesma altura. As âncoras das listas alternam entre `center` e `top` pelo mesmo motivo —
+ * as duas leituras da §11.2 ficam comparáveis sem trocar opção nenhuma.
  */
-const BULLET_SLIDES: { heading: string; items: string[]; anchor: OptionValue }[] = [
+const SLIDES: Spec[] = [
+  { template: COVER, heading: "O cache [[mentiu]]" },
+  { template: COVER, heading: "Todo painel dizia que estava [[tudo bem]]" },
   {
+    template: BULLETS,
+    heading: "O que os usuários viam",
+    items: [
+      "Uma resposta velha, mas só para alguns usuários",
+      "Nunca reproduzia em homologação",
+      "E [[sumia sozinho]] depois de um deploy qualquer",
+    ],
+    anchor: "center",
+  },
+  {
+    template: BULLETS,
     heading: "O que o log dizia",
     items: [
       "A leitura vinha do cache, e o cache [[nunca expirava]]",
       "O teste passava porque subia com o cache vazio",
       "Ninguém tinha olhado a métrica de acerto desde a estreia",
     ],
+    anchor: "top",
+  },
+  {
+    template: BULLETS,
+    heading: "O que não era",
+    items: [
+      "Não era o banco: a query saía em 4ms, medida",
+      "Não era a rede: o traço inteiro cabia em 40ms",
+      "Não era concorrência: acontecia com [[um processo só]]",
+      "Não era o deploy: acontecia antes dele também",
+    ],
     anchor: "center",
   },
   {
-    heading: "Três semanas depois",
+    template: COVER,
+    heading: "Três semanas de investigação para encontrar um [[bug de uma linha]]",
+  },
+  {
+    template: BULLETS,
+    heading: "A linha que ninguém tinha lido",
     items: [
-      "Uma linha de `ttl` que nunca tinha sido lida",
-      "Duas horas para achar, três semanas para procurar",
-      "O relatório saiu maior que a correção",
-      "E a métrica de acerto virou alarme",
+      "Um `ttl` em segundos, passado para uma API em milissegundos",
+      "Mil vezes maior: onze dias de validade",
+      "Escrita em 2023, revisada por duas pessoas",
     ],
     anchor: "top",
   },
+  {
+    template: BULLETS,
+    heading: "A correção, e o que ela custou",
+    items: [
+      "Uma linha: a conversão passou a acontecer na borda",
+      "Duas horas para escrever e testar",
+      "[[Três semanas]] para chegar até ela",
+    ],
+    anchor: "center",
+  },
+  {
+    template: BULLETS,
+    heading: "O que mudou no monitoramento",
+    items: [
+      "A taxa de acerto do cache virou alarme, não gráfico",
+      "Toda unidade de tempo passou a ir no nome da variável",
+      "`ttlSeconds` e `ttlMs` não se confundem numa revisão",
+      "E o teste sobe com o cache [[quente]], não vazio",
+    ],
+    anchor: "top",
+  },
+  {
+    template: BULLETS,
+    heading: "O que eu levei disso",
+    items: [
+      "Métrica que ninguém olha não é monitoramento, é enfeite",
+      "Bug que não reproduz espera um [[dado]], não um deploy",
+      "O tempo de procurar é o custo real, não o de corrigir",
+    ],
+    anchor: "center",
+  },
+  { template: COVER, heading: "Sistema saudável é o que você [[consegue ver]] quebrar" },
+  {
+    template: FINAL,
+    heading: "Escrevo sobre o que [[quebra]] antes do que funciona",
+    lead: "Backend, infra e os três dias que cada bug de uma linha custa.",
+    cta: "blog.maiahub.com.br",
+  },
 ];
-
-/**
- * O fechamento fecha a mesma história das capas e dos tópicos, e traz um `[[destaque]]`
- * como elas. O `lead` nasce escrito de propósito: apagá-lo no inspector é como se confere
- * o comportamento que a §11.3 promete — o bloco some junto com o gap.
- */
-const FINAL_SLIDE = {
-  heading: "Escrevo sobre o que [[quebra]] antes do que funciona",
-  lead: "Backend, infra e os três dias que cada bug de uma linha custa.",
-  cta: "blog.maiahub.com.br",
-};
 
 function withFields(
   template: string,
@@ -99,19 +154,32 @@ function withFields(
   };
 }
 
+function build(spec: Spec, position: number): Slide {
+  if (spec.template === COVER) {
+    return withFields(COVER, {
+      kicker: `log/ · ${String(position).padStart(2, "0")}`,
+      heading: spec.heading,
+    });
+  }
+
+  if (spec.template === BULLETS) {
+    return withFields(
+      BULLETS,
+      { heading: spec.heading, items: spec.items },
+      { anchor: spec.anchor },
+    );
+  }
+
+  return withFields(FINAL, {
+    heading: spec.heading,
+    lead: spec.lead,
+    cta: spec.cta,
+  });
+}
+
 export function createSeedDeck(): Deck {
-  const covers = HEADINGS.map((heading, position) =>
-    withFields(COVER, { kicker: `log/ · 0${position + 1}`, heading }),
-  );
-
-  const bullets = BULLET_SLIDES.map(({ heading, items, anchor }) =>
-    withFields(BULLETS, { heading, items }, { anchor }),
-  );
-
-  const final = withFields(FINAL, FINAL_SLIDE);
-
   return {
-    ...createDeck({ title: "Carrossel de exemplo" }),
-    slides: [...covers, ...bullets, final],
+    ...createDeck({ title: "O cache mentiu" }),
+    slides: SLIDES.map((spec, index) => build(spec, index + 1)),
   };
 }

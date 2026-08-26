@@ -3,16 +3,47 @@ import { createSeedDeck } from "@/editor/seed";
 import { parseInline } from "@/markup/parse";
 import { get } from "@/templates";
 
-describe("createSeedDeck", () => {
-  test("nasce com três capas, dois text-bullets e um fechamento, nessa ordem", () => {
-    const deck = createSeedDeck();
+/** O texto que chega ao canvas: os colchetes de `[[destaque]]` não ocupam linha. */
+function rendered(source: unknown): string {
+  return parseInline(String(source))
+    .map((node) => node.v)
+    .join("");
+}
 
-    expect(deck.slides.map((slide) => slide.template)).toEqual([
-      "cover-statement",
+function slidesOf(template: string) {
+  return createSeedDeck().slides.filter((slide) => slide.template === template);
+}
+
+describe("createSeedDeck", () => {
+  /**
+   * O critério de pronto da Etapa 2 é "um carrossel de 8 a 12 slides composto com os três
+   * templates". A semente **é** esse carrossel desde a 2E — deixou de ser o deck de seis
+   * slides que existia só para dar o que olhar —, e este é o teste que amarra o módulo ao
+   * critério da etapa em vez de a um número escrito à mão.
+   */
+  test("é um carrossel de 8 a 12 slides com os três templates", () => {
+    const { slides } = createSeedDeck();
+
+    expect(slides.length).toBeGreaterThanOrEqual(8);
+    expect(slides.length).toBeLessThanOrEqual(12);
+    expect(new Set(slides.map((slide) => slide.template))).toEqual(
+      new Set(["cover-statement", "text-bullets", "final-cta"]),
+    );
+  });
+
+  test("a narrativa alterna capa e lista, e fecha no final-cta", () => {
+    expect(createSeedDeck().slides.map((slide) => slide.template)).toEqual([
       "cover-statement",
       "cover-statement",
       "text-bullets",
       "text-bullets",
+      "text-bullets",
+      "cover-statement",
+      "text-bullets",
+      "text-bullets",
+      "text-bullets",
+      "text-bullets",
+      "cover-statement",
       "final-cta",
     ]);
   });
@@ -26,25 +57,82 @@ describe("createSeedDeck", () => {
     expect(createSeedDeck().slides.at(-1)?.template).toBe("final-cta");
   });
 
-  /** Os limites da §11.3 são conselho, mas a semente não tem por que estourá-los. */
+  /**
+   * O kicker numera a **posição no deck**, não a ordem entre as capas — §10.5 do design
+   * system. Com capa no miolo, numerar as capas entre si faria o slide 06 se anunciar
+   * como o terceiro, e o índice do kicker é justamente o que diz onde a pessoa está.
+   */
+  test("o kicker numera a posição do slide no deck", () => {
+    const { slides } = createSeedDeck();
+    const kickers = slides.flatMap((slide, index) =>
+      slide.template === "cover-statement" ? [[index + 1, slide.fields.kicker]] : [],
+    );
+
+    expect(kickers).toEqual([
+      [1, "log/ · 01"],
+      [2, "log/ · 02"],
+      [6, "log/ · 06"],
+      [11, "log/ · 11"],
+    ]);
+  });
+
+  test("cada slide tem título próprio — é o que torna a lista da 1D verificável", () => {
+    const headings = createSeedDeck().slides.map((slide) => slide.fields.heading);
+
+    expect(new Set(headings).size).toBe(12);
+  });
+
+  /**
+   * Os limites da §11.x são conselho, mas a semente não tem por que estourá-los: ela é o
+   * que abre na primeira execução, e o contador âmbar na primeira tela seria um defeito
+   * anunciando outro.
+   */
+  test("as capas cabem nos limites da §11.1", () => {
+    for (const cover of slidesOf("cover-statement")) {
+      expect(String(cover.fields.kicker).length).toBeLessThanOrEqual(12);
+      expect(rendered(cover.fields.heading).length).toBeLessThanOrEqual(70);
+    }
+  });
+
+  test("as listas cabem nos limites da §11.2", () => {
+    for (const bullets of slidesOf("text-bullets")) {
+      const items = bullets.fields.items as string[];
+
+      expect(rendered(bullets.fields.heading).length).toBeLessThanOrEqual(60);
+      expect(items.length).toBeGreaterThanOrEqual(3);
+      expect(items.length).toBeLessThanOrEqual(4);
+      for (const item of items) {
+        expect(rendered(item).length).toBeLessThanOrEqual(80);
+      }
+    }
+  });
+
   test("o fechamento cabe nos limites da §11.3", () => {
     const final = createSeedDeck().slides.at(-1)!;
-    const rendered = parseInline(String(final.fields.heading))
-      .map((node) => node.v)
-      .join("");
 
-    expect(rendered.length).toBeLessThanOrEqual(55);
+    expect(rendered(final.fields.heading).length).toBeLessThanOrEqual(55);
     expect(String(final.fields.lead).length).toBeLessThanOrEqual(90);
     expect(String(final.fields.cta).length).toBeLessThanOrEqual(40);
+  });
+
+  /**
+   * A âncora dos itens é a única opção que a semente desvia do default, e ela alterna
+   * entre as sete listas: as duas leituras da §11.2 ficam lado a lado na lista lateral, e
+   * o critério de pronto da 2.8 se confere sem trocar opção nenhuma.
+   */
+  test("as âncoras alternam entre as listas", () => {
+    const anchors = slidesOf("text-bullets").map((slide) => slide.options.anchor);
+
+    expect(anchors).toEqual(["center", "top", "center", "top", "center", "top", "center"]);
   });
 
   test("as opções vêm dos defaults do registry, não de cópia à mão", () => {
     for (const slide of createSeedDeck().slides) {
       const { defaults } = get(slide.template);
 
-      // O `anchor` do segundo `text-bullets` é o único desvio, e é deliberado — ver o
-      // teste abaixo. Tudo o mais tem de bater com o que o template diz, chave por chave:
-      // o dia em que um template ganhar opção, a semente a ganha junto.
+      // O `anchor` é o único desvio, e é deliberado — ver o teste acima. Tudo o mais tem
+      // de bater com o que o template diz, chave por chave: o dia em que um template
+      // ganhar opção, a semente a ganha junto.
       expect(Object.keys(slide.options)).toEqual(Object.keys(defaults.options));
 
       for (const [key, value] of Object.entries(defaults.options)) {
@@ -56,57 +144,47 @@ describe("createSeedDeck", () => {
   });
 
   /**
-   * A 2.7 tornou o `anchor` trocável no inspector, mas a semente continua nascendo com um
-   * de cada: as duas leituras da §11.2 ficam lado a lado na lista lateral, e o critério de
-   * pronto da 2.8 se confere olhando, sem trocar opção nenhuma.
+   * A marcação da §7 chega pronta na primeira tela: abrir a ferramenta já mostra o que ela
+   * faz, sem ninguém precisar digitar nada.
+   *
+   * O teto é **um nível de ênfase por bloco** — §3.4 do design system —, e nível não é
+   * ocorrência: dois `` `código` `` na mesma linha são o mesmo nível, e nomear duas
+   * variáveis não é enfatizar duas vezes. O que a regra proíbe é misturar marcadores num
+   * bloco só, e é isso que este teste conta.
    */
-  test("os dois text-bullets trazem âncoras diferentes, para comparar olhando", () => {
-    const anchors = createSeedDeck()
-      .slides.filter((slide) => slide.template === "text-bullets")
-      .map((slide) => slide.options.anchor);
+  test("cada slide traz marcação, e um nível de ênfase por bloco", () => {
+    for (const slide of createSeedDeck().slides) {
+      const blocks = [
+        String(slide.fields.heading),
+        ...((slide.fields.items as string[] | undefined) ?? []),
+      ];
 
-    expect(anchors).toEqual(["center", "top"]);
-  });
+      expect(blocks.filter((block) => rendered(block) !== block).length).toBeGreaterThanOrEqual(1);
 
-  test("os itens ficam dentro do teto de quatro da §11.2 — três é o alvo", () => {
-    const lists = createSeedDeck()
-      .slides.filter((slide) => slide.template === "text-bullets")
-      .map((slide) => slide.fields.items as string[]);
+      for (const block of blocks) {
+        const levels = new Set(
+          parseInline(block)
+            .filter((node) => node.t !== "text")
+            .map((node) => node.t),
+        );
 
-    expect(lists.map((items) => items.length)).toEqual([3, 4]);
-    for (const items of lists) {
-      expect(items.every((item) => item.length <= 80)).toBe(true);
+        expect(levels.size).toBeLessThanOrEqual(1);
+      }
     }
   });
 
-  test("cada slide tem título próprio — é o que torna a lista da 1D verificável", () => {
-    const headings = createSeedDeck().slides.map((slide) => slide.fields.heading);
-
-    expect(new Set(headings).size).toBe(6);
-  });
-
-  test("os títulos vão de uma linha a quatro, para conferir a âncora de base", () => {
-    // O que ocupa linha é o texto renderizado, não a marcação: os colchetes de
-    // `[[destaque]]` não chegam ao canvas e não podem contar aqui.
-    const [curto, , longo] = createSeedDeck().slides.map((slide) =>
-      parseInline(String(slide.fields.heading))
-        .map((node) => node.v)
-        .join("").length,
+  /**
+   * Os títulos de capa vão de uma linha a quatro: é assim que a âncora de base da §11.1
+   * se confere, vendo a última linha pousar sempre na mesma altura. ~19 caracteres por
+   * linha em 96px sobre 920px de largura útil.
+   */
+  test("os títulos de capa cobrem de uma linha a quatro", () => {
+    const lengths = slidesOf("cover-statement").map((cover) =>
+      rendered(cover.fields.heading).length,
     );
 
-    // ~19 caracteres por linha em 96px sobre 920px de largura útil — §11.1 dos templates.
-    expect(curto).toBeLessThanOrEqual(19);
-    expect(longo).toBeGreaterThan(57);
-    expect(longo).toBeLessThanOrEqual(70);
-  });
-
-  /** Só as capas têm kicker: a §11.2 não dá o campo ao `text-bullets`. */
-  test("o kicker numera a posição do slide", () => {
-    const kickers = createSeedDeck()
-      .slides.filter((slide) => slide.template === "cover-statement")
-      .map((slide) => slide.fields.kicker);
-
-    expect(kickers).toEqual(["log/ · 01", "log/ · 02", "log/ · 03"]);
+    expect(Math.min(...lengths)).toBeLessThanOrEqual(19);
+    expect(Math.max(...lengths)).toBeGreaterThan(57);
   });
 
   test("dois decks semente não compartilham id nem objeto de campos", () => {
