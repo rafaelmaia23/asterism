@@ -154,13 +154,31 @@ Templates diferentes devem usar as **mesmas chaves** para papéis equivalentes:
 Assim, trocar `text-bullets` por `text-impact` preserva o que a pessoa já digitou.
 Sem isso, a troca de layout apaga trabalho — o pior momento possível de uso da ferramenta.
 
+A tabela **fechou na 3A**, com a especificação dos dez templates. Nenhuma chave nova foi
+precisa: a explicação do `code-annotated` é `body`, que é o texto corrido principal de
+qualquer template, e as chaves de imagem e de código já estavam aqui desde a v1. O que a
+3A acrescentou foi a distinção abaixo — o que é de todos, o que é de alguns e o que é de um
+só.
+
+#### Duas chaves são de todo template
+
 O título de um slide é **sempre** `heading`, em qualquer template. A tentação de chamá-lo
 de `titulo` na capa e de `heading` no miolo custa exatamente a migração que esta tabela
 existe para garantir.
 
-**`kicker` é declarado por todo template**, e não só pelos que nascem com a faixa do
-cabeçalho ligada. Ele ficou preso ao `cover-statement` até a 2F, e o custo apareceu no deck
-de doze slides: sair da capa **descartava** o que estava digitado, porque a migração é uma
+Mais que isso: **`kicker` e `heading` são declarados pelos dez**, mesmo onde o layout não
+os desenha por padrão. São as duas chaves que atravessam qualquer troca de layout, e é o
+que faz a etiqueta e o título nunca se perderem — nem indo de um slide de código para um
+de imagem. Onde o valor está vazio, a região some, como o `lead` vazio do `final-cta` já
+fazia.
+
+O descritor de `kicker` é compartilhado, em `src/templates/shared/fields.ts`. O de
+`heading` **não é**: o limite de caractere acompanha a região, e a região é do template —
+70 na capa em 96px, 60 num slide de tópicos em 56px. O que é comum é o **rótulo**, e ele é
+"Título" nos dez, pelo motivo que a §11.2 dos templates registra.
+
+O `kicker` ficou preso ao `cover-statement` até a 2F, e o custo apareceu no deck de doze
+slides: sair da capa **descartava** o que estava digitado, porque a migração é uma
 interseção de chaves e uma chave que só um lado declara não atravessa. O descritor mora em
 `src/templates/shared/fields.ts`, o simétrico do `shared/options.ts`, e é o mesmo objeto em
 todos — declarado à mão em cada template, o rótulo divergiria no terceiro.
@@ -168,6 +186,34 @@ todos — declarado à mão em cada template, o rótulo divergiria no terceiro.
 O mesmo caminho vale para as chaves seguintes desta tabela quando um segundo template as
 quiser: o vocabulário promete a mesma chave para o mesmo papel, e um descritor compartilhado
 é o que faz a promessa ser verdadeira em vez de disciplina.
+
+#### A promessa é de papel, não de forma — e a migração cobra as duas
+
+O vocabulário garante que `body` é texto corrido em qualquer template. Não garante que
+todos o guardem com a mesma **forma de valor**, e o `migrateFields` compara as duas coisas:
+`list` guarda array, todo o resto guarda string, e chave cuja forma não bate fica com o
+default do destino.
+
+Daí a regra que a 3A fixou ao escrever os dez de uma vez: **a mesma chave tem o mesmo tipo
+de campo na biblioteca inteira**. `code`, `file` e `lang` são idênticos no `code-window` e
+no `code-annotated`; `image` é idêntico no `split-vertical` e no `image-caption`; `items` é
+`list` onde quer que apareça. Sem isso a promessa desta tabela vale no papel e falha na
+troca de layout, que é o único lugar onde ela é cobrada.
+
+#### O que é próprio de um template
+
+Uma chave que nenhum segundo template usa não ganha linha aqui — vocabulário com um
+usuário só é vocabulário por engano. Ela é declarada no template e **justificada na §11.x
+dele**, que é o critério que a 3A fechou:
+
+| Chave | Template | Papel |
+|---|---|---|
+| `beforeLabel` / `before` | `compare-2col` | O lado esquerdo da comparação, rótulo e conteúdo |
+| `afterLabel` / `after` | `compare-2col` | O lado direito, idem |
+
+O par antes/depois foi o único caso em dez templates. Promovê-lo à tabela canônica
+reservaria à biblioteca inteira um papel que só um layout tem; se um segundo template de
+comparação aparecer, é aí que ele sobe — e não antes.
 
 As chaves são em inglês, como todo identificador do projeto. O texto dos documentos
 continua em português.
@@ -756,3 +802,5 @@ sem retoque em nenhum outro programa.
 | 42 | O **cabeçalho é faixa compartilhada** de todo template, ligável por `showHeader`, e o `kicker` virou campo compartilhado | Manter o kicker como campo do `cover-statement`; ou dar a cada template um campo de etiqueta próprio, com chave própria | A §10.5 do design system prendia o kicker à capa, e o rodapé já tinha feito o caminho contrário na 2B: virou peça compartilhada com seis opções, e o que era regra virou padrão. O topo do slide ficou como a assimetria óbvia da arquitetura — uma faixa desenhada à mão dentro de um template, e nenhum outro slide podia ter etiqueta superior. Compartilhar tem dois retornos além do óbvio: a **migração passa a preservar o kicker** de graça, pela interseção de chaves da decisão 13, e a segunda peça que a faixa ganhar chega num lugar em vez de dez. O par com `showFooter` fecha o desenho: as duas faixas do slide são opção, as peças dentro delas são sub-opção, e a constelação continua sem opção própria porque quem a tira é quem tira a faixa toda |
 | 43 | Ligar o cabeçalho **empurra** o conteúdo do `text-bullets`, em vez de a faixa ser reservada sempre | Reservar 80–148 em todo template, com o conteúdo começando em 212 com a faixa ligada ou não — a regra "ligar uma peça não move as outras" que o rodapé segue desde a 2B | Reservar sempre custaria **132px do topo do template mais usado do sistema**, permanentemente, por uma faixa que ali nasce desligada: a região de itens cairia de 866 para 734px em todo slide de tópicos do carrossel, inclusive nos que nunca vão ter kicker. Empurrar custa um ternário numa string de classe, do mesmo formato que o `anchor` já usa no mesmo componente. A regra do rodapé não é contrariada onde foi escrita: ela fala das peças **dentro** de uma faixa, e vale porque o rodapé nunca disputou espaço com nada — mover o que está embaixo dele seria mover o nada. A capa e o `final-cta` não pagam nada de qualquer forma, porque os dois já têm a faixa 80–148 livre |
 | 44 | A seção do inspector é **metadado de desenho no descritor**, e uma delas mistura `field` e `option` | Duas seções fixas no componente, com o kicker aparecendo em "Conteúdo" e o interruptor em "Apresentação"; ou mover o texto do kicker para `options`, unificando o saco | O painel precisava de "Cabeçalho" e "Rodapé" como categorias que se ligam e se encolhem, e o cabeçalho é uma faixa com **um texto e um interruptor** — separá-los em duas seções distantes faria ligar a coisa numa e escrever nela em outra. A saída é a seção ser desenho e não dado: `fields` e `options` continuam sendo dois sacos separados no modelo, a §6 continua inteira, e o que a seção diz é onde o controle **aparece**. Mover o kicker para `options` resolveria o desenho e quebraria o modelo: opção reseta na troca de layout, e o texto digitado seria perdido justamente onde a decisão 13 acabou de garantir que sobrevive. Conteúdo e Apresentação viraram seções como as outras para que a **ordem** também fosse declarativa — sem isso, a posição do Cabeçalho acima do conteúdo seria uma regra escrita no componente em vez de no descritor. O interruptor continua declarado em `options`, e não na seção, para que `options` siga sendo a lista completa das chaves de opção, que é o invariante que os testes de paridade de cada template conferem |
+| 45 | A biblioteca inteira foi especificada **como conjunto**, numa sub-etapa de documento, e o vocabulário canônico fechou sem nenhuma chave nova | Escrever cada §11.x no commit que implementa o template, que é como as três primeiras nasceram; ou abrir o vocabulário a uma chave por papel novo, incluindo o par antes/depois e uma chave própria de anotação para o `code-annotated` | A migração é uma **interseção de chave e de forma**, então a biblioteca se decide junta ou não se decide: uma chave escolhida no sétimo template obriga a voltar no terceiro, e o custo dessa volta é reescrever descritor, schema, defaults e teste de paridade de um template já entregue. Especificados os dez de uma vez, três coisas que não apareciam olhando um por um ficaram óbvias. A explicação do `code-annotated` é `body`, o mesmo texto corrido do `context` — chave própria daria ao par a incompatibilidade de graça, e o papel é o mesmo. `kicker` e `heading` passam a ser declarados pelos dez, não só pelos que os desenham: são as duas chaves que atravessam qualquer troca de layout, e é o argumento da decisão 42 aplicado ao campo mais digitado do sistema, ao preço de uma região que some quando o valor está vazio — o que o `lead` do `final-cta` já fazia. E o par antes/depois do `compare-2col` fica **próprio do template**: vocabulário com um usuário só reserva à biblioteca inteira um papel que um layout tem, e a §6 passou a registrar a chave própria numa tabela à parte em vez de promovê-la |
+| 46 | **Imagem pode sangrar até a borda do canvas; conteúdo, não.** O padding de 80px da §11.0 dos templates passa a valer para conteúdo, e a imagem do `split-vertical` para em y 1174 | Manter os 80px nos quatro lados para tudo, com a imagem contida e raio de 12px como o bloco de código; ou deixar a imagem sangrar nos quatro lados, com legenda e rodapé por cima dela | Contida, a imagem vira figura ilustrando um slide de texto, e os dois templates de mídia perdem a razão de existir separados do `context`. Sangrar nos quatro lados é o oposto: põe texto sobre foto arbitrária, que só se sustenta com overlay escuro — a única exceção de gradiente que a §2.5 do design system permite, e justamente a que a decisão 28 mostrou não sobreviver à rasterização. O meio-termo é a regra acima, e o limite dela não é estético: **o rodapé precisa dos 920px**. Com a imagem do `split-vertical` descendo até a base, o rodapé caberia só na coluna de texto de 480px, e ali a placa da logo mais o handle mais doze pontos de constelação passam de 500px — não cabe, e num deck maior a constelação ainda cresce. A imagem para em y 1174, que é a linha da régua da §10.5, e a faixa de baixo continua inteira |

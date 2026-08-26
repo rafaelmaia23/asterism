@@ -1,8 +1,8 @@
 # asterism — plano de execução
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
-> ferramenta publica um carrossel real; a Etapa 3 está expandida e a próxima sessão abre
-> a 3A**
+> ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates; a
+> próxima sessão abre a 3B, o guard de transbordo e os estados dos controles**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -773,8 +773,8 @@ disputar espaço com a do outro.
 
 Três coisas que a divisão tornou visíveis, e que ela teve de resolver antes de existir:
 
-- **Os sete templates não estão especificados.** O `observatorio-templates.md` tem
-  §11.0–§11.3 e a tabela de status da §11 marca os outros sete como "a especificar".
+- **Os sete templates não estavam especificados.** O `observatorio-templates.md` tinha
+  §11.0–§11.3 e a tabela de status da §11 marcava os outros sete como "a especificar".
   Escrever §11.4–§11.10 é trabalho desta etapa, e é trabalho de decisão de produto — pela
   Regra 2 o documento vem antes do código. Virou a **3A**, uma sub-etapa inteira de
   documento, porque a biblioteca se decide como **conjunto**: são as chaves compartilhadas
@@ -791,7 +791,7 @@ Três coisas que a divisão tornou visíveis, e que ela teve de resolver antes d
   nascem seguindo-a e só os três atuais são adaptados. No fim da etapa, os dez seriam
   revisitados de uma vez.
 
-### 3A — especificação da biblioteca
+### 3A — especificação da biblioteca ✅
 
 Sessão de documento, sem uma linha de código. É onde moram quase todas as decisões de
 produto da etapa.
@@ -809,6 +809,62 @@ vocabulário canônico ou ficam próprios de um template; e como `compare-2col` 
 
 Especificar tudo de uma vez, em vez de cada §11.x no commit que implementa o template, é
 o que impede uma chave decidida na 3E de obrigar a voltar no que a 3C escreveu.
+
+Decidido na sessão, antes de escrever qualquer §11.x:
+
+| Questão | Decisão |
+|---|---|
+| A explicação do `code-annotated` | `body`, a chave canônica — a mesma do `context` e do `split-vertical` |
+| O par antes/depois do `compare-2col` | Quatro chaves **próprias**: `beforeLabel` / `before` / `afterLabel` / `after`, com os rótulos em `text` e os conteúdos em `textarea` |
+| Quais dos sete nascem com o cabeçalho ligado | Nenhum. A capa continua sendo o único |
+| A divisão dos 920px do `compare-2col` | 428 + 64 + 428, com o texto das colunas a 32px |
+| O que "vertical" quer dizer em `split-vertical` | Corte vertical: texto à esquerda, imagem à direita sangrando |
+| O `image-caption` | Imagem sangrando por três lados, com título e legenda na faixa de baixo |
+| Os campos do `text-impact` | Só `heading`. Nem lead, nem atribuição |
+| Opção compartilhada nova | Nenhuma. `imageFit` é própria, declarada igual nos dois de mídia |
+
+Resolvido na sessão:
+
+- **O vocabulário canônico fechou sem nenhuma chave nova.** A suspeita registrada aqui era
+  que `code`, `caption`, `image` e o par antes/depois precisassem de decisão; três dos
+  quatro já estavam na §6 desde a v1, e o quarto — o par — é o único caso em dez templates
+  de um papel que um layout tem e a biblioteca não. Ele ficou próprio e a §6 ganhou uma
+  tabela à parte para chave própria, em vez de promovê-lo. Vocabulário com um usuário só
+  reserva à biblioteca inteira o que um template usa.
+- **`kicker` e `heading` passaram a ser declarados pelos dez.** É a decisão 42 aplicada ao
+  campo mais digitado do sistema: as duas chaves atravessam qualquer troca de layout, e o
+  preço é uma região que some quando o valor está vazio — o que o `lead` do `final-cta` já
+  fazia desde a 2C. O descritor de `heading` **não** virou compartilhado, porque o limite
+  acompanha a região e a região é do template; o que é comum é o rótulo.
+- **A regra que faltava era de forma, não de chave.** A migração compara chave **e** forma
+  de valor, e nada garantia que dois templates declarassem a mesma chave com o mesmo tipo.
+  A §6 passou a exigir: a mesma chave tem o mesmo tipo de campo na biblioteca inteira —
+  `code`/`file`/`lang` idênticos nos dois de código, `image` idêntico nos dois de mídia.
+  Sem isso a tabela vale no papel e falha na troca de layout, que é onde ela é cobrada.
+- **A conta do rodapé decidiu a geometria da imagem.** O `split-vertical` ia sangrar de
+  ponta a ponta, e a conta reprovou: com a imagem descendo até a base, o rodapé teria os
+  480px da coluna de texto, e a placa com o handle mais doze pontos de constelação passam
+  de 500px. A imagem para em y 1174 — a linha da régua da §10.5 —, e a §11.0 ganhou a regra
+  geral: imagem sangra, mas nenhuma entra na faixa do rodapé.
+- **A explicação do `code-annotated` fica abaixo do código, não ao lado.** Não é composição:
+  a 34px mono, uma coluna de 428px comporta 21 caracteres por linha. O `compare-2col` pode
+  dividir a largura porque compara texto; código exige os 920px. E como consequência, é o
+  único template em que ligar o cabeçalho encolhe **o código** em vez de empurrar tudo:
+  prosa que perde duas linhas vira pensamento cortado ao meio.
+- **Duas colunas num canvas de 1080 custam um degrau da escala.** `compare-2col` e
+  `split-vertical` descem o texto para `slide-caption` 32px, porque em 40px uma coluna de
+  428px daria 21 caracteres por linha contra os 28 a 42 que a §3.4 do design system pede. É
+  o preço honesto do layout, e ficou escrito nas duas seções em vez de descoberto na 3E.
+- **Duas regras do design system ganharam exceção nomeada**, e a §11 de lá foi corrigida no
+  mesmo commit: o padding de 80px passou a valer para conteúdo, e o alinhamento à esquerda
+  abriu para o `text-impact` — que já era a exceção que a própria §3.4 previa.
+- **A §11.0 ganhou a convenção do guard**, antes de a 3B existir: toda tabela de regiões
+  marca com **⌐** a região cuja altura o guard mede. Os três templates atuais foram marcados
+  junto, então a 3B chega com os dez declarados em vez de dez decisões para tomar.
+- **O que a 3A não decidiu, e de propósito.** O realce de linha e o diff da §10.3 não têm
+  controle na v1 — a seção diz como aparecem, e expor a faixa de linhas é assunto de outra
+  etapa. A lista de linguagens do `lang` está escrita na §11.6, mas quem a fecha contra o
+  bundle é a 3D.
 
 ### 3B — guard de transbordo e estados dos controles
 
