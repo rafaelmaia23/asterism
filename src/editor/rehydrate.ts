@@ -13,6 +13,24 @@
  * desde a 1B, e é por isso que a decisão 31 custa vinte linhas em vez de uma tabela de
  * migração.
  *
+ * ## Chave que falta não é dado torto, é dado velho
+ *
+ * Entre as duas perguntas entrou um degrau: antes de validar, o slide salvo é **lido por
+ * cima dos defaults do template**. É o que separa os dois motivos de um slide não bater com
+ * o código, que a primeira versão tratava igual:
+ *
+ * - **Falta uma chave** — o commit anterior acrescentou um campo ao descritor e o que está
+ *   salvo é de antes dele. Nasce com o default, e o slide fica. Sem esse degrau, acrescentar
+ *   uma opção compartilhada apagaria o carrossel inteiro de quem já tinha um salvo: os dez
+ *   slides reprovariam de uma vez, e o editor abriria na semente.
+ * - **Uma chave tem valor de outra forma** — `items` como string onde o descritor promete
+ *   lista. Aí o default não salva ninguém: o valor errado sobrescreve o certo e o slide cai,
+ *   que é o comportamento da decisão 31 intacto.
+ *
+ * E o que volta é o **resultado do parse**, não o slide cru: o zod remove chave que o
+ * template não declara mais. Sem isso o dado velho ficaria pendurado para sempre — invisível
+ * no formulário, presente no JSON que a Etapa 4 vai exportar.
+ *
  * Mora em `src/editor` e não em `src/deck` por duas razões: `src/deck/types.ts` não importa
  * nada, nem de biblioteca, e a validação por slide precisa do registry, que `src/deck` não
  * pode conhecer — a seta é `templates → deck`. Quando o import/export JSON da Etapa 4
@@ -48,18 +66,23 @@ const deckSchema = z.object({
 });
 
 /**
- * O slide continua desenhável? Template desconhecido faz o registry lançar, e é a única
- * exceção que se espera aqui — daí o `catch` em vez de um `has` no registry, que não
- * existe justamente porque nenhuma outra tela pergunta.
+ * O slide relido pelo descritor do template dele, ou `null` quando não dá para aproveitá-lo.
+ *
+ * Template desconhecido faz o registry lançar, e é a única exceção que se espera aqui — daí
+ * o `catch` em vez de um `has` no registry, que não existe justamente porque nenhuma outra
+ * tela pergunta.
  */
-function survives(slide: Slide): boolean {
+function revive(slide: Slide): Slide | null {
   try {
-    return get(slide.template).schema.safeParse({
-      fields: slide.fields,
-      options: slide.options,
-    }).success;
+    const def = get(slide.template);
+    const parsed = def.schema.safeParse({
+      fields: { ...def.defaults.fields, ...slide.fields },
+      options: { ...def.defaults.options, ...slide.options },
+    });
+
+    return parsed.success ? { ...slide, ...parsed.data } : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -77,7 +100,9 @@ export function reviveDeck(raw: unknown, fallback: Deck): Deck {
     return fallback;
   }
 
-  const slides = parsed.data.slides.filter(survives);
+  const slides = parsed.data.slides
+    .map(revive)
+    .filter((slide): slide is Slide => slide !== null);
 
   if (slides.length === 0) {
     return fallback;

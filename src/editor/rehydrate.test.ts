@@ -72,9 +72,56 @@ describe("reviveDeck", () => {
     expect(revivido.slides.map((slide) => slide.id)).toEqual(["s1"]);
   });
 
-  test("slide a que falta uma opção do schema cai", () => {
+  /**
+   * Chave que **falta** não é dado torto, é dado velho: o commit anterior acrescentou um
+   * campo ao descritor e o que está salvo é de antes dele. Descartar o slide aqui apagaria
+   * o carrossel inteiro toda vez que um template ganhasse uma opção.
+   */
+  test("opção que falta nasce com o default do template, e o slide fica", () => {
     const deck = makeDeck();
     delete deck.slides[1].options.anchor;
+
+    const revivido = reviveDeck(comoSalvo(deck), semente);
+
+    expect(revivido.slides.map((slide) => slide.id)).toEqual(["s1", "s2"]);
+    expect(revivido.slides[1].options.anchor).toBe(
+      get("text-bullets").defaults.options.anchor,
+    );
+  });
+
+  test("campo que falta nasce com o default do template", () => {
+    const deck = makeDeck();
+    delete deck.slides[1].fields.items;
+
+    const revivido = reviveDeck(comoSalvo(deck), semente);
+
+    expect(revivido.slides[1].fields.items).toEqual(
+      get("text-bullets").defaults.fields.items,
+    );
+    // O que estava escrito não é sobrescrito pelo default.
+    expect(revivido.slides[1].fields.heading).toBe("O que o log dizia");
+  });
+
+  /**
+   * O outro lado da mesma moeda: chave que o template **perdeu** sai do slide. Sem isso o
+   * dado velho ficaria pendurado para sempre, invisível no formulário e presente no JSON
+   * que a Etapa 4 vai exportar.
+   */
+  test("chave que o template não declara mais é descartada", () => {
+    const deck = makeDeck();
+    deck.slides[1].fields.legenda = "de uma versão anterior do código";
+    deck.slides[1].options.densidade = "compacta";
+
+    const revivido = reviveDeck(comoSalvo(deck), semente);
+
+    expect(revivido.slides[1].fields).not.toHaveProperty("legenda");
+    expect(revivido.slides[1].options).not.toHaveProperty("densidade");
+  });
+
+  /** Preencher o que falta não pode preencher o que está errado. */
+  test("valor de forma errada continua derrubando o slide", () => {
+    const deck = makeDeck();
+    deck.slides[1].options.anchor = "de-lado";
 
     expect(reviveDeck(comoSalvo(deck), semente).slides.map((slide) => slide.id)).toEqual(["s1"]);
   });
