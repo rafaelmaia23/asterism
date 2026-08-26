@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { coverStatementSchema, fields, options } from "@/templates/cover-statement/fields";
 import { coverStatementMeta } from "@/templates/cover-statement/meta";
+import { kickerField } from "@/templates/shared/fields";
 
 describe("cover-statement", () => {
   test("os defaults da §11.1 validam contra o próprio schema", () => {
@@ -34,14 +35,14 @@ describe("cover-statement", () => {
     );
   });
 
-  test("kicker é texto digitado e literal — decisão 14", () => {
-    expect(fields.find((field) => field.key === "kicker")).toEqual({
-      key: "kicker",
-      type: "text",
-      label: "Kicker",
-      max: 12,
-      placeholder: "api/ · 04",
-    });
+  /**
+   * O descritor do kicker mudou de casa na 2F: era declarado aqui e virou compartilhado.
+   * O que a capa promete agora é expor **o mesmo objeto** — a forma dele é conferida em
+   * `shared/fields.test.ts`, e comparar por identidade é o que impede a capa de reescrevê-lo
+   * com as mesmas propriedades e voltar a divergir.
+   */
+  test("o kicker é o campo compartilhado, não uma cópia — decisão 14", () => {
+    expect(fields.find((field) => field.key === "kicker")).toBe(kickerField);
   });
 
   test("heading é textarea com marcação, limite 70", () => {

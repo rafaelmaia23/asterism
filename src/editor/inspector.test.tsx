@@ -5,6 +5,7 @@ import type { Deck } from "@/deck/types";
 import { Inspector } from "@/editor/inspector";
 import { createEditorStore } from "@/editor/store";
 import { list, register } from "@/templates/registry";
+import { sharedSections } from "@/templates/shared/sections";
 import type { Field, TemplateDef } from "@/templates/types";
 import "@/templates";
 
@@ -14,7 +15,9 @@ import "@/templates";
  * inspector passar a conhecer template, este teste é o que quebra.
  */
 const fakeFields: Field[] = [
-  { key: "kicker", type: "text", label: "Etiqueta", max: 12 },
+  // Na seção do cabeçalho: um `field` desenhado junto do interruptor que o liga, que é uma
+  // `option`. É a decisão 44 — a seção é desenho, e os dois sacos continuam separados.
+  { key: "kicker", type: "text", label: "Etiqueta", max: 12, section: "header" },
   { key: "heading", type: "textarea", label: "Título", max: 20, md: true, rows: 3 },
   { key: "items", type: "list", label: "Tópicos", maxItems: 4, maxPerItem: 10, md: true },
   // Sem limite no descritor, para provar que o contador nasce do descritor e não do tipo.
@@ -24,7 +27,9 @@ const fakeFields: Field[] = [
 ];
 
 const fakeOptions: Field[] = [
-  { key: "showChevron", type: "toggle", label: "Chevron" },
+  { key: "showHeader", type: "toggle", label: "Cabeçalho" },
+  { key: "showFooter", type: "toggle", label: "Rodapé" },
+  { key: "showChevron", type: "toggle", label: "Chevron", section: "footer" },
   {
     key: "anchor",
     type: "select",
@@ -41,8 +46,26 @@ register({
   label: "Template de teste",
   group: "content",
   background: "plain",
+  sections: sharedSections,
   fields: fakeFields,
   options: fakeOptions,
+  schema: z.object({
+    fields: z.record(z.string(), z.string()),
+    options: z.record(z.string(), z.union([z.string(), z.boolean()])),
+  }),
+  defaults: { fields: {}, options: {} },
+  Component: () => null,
+} satisfies TemplateDef);
+
+/** Um template que não usa nenhuma seção além da de conteúdo, que é onde o padrão cai. */
+register({
+  id: "template-sem-secoes",
+  label: "Template sem seções",
+  group: "content",
+  background: "plain",
+  sections: sharedSections,
+  fields: [{ key: "heading", type: "textarea", label: "Título" }],
+  options: [],
   schema: z.object({
     fields: z.record(z.string(), z.string()),
     options: z.record(z.string(), z.union([z.string(), z.boolean()])),
@@ -71,7 +94,7 @@ function makeDeck(): Deck {
           cta: "blog.maiahub.com.br",
           image: "",
         },
-        options: { showChevron: true, anchor: "center" },
+        options: { showHeader: true, showFooter: true, showChevron: true, anchor: "center" },
       },
     ],
     assets: {},
@@ -82,6 +105,11 @@ function renderInspector() {
   const store = createEditorStore(makeDeck());
   const { container } = render(<Inspector store={store} />);
   return { store, container };
+}
+
+/** O rodapé nasce encolhido — quem precisa dos controles dele abre a seção primeiro. */
+function abrirRodape() {
+  fireEvent.click(screen.getByTestId("collapse-footer"));
 }
 
 describe("Inspector", () => {
@@ -115,8 +143,7 @@ describe("Inspector", () => {
     fireEvent.click(screen.getByTestId("layout-trigger"));
     fireEvent.keyDown(screen.getByRole("option", { name: "Tópicos" }), { key: "Enter" });
 
-    // O `text-bullets` chama o título de "Cabeçalho" e não declara etiqueta nenhuma.
-    expect(screen.getByLabelText<HTMLTextAreaElement>("Cabeçalho").value).toBe("Um título");
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Título").value).toBe("Um título");
     expect(screen.queryByLabelText("Etiqueta")).toBeNull();
   });
 
@@ -132,6 +159,7 @@ describe("Inspector", () => {
 
   test("desenha um controle por descritor, com o rótulo do descritor", () => {
     renderInspector();
+    abrirRodape();
 
     expect(screen.getByLabelText("Etiqueta")).toHaveProperty("tagName", "INPUT");
     expect(screen.getByLabelText("Título")).toHaveProperty("tagName", "TEXTAREA");
@@ -167,6 +195,7 @@ describe("Inspector", () => {
 
   test("o toggle escreve em options, não em fields", () => {
     const { store } = renderInspector();
+    abrirRodape();
 
     fireEvent.click(screen.getByLabelText("Chevron"));
 
@@ -215,6 +244,150 @@ describe("Inspector", () => {
 
     expect(linha.textContent).toContain("Imagem");
     expect(linha.querySelector("input, textarea")).toBeNull();
+  });
+});
+
+/**
+ * As seções da 2F. O inspector continua não conhecendo template nenhum: ele lê `sections`
+ * do descritor e desenha uma seção por entrada, na ordem declarada.
+ */
+describe("Inspector — seções", () => {
+  test("uma seção por entrada declarada, na ordem do descritor", () => {
+    const { container } = renderInspector();
+
+    const ordem = [...container.querySelectorAll("[data-testid^='section-']")].map((node) =>
+      node.getAttribute("data-testid"),
+    );
+
+    expect(ordem).toEqual([
+      "section-header",
+      "section-content",
+      "section-footer",
+      "section-style",
+    ]);
+  });
+
+  /** Campo sem `section` cai em `content`; opção sem `section` cai em `style`. */
+  test("o controle desenha na seção que declara, e o resto cai no padrão", () => {
+    renderInspector();
+
+    const dentro = (secao: string, testid: string) =>
+      screen.getByTestId(secao).querySelector(`[data-testid='${testid}']`) !== null;
+
+    abrirRodape();
+
+    expect(dentro("section-header", "field-kicker")).toBe(true);
+    expect(dentro("section-content", "field-heading")).toBe(true);
+    expect(dentro("section-footer", "field-showChevron")).toBe(true);
+    expect(dentro("section-style", "field-anchor")).toBe(true);
+  });
+
+  /**
+   * O interruptor da seção desenha no cabeçalho dela, e **não** também como linha dentro.
+   * Ele continua declarado em `options` — é o que mantém `options` sendo a lista completa
+   * das chaves de opção, que os testes de paridade de cada template conferem.
+   */
+  test("o interruptor da seção não aparece duas vezes", () => {
+    renderInspector();
+
+    expect(screen.getByLabelText("Cabeçalho")).toBeTruthy();
+    expect(screen.queryByTestId("field-showHeader")).toBeNull();
+    expect(screen.queryByTestId("field-showFooter")).toBeNull();
+  });
+
+  test("o interruptor da seção escreve em options", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Rodapé"));
+
+    expect(store.getState().deck.slides[0].options.showFooter).toBe(false);
+  });
+
+  /** Desligada, a seção mostra só o cabeçalho: não há o que ajustar numa faixa que sumiu. */
+  test("com o interruptor desligado, os controles da seção somem", () => {
+    renderInspector();
+
+    expect(screen.getByTestId("field-kicker")).toBeTruthy();
+
+    fireEvent.click(screen.getByLabelText("Cabeçalho"));
+
+    expect(screen.queryByTestId("field-kicker")).toBeNull();
+    // A seção continua lá — é como se liga a faixa de volta.
+    expect(screen.getByTestId("section-header")).toBeTruthy();
+  });
+
+  test("ligar de volta traz os controles com o que estava escrito", () => {
+    renderInspector();
+
+    fireEvent.click(screen.getByLabelText("Cabeçalho"));
+    fireEvent.click(screen.getByLabelText("Cabeçalho"));
+
+    expect(screen.getByLabelText<HTMLInputElement>("Etiqueta").value).toBe("log/ · 01");
+  });
+
+  /**
+   * Encolher é estado do painel, não do slide: o `partialize` do store salva só o deck, e
+   * preferência de coluna não é modelo de dados.
+   */
+  test("o gatilho encolhe a seção sem mexer no interruptor", () => {
+    const { store } = renderInspector();
+
+    fireEvent.click(screen.getByTestId("collapse-header"));
+
+    expect(screen.queryByTestId("field-kicker")).toBeNull();
+    expect(store.getState().deck.slides[0].options.showHeader).toBe(true);
+
+    fireEvent.click(screen.getByTestId("collapse-header"));
+
+    expect(screen.getByTestId("field-kicker")).toBeTruthy();
+  });
+
+  test("o gatilho anuncia se está aberto", () => {
+    renderInspector();
+
+    expect(screen.getByTestId("collapse-header").getAttribute("aria-expanded")).toBe("true");
+
+    fireEvent.click(screen.getByTestId("collapse-header"));
+
+    expect(screen.getByTestId("collapse-header").getAttribute("aria-expanded")).toBe("false");
+  });
+
+  /**
+   * O rodapé são cinco interruptores que se mexe uma vez e não se olha mais. Nasce
+   * encolhido para que a coluna abra mostrando o que se edita, não o que se configurou.
+   */
+  test("o rodapé nasce encolhido; as outras seções, abertas", () => {
+    renderInspector();
+
+    expect(screen.getByTestId("collapse-footer").getAttribute("aria-expanded")).toBe("false");
+    expect(screen.getByTestId("collapse-content").getAttribute("aria-expanded")).toBe("true");
+    expect(screen.queryByTestId("field-showChevron")).toBeNull();
+  });
+
+  /**
+   * Um template que não declara o interruptor de uma seção nem nenhum controle nela não
+   * ganha uma faixa vazia no formulário. Vale para os sete templates da Etapa 3 que ainda
+   * não existem tanto quanto para este.
+   */
+  test("seção sem interruptor e sem controles não desenha", () => {
+    const store = createEditorStore({
+      ...makeDeck(),
+      slides: [
+        {
+          id: "s-vazio",
+          template: "template-sem-secoes",
+          fields: { heading: "Só isto" },
+          options: {},
+        },
+      ],
+    });
+
+    render(<Inspector store={store} />);
+
+    expect(screen.getByTestId("section-content")).toBeTruthy();
+    expect(screen.queryByTestId("section-header")).toBeNull();
+    expect(screen.queryByTestId("section-footer")).toBeNull();
+    expect(screen.queryByTestId("section-style")).toBeNull();
   });
 });
 

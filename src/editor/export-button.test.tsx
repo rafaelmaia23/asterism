@@ -53,4 +53,37 @@ describe("ExportButtons", () => {
 
     await waitFor(() => expect(botao.hasAttribute("disabled")).toBe(false));
   });
+
+  test("o botão anuncia que está trabalhando e troca o ícone pelo spinner", async () => {
+    let libera = () => {};
+    exportDeck.mockImplementation(() => new Promise<void>((resolve) => (libera = resolve)));
+
+    render(<ExportButtons />);
+    const botao = screen.getByRole("button", { name: /PDF/ });
+
+    expect(botao.getAttribute("aria-busy")).toBe("false");
+    expect(botao.querySelector("[data-testid='export-spinner']")).toBeNull();
+
+    fireEvent.click(botao);
+    await waitFor(() => expect(botao.getAttribute("aria-busy")).toBe("true"));
+    expect(botao.querySelector("[data-testid='export-spinner']")).toBeTruthy();
+
+    // O rótulo não muda: a §8 do design system pede largura preservada.
+    expect(botao.textContent).toBe("PDF");
+
+    libera();
+    await waitFor(() => expect(botao.getAttribute("aria-busy")).toBe("false"));
+    expect(botao.querySelector("[data-testid='export-spinner']")).toBeNull();
+  });
+
+  test("exportação que falha também devolve o `aria-busy` ao normal", async () => {
+    exportDeck.mockRejectedValue(new Error("captura falhou"));
+
+    render(<ExportButtons />);
+    const botao = screen.getByRole("button", { name: /PDF/ });
+
+    fireEvent.click(botao);
+
+    await waitFor(() => expect(botao.getAttribute("aria-busy")).toBe("false"));
+  });
 });

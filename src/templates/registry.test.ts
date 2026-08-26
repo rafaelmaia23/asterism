@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
 import { createTemplateRegistry } from "@/templates/registry";
+import { sharedSections } from "@/templates/shared/sections";
 import type { AnyTemplateDef } from "@/templates/types";
 
 function stub(id: string): AnyTemplateDef {
@@ -9,6 +10,7 @@ function stub(id: string): AnyTemplateDef {
     label: id,
     group: "content",
     background: "plain",
+    sections: sharedSections,
     fields: [],
     options: [],
     schema: z.object({ fields: z.object({}), options: z.object({}) }),

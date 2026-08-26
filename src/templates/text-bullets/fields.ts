@@ -11,19 +11,30 @@
  */
 
 import { z } from "zod";
+import { sharedFields } from "@/templates/shared/fields";
 import { sharedOptions } from "@/templates/shared/options";
 import type { Field } from "@/templates/types";
 
-/** Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates. */
+/**
+ * O kicker vem de `shared/fields.ts`, como em todo template desde a 2F. Aqui ele **nasce
+ * desligado**: o cabeçalho do slide já ocupa o topo, e ligar os dois é escolha de quem
+ * edita, não o desenho padrão do template.
+ *
+ * Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates.
+ */
 export const fields: Field[] = [
+  ...sharedFields,
+  // "Título", e não "Cabeçalho" como até a 2E: o cabeçalho passou a ser a faixa do topo,
+  // e o inspector mostraria dois controles com o mesmo nome na mesma coluna. É também o
+  // nome do papel no vocabulário canônico da §6 — `heading` é o título em todo template.
   {
     key: "heading",
     type: "textarea",
-    label: "Cabeçalho",
+    label: "Título",
     max: 60,
     rows: 2,
   },
-  // Sem `md` no cabeçalho e com `md` nos itens: a §11.2 dá marcação só à lista, e a regra
+  // Sem `md` no título e com `md` nos itens: a §11.2 dá marcação só à lista, e a regra
   // de um nível de ênfase por bloco da §3.4 do design system já é apertada dentro dela.
   {
     key: "items",
@@ -35,7 +46,7 @@ export const fields: Field[] = [
   },
 ];
 
-/** As quatro primeiras vêm de `shared/options.ts`: são as mesmas em todo template. */
+/** As oito primeiras vêm de `shared/options.ts`: são as mesmas em todo template. */
 export const options: Field[] = [
   ...sharedOptions,
   {
@@ -51,11 +62,14 @@ export const options: Field[] = [
 
 export const textBulletsSchema = z.object({
   fields: z.object({
+    kicker: z.string(),
     heading: z.string(),
     items: z.array(z.string()),
   }),
   options: z.object({
     showGrid: z.boolean(),
+    showHeader: z.boolean(),
+    showFooter: z.boolean(),
     showRule: z.boolean(),
     showLogo: z.boolean(),
     showLogoPlate: z.boolean(),

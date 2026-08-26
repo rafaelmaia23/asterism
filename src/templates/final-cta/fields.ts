@@ -15,11 +15,19 @@
  */
 
 import { z } from "zod";
+import { sharedFields } from "@/templates/shared/fields";
 import { sharedOptions } from "@/templates/shared/options";
 import type { Field } from "@/templates/types";
 
-/** Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates. */
+/**
+ * O kicker vem de `shared/fields.ts`, como em todo template desde a 2F, e **nasce
+ * desligado**: a região 80–400 do fechamento é respiro deliberado, e ligá-lo é escolha de
+ * quem edita. Ver a §11.3.
+ *
+ * Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates.
+ */
 export const fields: Field[] = [
+  ...sharedFields,
   {
     key: "heading",
     type: "textarea",
@@ -46,7 +54,7 @@ export const fields: Field[] = [
   },
 ];
 
-/** As seis primeiras vêm de `shared/options.ts`: são as mesmas em todo template. */
+/** As oito primeiras vêm de `shared/options.ts`: são as mesmas em todo template. */
 export const options: Field[] = [
   ...sharedOptions,
   {
@@ -58,12 +66,15 @@ export const options: Field[] = [
 
 export const finalCtaSchema = z.object({
   fields: z.object({
+    kicker: z.string(),
     heading: z.string(),
     lead: z.string(),
     cta: z.string(),
   }),
   options: z.object({
     showGrid: z.boolean(),
+    showHeader: z.boolean(),
+    showFooter: z.boolean(),
     showRule: z.boolean(),
     showLogo: z.boolean(),
     showLogoPlate: z.boolean(),

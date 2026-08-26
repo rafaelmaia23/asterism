@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { Deck } from "@/deck/types";
 import { createEditorStore } from "@/editor/store";
@@ -154,6 +154,57 @@ describe("SlideList", () => {
       renderList(deck);
 
       expect(screen.getByRole("button", { name: /Remover/ })).toHaveProperty("disabled", true);
+    });
+  });
+
+  /**
+   * O `addSlide` já torna o novo ativo desde a 2.13; o que faltava era a lista ir junto.
+   * Num deck de doze o item novo nasce fora da vista, e a única pista de que algo
+   * aconteceu ficava no canvas.
+   *
+   * O `happy-dom` não implementa `scrollIntoView`, então o espião também é quem cria o
+   * método — sem ele o efeito lançaria dentro do render.
+   */
+  describe("a lista acompanha o slide ativo", () => {
+    let scrollIntoView: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+      scrollIntoView = vi.fn();
+      Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+        configurable: true,
+        writable: true,
+        value: scrollIntoView,
+      });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(HTMLElement.prototype, "scrollIntoView");
+    });
+
+    test("acrescentar um slide rola a lista até ele", () => {
+      renderList();
+      scrollIntoView.mockClear();
+
+      fireEvent.click(screen.getByRole("button", { name: /Slide/ }));
+
+      expect(scrollIntoView).toHaveBeenCalled();
+      // O `<li>` do slide novo, e não outro qualquer: é o último da lista.
+      const alvo = scrollIntoView.mock.instances.at(-1) as HTMLElement;
+      expect(alvo.contains(items()[2])).toBe(true);
+    });
+
+    /**
+     * `block: "nearest"` é o que faz clicar num item já visível não sacudir a lista, e
+     * sem `behavior` a rolagem é instantânea — a §7 do design system não anima posição
+     * por mais de 8px.
+     */
+    test("rola pelo mínimo e sem animar", () => {
+      renderList();
+      scrollIntoView.mockClear();
+
+      fireEvent.click(items()[1]);
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
     });
   });
 });

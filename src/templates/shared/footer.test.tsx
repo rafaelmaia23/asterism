@@ -10,6 +10,7 @@ import { Footer } from "@/templates/shared/footer";
  */
 
 const all = {
+  showFooter: true,
   showRule: true,
   showLogo: true,
   showLogoPlate: true,
@@ -35,8 +36,23 @@ describe("Footer", () => {
     expect(screen.queryByTestId("chevron")).not.toBeNull();
   });
 
-  /** A constelação é a única peça sem opção: progresso é o que a faixa é. */
-  test("com tudo desligado, sobra a constelação", () => {
+  /**
+   * O interruptor da faixa é o único que alcança a constelação. Ela não tem opção própria
+   * — progresso é o que o rodapé é —, mas um slide sem rodapé nenhum não é um rodapé mais
+   * enxuto: é a ausência da faixa, e nela não sobra peça nenhuma.
+   */
+  test("com a faixa desligada, não sobra nada — nem a constelação", () => {
+    renderFooter({ showFooter: false });
+
+    expect(screen.queryByTestId("footer-rule")).toBeNull();
+    expect(screen.queryByRole("img", { name: "maiahub" })).toBeNull();
+    expect(screen.queryByText("@rafael")).toBeNull();
+    expect(screen.queryByTestId("chevron")).toBeNull();
+    expect(screen.queryAllByTestId("constellation-dot")).toHaveLength(0);
+  });
+
+  /** A constelação é a única peça sem opção própria: progresso é o que a faixa é. */
+  test("com as cinco peças desligadas, sobra a constelação", () => {
     renderFooter({
       showRule: false,
       showLogo: false,

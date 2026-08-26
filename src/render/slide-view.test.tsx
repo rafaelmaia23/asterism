@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { DeckMeta, Slide } from "@/deck/types";
 import { SlideView } from "@/render/slide-view";
 import { register } from "@/templates/registry";
+import { sharedSections } from "@/templates/shared/sections";
 import type { TemplateDef } from "@/templates/types";
 // Importar `@/templates` é o que popula o registry — é o único módulo que conhece
 // template. O `SlideView` chega nele pelo id gravado no slide, nunca por import direto.
@@ -19,6 +20,7 @@ register({
   label: "Template plano",
   group: "content",
   background: "plain",
+  sections: sharedSections,
   fields: [],
   options: [],
   schema: z.object({ fields: z.object({}), options: z.record(z.string(), z.boolean()) }),
@@ -30,7 +32,7 @@ const slide: Slide = {
   id: "s1",
   template: "cover-statement",
   fields: { kicker: "log/ · 01", heading: "Um título que declara algo" },
-  options: { showChevron: true },
+  options: { showHeader: true, showFooter: true, showChevron: true },
 };
 
 function canvas() {
@@ -55,7 +57,7 @@ describe("SlideView", () => {
    * decide é a opção `showGrid` do slide. Ver a §4.3 do design system e a decisão 25.
    */
   test("sem a opção, o fundo cai no padrão do descritor", () => {
-    const semOpcao: Slide = { ...slide, options: { showChevron: true } };
+    const semOpcao: Slide = { ...slide, options: { showHeader: true, showFooter: true, showChevron: true } };
 
     render(<SlideView slide={semOpcao} deck={deck} index={0} total={3} format={{ w: 1080, h: 1350 }} />);
 

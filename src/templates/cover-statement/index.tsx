@@ -8,9 +8,14 @@
  *
  * As três regiões, em faixa vertical sobre o canvas:
  *
- *   Kicker   80 – 148    `slide-meta`, azure-400
- *   Título   300 – 1160  `slide-display`, ancorado à BASE da região
- *   Rodapé   1238 – 1270 o `Footer` compartilhado, que se posiciona sozinho
+ *   Cabeçalho  80 – 148    o `Header` compartilhado, que se posiciona sozinho
+ *   Título     300 – 1160  `slide-display`, ancorado à BASE da região
+ *   Rodapé     1238 – 1270 o `Footer` compartilhado, que se posiciona sozinho
+ *
+ * O título **não se move** com o cabeçalho ligado ou desligado: a região dele começa em 300
+ * de qualquer jeito, e os 152px entre as duas faixas são respiro, não espaçamento. É o que
+ * mantém a âncora de base funcionando igual nos dois estados. O `text-bullets` é quem paga
+ * pelo cabeçalho, porque é o único dos três com conteúdo colado no topo.
  *
  * O título passa pelo `<Inline>`, e é o único campo do template que aceita marcação — o
  * kicker é literal. Na prática só `[[destaque]]` se usa aqui: `**forte**` não tem efeito
@@ -33,7 +38,7 @@ import {
 } from "@/templates/cover-statement/fields";
 import { coverStatementMeta } from "@/templates/cover-statement/meta";
 import { Footer } from "@/templates/shared/footer";
-import { Kicker } from "@/templates/shared/kicker";
+import { Header } from "@/templates/shared/header";
 import type { TemplateComponentProps, TemplateDef } from "@/templates/types";
 
 function CoverStatement({
@@ -45,9 +50,7 @@ function CoverStatement({
 }: TemplateComponentProps<CoverFields, CoverOptions>) {
   return (
     <div className="relative h-full w-full">
-      <div className="absolute top-[80px] left-[var(--slide-pad)] flex h-[68px] items-start">
-        <Kicker>{content.kicker}</Kicker>
-      </div>
+      <Header kicker={content.kicker} show={settings.showHeader} />
 
       <div className="absolute top-[300px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[860px] items-end">
         <p className="slide-display text-ink-100">
@@ -59,6 +62,7 @@ function CoverStatement({
         handle={deck.handle}
         index={index}
         total={total}
+        showFooter={settings.showFooter}
         showRule={settings.showRule}
         showLogo={settings.showLogo}
         showLogoPlate={settings.showLogoPlate}

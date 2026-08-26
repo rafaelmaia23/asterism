@@ -7,18 +7,19 @@
  */
 
 import { z } from "zod";
+import { sharedFields } from "@/templates/shared/fields";
 import { sharedOptions } from "@/templates/shared/options";
 import type { Field } from "@/templates/types";
 
-/** Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates. */
+/**
+ * O kicker vem de `shared/fields.ts` desde a 2F: era declarado aqui, e a capa era o único
+ * template a tê-lo. Compartilhado, ele atravessa a troca de layout — a migração da 2.10 é
+ * uma interseção de chaves, e chave que só um lado declara não passa.
+ *
+ * Os limites são conselho, não trava: quem reprova é o guard. §11.0 dos templates.
+ */
 export const fields: Field[] = [
-  {
-    key: "kicker",
-    type: "text",
-    label: "Kicker",
-    max: 12,
-    placeholder: "api/ · 04",
-  },
+  ...sharedFields,
   {
     key: "heading",
     type: "textarea",
@@ -30,10 +31,11 @@ export const fields: Field[] = [
 ];
 
 /**
- * As quatro vêm de `shared/options.ts` — a grade e as três peças do rodapé são os mesmos
- * campos em todo template, e o `showChevron` deixou de ser próprio da capa na 2B: virou
- * compartilhado, com a capa apenas nascendo com ele ligado. A chave é a mesma de antes,
- * então nada no dado muda. A capa não acrescenta opção nenhuma às quatro.
+ * As oito vêm de `shared/options.ts` — a grade, as duas faixas e as cinco peças do rodapé
+ * são os mesmos campos em todo template. O `showChevron` deixou de ser próprio da capa na
+ * 2B e o `showHeader` chegou na 2F, com a capa sendo o único template que nasce com ele
+ * ligado. As chaves antigas não mudaram, então o dado salvo continua valendo. A capa não
+ * acrescenta opção nenhuma às oito.
  */
 export const options: Field[] = [...sharedOptions];
 
@@ -44,6 +46,8 @@ export const coverStatementSchema = z.object({
   }),
   options: z.object({
     showGrid: z.boolean(),
+    showHeader: z.boolean(),
+    showFooter: z.boolean(),
     showRule: z.boolean(),
     showLogo: z.boolean(),
     showLogoPlate: z.boolean(),

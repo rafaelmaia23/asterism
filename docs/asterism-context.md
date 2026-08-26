@@ -158,6 +158,17 @@ O título de um slide é **sempre** `heading`, em qualquer template. A tentaçã
 de `titulo` na capa e de `heading` no miolo custa exatamente a migração que esta tabela
 existe para garantir.
 
+**`kicker` é declarado por todo template**, e não só pelos que nascem com a faixa do
+cabeçalho ligada. Ele ficou preso ao `cover-statement` até a 2F, e o custo apareceu no deck
+de doze slides: sair da capa **descartava** o que estava digitado, porque a migração é uma
+interseção de chaves e uma chave que só um lado declara não atravessa. O descritor mora em
+`src/templates/shared/fields.ts`, o simétrico do `shared/options.ts`, e é o mesmo objeto em
+todos — declarado à mão em cada template, o rótulo divergiria no terceiro.
+
+O mesmo caminho vale para as chaves seguintes desta tabela quando um segundo template as
+quiser: o vocabulário promete a mesma chave para o mesmo papel, e um descritor compartilhado
+é o que faz a promessa ser verdadeira em vez de disciplina.
+
 As chaves são em inglês, como todo identificador do projeto. O texto dos documentos
 continua em português.
 
@@ -230,9 +241,14 @@ Cada template é uma pasta autocontida:
 ```
 src/templates/cover-statement/
   index.tsx     componente; recebe props tipadas, renderiza 1080×1350
-  meta.ts       { id, label, group, background, defaults }
+  meta.ts       { id, label, group, background, sections, defaults }
   fields.ts     descritores de fields e options + schema zod
 ```
+
+O que é o mesmo em todos os dez não fica em pasta nenhuma: `src/templates/shared/` guarda
+os descritores compartilhados — `fields.ts`, `options.ts`, `sections.ts` — e as peças que
+todo slide desenha, o `Header` e o `Footer`. Um template os espalha e acrescenta os
+próprios depois.
 
 ```ts
 type TemplateDef<
@@ -245,6 +261,7 @@ type TemplateDef<
   background: "plain" | "grid"
   fields: Field[]
   options: Field[]
+  sections: FieldSection[]
   schema: ZodType<{ fields: F; options: O }>
   defaults: { fields: F; options: O }
   Component: React.FC<{ fields: F; options: O; deck: DeckMeta; index: number; total: number }>
@@ -263,7 +280,7 @@ sob `strictFunctionTypes` os parâmetros são contravariantes — um componente 
 O `Field` é um descritor declarativo — não uma derivação automática do zod:
 
 ```ts
-type Field =
+type Field = (
   | { key: string; type: "text";     label: string; max?: number; placeholder?: string; md?: boolean }
   | { key: string; type: "textarea"; label: string; max?: number; md?: boolean; rows?: number }
   | { key: string; type: "list";     label: string; maxItems: number; maxPerItem?: number; md?: boolean }
@@ -271,7 +288,18 @@ type Field =
   | { key: string; type: "code";     label: string; maxLines: number }
   | { key: string; type: "select";   label: string; options: { value: string; label: string }[] }
   | { key: string; type: "toggle";   label: string }
+) & { section?: string }
+
+type FieldSection = { key: string; label: string; toggle?: string }
 ```
+
+`sections` e `section` são **metadado de desenho**: dizem em que faixa do inspector cada
+controle aparece e sob que interruptor. Não tocam no dado — `fields` e `options` continuam
+sendo a lista completa e plana das chaves de cada saco, e o slide continua guardando os dois
+separados. Ver a §14 e a decisão 44.
+
+O `section` de um controle não é o `group` do template: aquele é uma faixa do formulário,
+este é a função narrativa do template inteiro.
 
 **O zod valida, o descritor desenha.** Gerar formulário automaticamente a partir do
 schema parece elegante e é um poço sem fundo — unions, arrays, defaults e refinements
@@ -438,6 +466,21 @@ biblioteca, e porque a validação por slide precisa do registry — a seta é
 `templates → deck`. Deck de forma errada e deck sem nenhum slide sobrevivente voltam ao
 semente, pela mesma regra que recusa remover o último slide.
 
+**Entre as duas perguntas há um degrau: chave que falta não é dado torto, é dado velho.**
+Antes de validar, o slide salvo é lido **por cima dos defaults do template**, e é isso que
+separa os dois motivos de ele não bater com o código. Falta uma chave? O commit anterior
+acrescentou um campo ao descritor e o que está salvo é de antes dele — nasce com o default,
+e o slide fica. Uma chave tem valor de outra forma, `items` como string onde o descritor
+promete lista? O default não salva ninguém, o valor errado sobrescreve o certo e o slide
+cai, que é a decisão 31 intacta. Sem o degrau, acrescentar uma opção compartilhada apagaria
+o carrossel de quem já tinha um salvo: os dez slides reprovariam de uma vez e o editor
+abriria na semente — exatamente a perda de trabalho que a decisão 31 existe para impedir,
+chegando pela porta de trás. Decisão 41.
+
+O que volta é o **resultado do parse**, não o slide cru: o zod remove a chave que o template
+não declara mais. Sem isso o dado velho ficaria pendurado para sempre, invisível no
+formulário e presente no JSON que a Etapa 4 vai exportar.
+
 Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory é o que
 deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
 reset global; a aplicação usa o singleton. Ver decisão 24.
@@ -568,8 +611,8 @@ Três colunas, sem invenção:
 - **Esquerda** — lista de slides com miniatura, índice, rótulo do template, marca de
   transbordo, reordenação por arraste, duplicar e remover.
 - **Centro** — canvas com o slide ativo em escala, seletor de zoom, indicador de validade.
-- **Direita** — inspector: seletor de layout no topo, campos de conteúdo, opções de
-  apresentação abaixo, contadores de caractere.
+- **Direita** — inspector: seletor de layout no topo e, abaixo, as seções que o descritor
+  declara, com contadores de caractere.
 - **Topo** — nome do deck, ações de deck (novo, importar, exportar JSON) e o botão de
   exportação com escolha de alvo.
 
@@ -577,17 +620,64 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 2D: o centro funciona; o topo tem o nome do deck e a exportação —
-um botão por alvo do registry, hoje um só, e o menu com escolha de alvo entra quando
-houver mais de um; a direita tem o seletor de layout, que troca o template do slide
-preservando o conteúdo, e o formulário derivado dos descritores, com contadores;
-a esquerda lista os slides com miniatura, número e nome, troca o ativo e tem, no pé, a
-barra que acrescenta e remove — sem marca de transbordo, arraste nem duplicar.
+Estado hoje, depois da 2F: o centro funciona; o topo tem o nome do deck e a exportação —
+um botão por alvo do registry, hoje um só, com spinner enquanto a captura acontece, e o
+menu com escolha de alvo entra quando houver mais de um; a direita tem o seletor de layout,
+que troca o template do slide preservando o conteúdo, e o formulário derivado dos
+descritores, em seções que se ligam e se encolhem, com contadores; a esquerda lista os
+slides com miniatura, número e nome, troca o ativo, rola até ele e tem, no pé, a barra que
+acrescenta e remove — sem marca de transbordo, arraste nem duplicar.
 
 Acrescentar e remover ficam numa barra fixa no pé da coluna, agindo sobre o slide ativo, e
 não como um controle por miniatura: o item da lista é um `<button>` inteiro, e botão dentro
 de botão é HTML inválido; e a §6 do design system diz que ícone nunca substitui rótulo em
 ação destrutiva, o que um X pendurado em cada uma das doze miniaturas seria.
+
+**A lista rola até o slide ativo.** Quem rola é o `<ol>`, e não a coluna — a coluna é quem
+segura a barra do pé. Acrescentar já tornava o slide novo o ativo, mas num deck de doze ele
+nascia abaixo da dobra: a única pista de que algo tinha acontecido ficava no canvas, e a
+coluna que existe para mostrar onde se está mostrava outro lugar. A rolagem é `nearest` e
+instantânea — não mexe em nada quando o item já está visível, e a §7 do design system não
+anima posição por mais de 8px.
+
+### As seções do inspector
+
+O formulário era duas seções fixas — Conteúdo escrevendo em `fields`, Apresentação em
+`options` —, o desenho espelhando a divisão do modelo da §6. Desde a 2F ele lê `sections`
+do descritor e desenha uma seção por entrada, na ordem declarada:
+
+```
+Layout            o seletor de template; não é seção do descritor
+▾ Cabeçalho  [●]  interruptor `showHeader`; dentro, o campo Kicker
+▾ Conteúdo        os campos sem `section`
+▸ Rodapé     [●]  interruptor `showFooter`; dentro, as cinco peças da faixa
+▾ Apresentação    as opções sem `section` — a grade e as próprias do template
+```
+
+A ordem é a **vertical do slide**, e é declarativa: quem edita procura o controle onde a
+coisa está no slide. Conteúdo e Apresentação entraram na lista como seções sem interruptor
+justamente para isso — fossem duas seções fixas no componente, a posição do Cabeçalho acima
+do conteúdo seria uma regra escrita em `inspector.tsx` em vez de no descritor.
+
+**Uma seção mistura `field` e `option` no desenho, e só no desenho.** O cabeçalho do slide é
+uma faixa com um texto e um interruptor; separá-los em duas seções distantes faria ligar a
+coisa numa e escrever nela na outra. A seção é metadado de desenho: `fields` e `options`
+continuam sendo dois sacos separados no dado, e a regra "conteúdo migra, opções resetam"
+continua inteira. Mover o kicker para `options` resolveria o desenho e quebraria isso —
+opção reseta na troca de layout, e o texto seria perdido justo onde o vocabulário
+compartilhado acabou de garantir que sobrevive. Decisão 44.
+
+Faixa desligada não mostra as sub-opções: não há o que ajustar numa coisa que sumiu do
+slide. O valor delas continua guardado, então ligar de volta traz o que estava.
+
+Encolher é estado do painel, não do slide: mora em `useState` no `Inspector`, sobrevive à
+troca de slide porque o componente não desmonta, e não entra no `persist`, que guarda só o
+deck. O Rodapé nasce encolhido — cinco interruptores que se mexe uma vez —, o resto aberto.
+
+O cabeçalho de uma seção é um `<div>` com dois controles **irmãos**: o gatilho que encolhe e
+o interruptor da faixa. Switch dentro de button é HTML inválido, a mesma armadilha que a
+lista lateral já documenta, e é por isso que não há um `Collapsible` do Base UI aqui — o
+`Trigger` dele envolveria o interruptor junto.
 
 O formulário desenha cinco dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
 a 1D, `list` e `select` desde a 2C. `image` e `code` continuam aparecendo como linha
@@ -660,3 +750,7 @@ sem retoque em nenhum outro programa.
 | 38 | A régua do rodapé fica em y 1174, em `ink-600`, e toda hairline do canvas usa a compensação de escala | Deixá-la em y 1190 e só trocar a cor; ou tingi-la de âmbar; ou aceitar `height: 1px` como as outras bordas do editor | Foi relatada como "some do PDF quando a grade está ligada", e a medida a 72 dpi mostrou outra coisa: a grade desenha horizontais em `54k + 1` com traço de 2px, o que em k = 22 ocupa 1189–1190, e a régua estava em 1190 no mesmo `ink-800`. Não sumia — era pintada dentro do traço da grade, na cor idêntica. Só trocar a cor deixaria uma listra de outro tom dentro de uma linha de 2px, que parece defeito de impressão; por isso mudam a posição **e** a cor. O âmbar foi comparado e descartado: a §2.5 do design system o reserva a pontuação, no máximo um uso por slide, e uma linha de 920px atravessando o canvas não é pontuação. A mesma medida expôs o segundo defeito: `height: 1px` a k = 0,28 dá 0,28 pixel de dispositivo e o navegador não pinta, então a régua aparecia no PDF — que rasteriza a k = 1 — e faltava no preview. É a decisão 15 outra vez, e ela deixou de ser um detalhe da grade para virar a utility `slide-hairline`, que vale para qualquer linha fina dentro do slide |
 | 39 | O texto do CTA do `final-cta` usa `slide-code`, a 34px | Criar um nono degrau na escala carrossel, `slide-cta` a 36px, como a §11.3 dos templates escrevia; ou escrever os 36px direto no template | Os documentos se contradiziam outra vez, e desta vez a mais específica perde: a §11.3 dava "36px JetBrains Mono" ao texto do CTA e a §3.3 do design system — que é quem decide escala tipográfica — não tem esse degrau, porque o mono dela é `slide-code`, a 34px. A decisão 19 já tinha estabelecido que o template escreve o token e nunca recompõe família, tamanho, altura e peso; escrever 36px no `index.tsx` seria exatamente a divergência que ela existe para impedir, e criar o degrau seria pior, porque a §1 pede restrição sobre invenção e o nono degrau serviria a um uso só. Os 2px de diferença são invisíveis em mono a essa escala, e a hierarquia que a decisão 29 protege continua intacta: 34px `azure-400` no miolo contra 28px `ink-400` no rodapé são vozes distintas do mesmo jeito. A §11.3 passou a nomear o token em vez do número |
 | 40 | A constelação desenha **um ponto por slide em qualquer contagem** — o recorte acima de 10 slides da §10.5 do design system foi revogado | As três leituras do recorte que o experimento 2 levantou: os cinco primeiros pontos, uma janela deslizante de cinco em torno do atual, ou cinco posições amostradas pelo deck — todas com o contador `03 / 12` ao lado | O documento pedia "5 pontos mais um contador" sem dizer quais cinco, e a pergunta que parecia de detalhe era a regra inteira: as três leituras foram montadas numa rota descartável com um deck de 12 slides e nenhuma passou. **Os cinco primeiros** congelam no slide 5 e ficam idênticos pelos oito seguintes. **A janela deslizante** é pior do que a previsão do `TODO.md`: não é só que o último aceso não se move — do slide 4 ao 10 a faixa inteira mostra `●●●○○`, sete slides sem informação nenhuma, e só as duas pontas dizem alguma coisa. **A amostragem espalhada** é a única que se mexe de ponta a ponta, mas avança em quatro degraus (slides 4, 7, 9 e 12) com espaçamento irregular, e o que ela entrega em troca de perder oito pontos é um número que ninguém pediu. O recorte existia para resolver um problema de espaço que **não se mediu antes de escrever a regra**: a faixa comporta 26 pontos antes de a constelação encostar no handle, e o teto da Etapa 2 é 12. É a §1 do design system aplicada à própria §10.5 — restrição sobre invenção —, e o custo de manter a regra simples é um limite que nenhum carrossel real alcança |
+| 41 | Ao reidratar, o slide salvo é lido **por cima dos defaults do template** antes de ser validado | Manter a validação crua da decisão 31, descartando todo slide a que falte uma chave; ou escrever uma tabela de migração por versão do descritor | Um slide salvo deixa de bater com o código por dois motivos que a decisão 31 tratava como um só. Falta uma chave? O commit anterior acrescentou um campo ao descritor e o que está salvo é de antes dele — dado velho, não dado torto. Uma chave tem valor de outra forma? Aí sim é dado que o template não sabe desenhar. Sem a distinção, **acrescentar uma opção compartilhada apaga o carrossel de quem já tinha um salvo**: os dez slides reprovam de uma vez e o editor abre na semente, que é exatamente a perda de trabalho que a decisão 31 existe para impedir, chegando pela porta de trás. O `showHeader` da 2F foi o primeiro caso real, e o custo do degrau são dois espalhamentos de objeto antes do `safeParse`. Uma tabela de migração por versão é o que a decisão 31 já tinha descartado, e continua descartada pelo mesmo motivo: o schema por template já sabe o que o template quer, e os defaults por template já sabem com o que ele nasce. Guardar o **resultado do parse** em vez do slide cru fecha o outro lado — chave que o template perdeu sai do dado em vez de ficar pendurada até o import/export da Etapa 4 |
+| 42 | O **cabeçalho é faixa compartilhada** de todo template, ligável por `showHeader`, e o `kicker` virou campo compartilhado | Manter o kicker como campo do `cover-statement`; ou dar a cada template um campo de etiqueta próprio, com chave própria | A §10.5 do design system prendia o kicker à capa, e o rodapé já tinha feito o caminho contrário na 2B: virou peça compartilhada com seis opções, e o que era regra virou padrão. O topo do slide ficou como a assimetria óbvia da arquitetura — uma faixa desenhada à mão dentro de um template, e nenhum outro slide podia ter etiqueta superior. Compartilhar tem dois retornos além do óbvio: a **migração passa a preservar o kicker** de graça, pela interseção de chaves da decisão 13, e a segunda peça que a faixa ganhar chega num lugar em vez de dez. O par com `showFooter` fecha o desenho: as duas faixas do slide são opção, as peças dentro delas são sub-opção, e a constelação continua sem opção própria porque quem a tira é quem tira a faixa toda |
+| 43 | Ligar o cabeçalho **empurra** o conteúdo do `text-bullets`, em vez de a faixa ser reservada sempre | Reservar 80–148 em todo template, com o conteúdo começando em 212 com a faixa ligada ou não — a regra "ligar uma peça não move as outras" que o rodapé segue desde a 2B | Reservar sempre custaria **132px do topo do template mais usado do sistema**, permanentemente, por uma faixa que ali nasce desligada: a região de itens cairia de 866 para 734px em todo slide de tópicos do carrossel, inclusive nos que nunca vão ter kicker. Empurrar custa um ternário numa string de classe, do mesmo formato que o `anchor` já usa no mesmo componente. A regra do rodapé não é contrariada onde foi escrita: ela fala das peças **dentro** de uma faixa, e vale porque o rodapé nunca disputou espaço com nada — mover o que está embaixo dele seria mover o nada. A capa e o `final-cta` não pagam nada de qualquer forma, porque os dois já têm a faixa 80–148 livre |
+| 44 | A seção do inspector é **metadado de desenho no descritor**, e uma delas mistura `field` e `option` | Duas seções fixas no componente, com o kicker aparecendo em "Conteúdo" e o interruptor em "Apresentação"; ou mover o texto do kicker para `options`, unificando o saco | O painel precisava de "Cabeçalho" e "Rodapé" como categorias que se ligam e se encolhem, e o cabeçalho é uma faixa com **um texto e um interruptor** — separá-los em duas seções distantes faria ligar a coisa numa e escrever nela em outra. A saída é a seção ser desenho e não dado: `fields` e `options` continuam sendo dois sacos separados no modelo, a §6 continua inteira, e o que a seção diz é onde o controle **aparece**. Mover o kicker para `options` resolveria o desenho e quebraria o modelo: opção reseta na troca de layout, e o texto digitado seria perdido justamente onde a decisão 13 acabou de garantir que sobrevive. Conteúdo e Apresentação viraram seções como as outras para que a **ordem** também fosse declarativa — sem isso, a posição do Cabeçalho acima do conteúdo seria uma regra escrita no componente em vez de no descritor. O interruptor continua declarado em `options`, e não na seção, para que `options` siga sendo a lista completa das chaves de opção, que é o invariante que os testes de paridade de cada template conferem |

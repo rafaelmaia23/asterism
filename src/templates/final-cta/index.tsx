@@ -7,9 +7,14 @@
  *
  * As três regiões, em faixa vertical sobre o canvas:
  *
- *   Vazio      80 – 400    respiro, sempre; não é elemento, é a ausência de um
+ *   Vazio      80 – 400    respiro; não é elemento, é a ausência de um
  *   Conteúdo  400 – 1160   título, lead e CTA, ancorados à BASE da região
  *   Rodapé   1238 – 1270   o `Footer` compartilhado, que se posiciona sozinho
+ *
+ * **O respiro é o que a região é com o cabeçalho desligado**, que é como o template nasce.
+ * O `Header` da 2F cabe em 80–148 sem empurrar nada, porque os 320px acima do conteúdo já
+ * estavam vazios: é o único template em que a faixa entra de graça. Ligá-la troca respiro
+ * por etiqueta, e é escolha de quem edita — a §11.3 recomenda o vazio, não o obriga.
  *
  * **Lead vazio faz o bloco desaparecer junto com o gap.** O gap mora no elemento — é
  * `margin-top` do lead, não um `gap` do contêiner —, então some com ele e o CTA fica a
@@ -42,6 +47,7 @@ import {
 } from "@/templates/final-cta/fields";
 import { finalCtaMeta } from "@/templates/final-cta/meta";
 import { Footer } from "@/templates/shared/footer";
+import { Header } from "@/templates/shared/header";
 import type { TemplateComponentProps, TemplateDef } from "@/templates/types";
 
 function FinalCta({
@@ -55,6 +61,8 @@ function FinalCta({
 
   return (
     <div className="relative h-full w-full">
+      <Header kicker={content.kicker} show={settings.showHeader} />
+
       <div className="absolute top-[400px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[760px] flex-col justify-end">
         <p className="slide-title text-ink-100">
           <Inline>{content.heading}</Inline>
@@ -84,6 +92,7 @@ function FinalCta({
         handle={deck.handle}
         index={index}
         total={total}
+        showFooter={settings.showFooter}
         showRule={settings.showRule}
         showLogo={settings.showLogo}
         showLogoPlate={settings.showLogoPlate}

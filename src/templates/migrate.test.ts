@@ -4,6 +4,7 @@ import type { FieldValue } from "@/deck/types";
 import { migrateFields } from "@/templates/migrate";
 import { get } from "@/templates";
 import type { Field, TemplateDef } from "@/templates/types";
+import { sharedSections } from "@/templates/shared/sections";
 
 /**
  * Templates que só existem aqui. A migração não pode depender de quais templates a
@@ -20,6 +21,7 @@ function fakeTemplate(
     label: id,
     group: "content",
     background: "plain",
+    sections: sharedSections,
     fields,
     options: [],
     schema: z.object({
@@ -123,6 +125,10 @@ describe("migrateFields", () => {
   /**
    * O caso que a 2.11 aciona de verdade. É a decisão 13 sendo cobrada: `heading` é o
    * título em qualquer template, e é só por isso que a troca não apaga trabalho.
+   *
+   * O kicker atravessa junto desde a 2F, e **sem uma linha de código aqui**: ele passou a
+   * ser campo compartilhado, e a interseção de chaves fez o resto. Até então ele só existia
+   * na capa, e sair dela descartava o que estava digitado.
    */
   test("da capa para os tópicos, com os templates de verdade", () => {
     const migrado = migrateFields(get("cover-statement"), get("text-bullets"), {
@@ -131,7 +137,21 @@ describe("migrateFields", () => {
     });
 
     expect(migrado.heading).toBe("Ninguém [[lê docs]]");
-    expect("kicker" in migrado).toBe(false);
+    expect(migrado.kicker).toBe("log/ · 01");
     expect(migrado.items).toEqual(get("text-bullets").defaults.fields.items);
+  });
+
+  /** E na volta, igual: o vocabulário compartilhado não tem direção preferida. */
+  test("dos tópicos para o fechamento, o kicker sobrevive", () => {
+    const migrado = migrateFields(get("text-bullets"), get("final-cta"), {
+      kicker: "api/ · 07",
+      heading: "O que o log dizia",
+      items: ["um", "dois"],
+    });
+
+    expect(migrado.kicker).toBe("api/ · 07");
+    expect(migrado.heading).toBe("O que o log dizia");
+    // `items` não existe no fechamento, então é descartado — a interseção de chaves.
+    expect("items" in migrado).toBe(false);
   });
 });
