@@ -1,11 +1,12 @@
 # asterism — plano de execução
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
-> ferramenta publica um carrossel real; a próxima sessão abre a 3A**
+> ferramenta publica um carrossel real; a Etapa 3 está expandida e a próxima sessão abre
+> a 3A**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
-> Cada tarefa cabe num commit. As Etapas 1 e 2 têm um nível a mais — **sub-etapa**, uma
-> por sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
-> entrega, e são quebradas em tarefas quando chegarem.
+> Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
+> por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
+> em tarefas quando chegarem.
 
 ## Mapeamento com o roadmap
 
@@ -604,7 +605,7 @@ Resolvido na sessão:
 - **A armadilha da 2.12 não chegou a acontecer** porque o store nasceu com
   `skipHydration`. A §13 do documento de contexto ganhou a armadilha assim mesmo, na forma
   geral: estado que vem do navegador não pode chegar no primeiro render — vale para
-  `localStorage` hoje e para o IndexedDB da Etapa 4.
+  `localStorage` hoje e para o IndexedDB da 3F.
 - **Conferido no navegador.** Os quatro critérios de pronto passaram olhando: a troca de
   layout preservando o título e resetando as opções, a barra acrescentando e removendo com
   a escolha do vizinho, o deck sobrevivendo ao reload sem aviso de hidratação no console, e
@@ -746,8 +747,157 @@ falha número um deste tipo de ferramenta.
 **Mais uma tarefa nesta etapa:** alinhar as variantes do shadcn à §2.4 do design system.
 O preset `nova` desenha o botão destrutivo como fundo tingido a 10%, e o padrão do
 sistema é tom 400 de preenchimento com tom 950 de texto. A decisão já está tomada — o
-Observatório vence, decisão 17 — e fica para cá porque com três componentes instalados
-seria ajustar no escuro. Auditar todas as variantes na mesma passada.
+Observatório vence, decisão 17 — e ficou para cá porque com três componentes instalados
+seria ajustar no escuro; hoje são seis. Auditar todas as variantes na mesma passada, que é
+a tarefa 3.6.
+
+**Fora desta etapa.** Múltiplos decks com tela de listagem, undo/redo, reordenação por
+arraste, duplicar slide, import/export `.json`, atalhos de teclado, estados vazios e
+deploy — tudo isso continua nas Etapas 4 e 5. Imagem por URL externa está fora por
+escopo, não por etapa: a §11 do documento de contexto fecha o assunto em upload local.
+
+**Pronto quando** um carrossel de 8 a 12 slides usa os **dez** templates — com bloco de
+código realçado e imagem —, nenhum slide transborda sem aviso, e o PDF sai sem retoque
+externo.
+
+As dezenove tarefas são grandes demais para uma sessão só, então a etapa está dividida em
+**sete sub-etapas**, no mesmo formato das Etapas 1 e 2: dependências resolvidas, critério
+de pronto que se verifica sozinho e um estado do repositório que compila, passa nos testes
+e pode ser abandonado sem deixar meio caminho. Uma sub-etapa por sessão, uma branch por
+sub-etapa.
+
+São sete e não cinco porque esta etapa carrega quatro assuntos de naturezas diferentes —
+sete templates, uma dependência nova com risco de rasterização, um mecanismo transversal e
+uma auditoria de componente — e misturá-los numa sessão faria a conferência de cada um
+disputar espaço com a do outro.
+
+Três coisas que a divisão tornou visíveis, e que ela teve de resolver antes de existir:
+
+- **Os sete templates não estão especificados.** O `observatorio-templates.md` tem
+  §11.0–§11.3 e a tabela de status da §11 marca os outros sete como "a especificar".
+  Escrever §11.4–§11.10 é trabalho desta etapa, e é trabalho de decisão de produto — pela
+  Regra 2 o documento vem antes do código. Virou a **3A**, uma sub-etapa inteira de
+  documento, porque a biblioteca se decide como **conjunto**: são as chaves compartilhadas
+  que fazem o `migrateFields` da 2.10 funcionar entre os dez, pela interseção da §6.
+- **O caminho mínimo de imagem foi antecipado da Etapa 4.** A entrega desta etapa lista
+  `split-vertical` e `image-caption`; o upload local, o `idb-keyval` e o `ImageId` eram
+  entrega da Etapa 4. É a mesma contradição que a decisão 30 resolveu na Etapa 2 com o
+  `addSlide`, e a resposta é a mesma: sem eles o critério de pronto **desta** etapa é
+  inalcançável, e um template cujo campo principal não tem controle não está entregue. Sobe
+  o mínimo — guardar, escolher e rasterizar uma imagem local. O `.json` com as imagens em
+  base64 continua na Etapa 4.
+- **O guard de transbordo é uma convenção, não um recurso isolado.** Ele mede um bloco de
+  conteúdo que todo template precisa declarar. Entra **cedo**, na 3B: assim os sete novos
+  nascem seguindo-a e só os três atuais são adaptados. No fim da etapa, os dez seriam
+  revisitados de uma vez.
+
+### 3A — especificação da biblioteca
+
+Sessão de documento, sem uma linha de código. É onde moram quase todas as decisões de
+produto da etapa.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 3.1 | §11.4–§11.10 dos sete templates restantes | Cada um com regiões, elementos, campos, opções, comportamento e o bloco `defaults`, no formato da §11.2 |
+| 3.2 | O vocabulário canônico da §6 do documento de contexto recebe as chaves novas | Toda chave dos sete ou está na §6 ou está justificada como própria do template |
+| 3.3 | A tabela de status da §11 e as tabelas compartilhadas da §11.0 dos templates | Nenhuma linha diz "a especificar". Se o conjunto pedir opção compartilhada nova, ela entra na §11.0 aqui e em `shared/options.ts` na sub-etapa que a usar |
+
+Pontos que só aparecem olhando os sete juntos, e que a 3A tem de fechar: quais nascem com
+o cabeçalho ligado; se `code`, `caption`, `image` e o par antes/depois entram no
+vocabulário canônico ou ficam próprios de um template; e como `compare-2col` e
+`split-vertical` dividem os 920px de largura útil.
+
+Especificar tudo de uma vez, em vez de cada §11.x no commit que implementa o template, é
+o que impede uma chave decidida na 3E de obrigar a voltar no que a 3C escreveu.
+
+### 3B — guard de transbordo e estados dos controles
+
+As duas coisas transversais ao que já existe, antes de os sete chegarem. As duas são
+questões da §8 do design system — o estado **Inválido** e o de **Foco** —, o que faz a
+conferência ser a mesma passada.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 3.4 | O bloco de conteúdo medido por `ResizeObserver`, comparando `scrollHeight` com `clientHeight` — §9 do documento de contexto | Um `text-bullets` com cinco itens longos marca; três itens não. O elemento medido **não** é dimensionado pelo que contém — a armadilha da §13 que a 1C documentou |
+| 3.5 | A marca de transbordo no canvas e na lista lateral | Borda `crown-400`, como a §8 do design system pede para o inválido. A lista mostra o slide inválido sem que o canvas precise estar nele |
+| 3.6 | Experimento 3 — foco e raio dos controles de formulário | Os componentes de uma vez: `button`, `card`, `input`, `select`, `switch` e `textarea`. Decidido, ou os componentes cedem ou a §5 e a §8 do design system são corrigidas junto |
+
+Os três templates atuais são adaptados aqui; os sete de 3C em diante já nascem com o bloco
+declarado. A auditoria das variantes do shadcn contra a §2.4 acontece na mesma passada da
+3.6 — é mexer nos mesmos arquivos, e a §9 do design system já manda conferir toda
+instalação de componente.
+
+### 3C — os dois de texto: `context` e `text-impact`
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 3.7 | `context` completo — §11.4 dos templates | Regiões, campos e `defaults` batendo com o documento; nasce `plain` e expõe as oito compartilhadas |
+| 3.8 | `text-impact` completo — §11.5 dos templates | Nasce `grid`; é o template de frase isolada, o respiro da série |
+| 3.9 | A semente troca as duas capas do miolo por `text-impact` | Os slides 6 e 11 do carrossel de referência deixam de ser `cover-statement`. A 2E registrou isso como limitação de biblioteca, e é esta tarefa que a fecha |
+
+São os dois que não pedem nada novo do inspector — usam os tipos que a 1D e a 2C já
+desenham. É por isso que abrem a sequência de templates: a primeira sessão de template da
+etapa não precisa gastar nada com formulário.
+
+### 3D — shiki e `code-window`
+
+A sub-etapa de maior risco técnico da etapa.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 3.10 | Instalar shiki e derivar o tema dos tokens da §10.4 do design system | O tema é **gerado** dos tokens, não importado pronto — §13 do documento de contexto. Bundle fino: só as linguagens que o carrossel usa |
+| 3.11 | Inspector: tipo de campo `code`, com `maxLines` | Hoje é linha inerte com o rótulo — §14 do contexto. O contador de linhas fica âmbar acima do `maxLines` e não trava: limite é conselho, como na §11.0 dos templates |
+| 3.12 | `code-window` completo — §11.6 dos templates, com o bloco da §10.3 | Superfície `--slide-raised`, raio 12px, sem borda, barra com os três pontos `ink-700` e o nome do arquivo, padding interno 32px |
+
+**Armadilha esperada.** O realce do shiki é assíncrono. O palco de exportação da 1.13a
+espera `document.fonts.ready` e mais nada; se o HTML realçado chegar depois da captura, o
+PDF sai com o código cru. É a mesma família de problema que as fontes, e o palco ganha uma
+segunda espera. Se a sessão confirmar, a §13 do documento de contexto e a §10 ganham a nota
+no mesmo commit.
+
+Fecha conferindo **no PDF**, medindo cor no bitmap como a 2A e a 2B fizeram: o realce sai
+como `<span>` colorido, que é a classe de risco que já atravessou a rasterização duas vezes
+— o que não atravessa é gradiente.
+
+### 3E — `code-annotated` e `compare-2col`
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 3.13 | `code-annotated` completo — §11.7 dos templates | Reusa o bloco de código da 3D; o que muda é a região de explicação ao lado ou abaixo |
+| 3.14 | `compare-2col` completo — §11.8 dos templates | As duas colunas dentro dos 920px úteis, com o par de rótulos |
+
+Os dois mais densos da biblioteca, e é aqui que o guard da 3B começa a pagar.
+
+### 3F — imagens: `split-vertical` e `image-caption`
+
+A antecipação decidida acima. **Só o caminho mínimo**: guardar, escolher, exibir e
+rasterizar uma imagem local.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 3.15 | `idb-keyval` com o deck guardando apenas `ImageId` — §11 do documento de contexto | O `localStorage` continua guardando só o deck; a imagem nunca entra nele. O `ImageId` já existe nos tipos desde a 1.2 |
+| 3.16 | Inspector: tipo de campo `image`, com upload local | Hoje é linha inerte — §14 do contexto. Sem campo de URL, e não por falta de tempo: a §11 fecha o escopo em upload local |
+| 3.17 | `split-vertical` completo — §11.9 dos templates | Texto e imagem dividindo o slide conforme a especificação da 3A |
+| 3.18 | `image-caption` completo — §11.10 dos templates | Imagem dominante com legenda |
+
+**Armadilha esperada, da mesma família das fontes.** A rasterização não busca recurso de
+outra origem — é justamente por isso que as fontes são `next/font/local`. A imagem tem de
+chegar ao DOM como `blob:` ou `data:` da própria origem, e o palco de exportação tem de
+esperar o `decode()` antes de capturar, como já espera as fontes.
+
+**E um caso que a decisão 31 não cobre.** Reidratar um deck cujo `ImageId` não está mais no
+IndexedDB não é slide torto: o schema passa, porque o id é uma string válida. A imagem some
+e o slide fica — a regra continua sendo derrubar só o que não passa, e um id órfão passa.
+
+### 3G — fecho da etapa
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 3.19 | Recompor o carrossel de referência com os dez templates | O critério de pronto da etapa, conferido no navegador **e** no PDF |
+
+É a sessão que acha o que teste unitário não acha, como a conferência da 1E achou a grade e
+a da 2B achou a régua camuflada. Também é a primeira vez que o guard da 3B tem os dez
+templates para provar contra, e a primeira em que a semente exercita a biblioteca inteira.
 
 ---
 
@@ -758,8 +908,12 @@ Corresponde à Fase 3 do §15.
 
 **Entrega.** Reordenação por arraste com `@dnd-kit/sortable`; duplicar e remover slide;
 undo/redo com `zundo`; múltiplos decks com tela de listagem; import/export `.json` com
-imagens embutidas em base64; imagens no IndexedDB via `idb-keyval`, com o deck guardando
-apenas `ImageId`.
+imagens embutidas em base64.
+
+**O IndexedDB saiu daqui.** As imagens no `idb-keyval`, com o deck guardando apenas
+`ImageId`, subiram para a 3F junto com os dois templates de mídia que as pedem: sem elas o
+critério de pronto da Etapa 3 é inalcançável. O que fica aqui é o `.json` autocontido, que
+é assunto de import/export e não de armazenamento.
 
 Apenas upload local de imagem. URL externa contamina o canvas e faz a exportação falhar
 em silêncio.
@@ -784,8 +938,8 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
 contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
 33 e 34, a 2B as 35 a 38, a 2C a 39, a 2E a 40 e a 2F as 41 a 44. Continua **um** ponto
-aberto: o foco e o raio dos controles de formulário, do experimento 3. Ele não bloqueia
-nada.
+aberto: o foco e o raio dos controles de formulário, do experimento 3, que a divisão da
+Etapa 3 agendou para a 3B. Ele não bloqueia nada.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
 lado a lado e comparando o resultado — de preferência medido, como nos experimentos 4 e 5.
@@ -881,11 +1035,11 @@ grade e em slide reduzido: ficou `ink-600`. As três candidatas `sun` foram desc
 Registrado nas decisões 35 a 38 do documento de contexto, na §10.5 e na §4.3 do design
 system, na §11.0 e na §11.1 dos templates, e em `maiahub-logo.md`.
 
-### Experimento 3 — foco e raio dos controles de formulário · a agendar
+### Experimento 3 — foco e raio dos controles de formulário · agendado para a 3B
 
 A auditoria da 1D encontrou duas divergências entre os componentes shadcn instalados e o
 design system. As duas vêm do preset `nova`, entraram no bootstrap com `button`, `input` e
-`card`, e se repetiram no `textarea` e no `switch`:
+`card`, se repetiram no `textarea` e no `switch`, e voltaram no `select` da 2C:
 
 - **Anel de foco.** Os componentes trazem `focus-visible:ring-3` com `ring/50` e sem
   offset; a §5 do design system diz "anel de 2px `azure-500` com offset de 2px", e a §8
@@ -894,6 +1048,11 @@ design system. As duas vêm do preset `nova`, entraram no bootstrap com `button`
   8px a cartões e blocos de código e 6px ao resto.
 
 Não são erros de instalação: o preset é coerente consigo mesmo, e a §9 é explícita em que
-quem cede é o componente, não o documento. O trabalho é mexer nos cinco componentes de uma
+quem cede é o componente, não o documento. O trabalho é mexer nos seis componentes de uma
 vez, ver as duas telas e decidir se o documento estava certo — corrigir só os dois
 componentes novos seria pior que a divergência.
+
+O `card` não tem anel de foco e não usa `rounded-lg`: ele traz `rounded-xl`, que com o
+`--radius` de 6px da §9 resolve em 10px, onde a §5 dá 8px a cartão. É uma terceira
+divergência, da mesma origem, e por isso a auditoria da tarefa 3.6 olha **todas** as
+variantes na mesma passada, e não só as duas desta lista.

@@ -446,8 +446,10 @@ O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`
 mais — autosave e undo sobre um estado que ainda não sabe editar não teriam o que
 guardar. A 2D acrescentou `setTemplate`, `addSlide` e `removeSlide`, que são o que faz
 compor, e o `persist` por cima deste mesmo store — tarefa 2.12: a Fase 1 do §15 promete um
-carrossel publicável e um deck que some no reload não cumpre a promessa. `zundo` e o
-IndexedDB ficam para a **Etapa 4**, junto com o resto do editor.
+carrossel publicável e um deck que some no reload não cumpre a promessa. O **IndexedDB
+chega na 3F**, com os dois templates de mídia que o pedem: um template cujo campo principal
+não tem onde guardar valor não está entregue, e é a mesma razão pela qual a decisão 30
+antecipou o `addSlide`. O `zundo` fica para a **Etapa 4**, junto com o resto do editor.
 
 **Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
 deixa de bater com o código quando um template some ou muda de chave, e a resposta é
@@ -694,8 +696,8 @@ terceiro template.
 | Fase | Escopo | Estimativa |
 |---|---|---|
 | **1 — Fatia vertical** | Tipos, registry, parser inline, canvas escalado, inspector, **3 templates** (`cover-statement`, `text-bullets`, `final-cta`), alvo PDF | 6–8 h |
-| **2 — Biblioteca** | Os outros 7 templates, shiki com tema próprio, guard de transbordo | 4–6 h |
-| **3 — Editor** | dnd-kit, duplicar/remover, undo/redo, múltiplos decks, import/export JSON, imagens no IndexedDB | 4–5 h |
+| **2 — Biblioteca** | Os outros 7 templates, shiki com tema próprio, guard de transbordo, imagens no IndexedDB | 4–6 h |
+| **3 — Editor** | dnd-kit, duplicar/remover, undo/redo, múltiplos decks, import/export JSON | 4–5 h |
 | **4 — Produto** | Atalhos de teclado, estados vazios, README com GIF, deploy | 3 h |
 
 Total aproximado: **20 horas**, dois fins de semana. A fase 1 já permite publicar um
