@@ -650,10 +650,10 @@ Resolvido na sessão:
   botão da lista com `name: /02/`, e o nome acessível do botão inclui o slide inteiro — o
   "2023" do slide 7 passou a casar também. Ancorado no início do nome, que é onde o índice
   fica.
-- **A conferência final no navegador e no PDF é do autor**, e não foi relatada nesta
-  sessão. Os portões automáticos passaram — 308 testes, `tsc`, `eslint` e o build estático
-  —, e nenhum deles substitui olhar as doze páginas do arquivo: foi assim que a 1E achou a
-  grade e a 2B achou a régua camuflada.
+- **Conferido no navegador e no PDF.** O carrossel de doze slides saiu limpo, sem nada a
+  corrigir — a primeira vez em três sub-etapas que a conferência do arquivo não devolve
+  trabalho, depois da grade na 1E e da régua camuflada na 2B. Com ela, o critério de pronto
+  da Etapa 2 está cumprido: um carrossel real, do zero ao PDF, sem retoque externo.
 
 ---
 
