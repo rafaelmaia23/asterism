@@ -1,10 +1,10 @@
-import { sharedSections } from "@/templates/shared/sections";
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
 import type { FieldValue } from "@/deck/types";
 import { migrateFields } from "@/templates/migrate";
 import { get } from "@/templates";
 import type { Field, TemplateDef } from "@/templates/types";
+import { sharedSections } from "@/templates/shared/sections";
 
 /**
  * Templates que só existem aqui. A migração não pode depender de quais templates a

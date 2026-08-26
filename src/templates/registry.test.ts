@@ -1,7 +1,7 @@
-import { sharedSections } from "@/templates/shared/sections";
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
 import { createTemplateRegistry } from "@/templates/registry";
+import { sharedSections } from "@/templates/shared/sections";
 import type { AnyTemplateDef } from "@/templates/types";
 
 function stub(id: string): AnyTemplateDef {

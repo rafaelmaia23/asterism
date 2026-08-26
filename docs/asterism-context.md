@@ -611,8 +611,8 @@ Três colunas, sem invenção:
 - **Esquerda** — lista de slides com miniatura, índice, rótulo do template, marca de
   transbordo, reordenação por arraste, duplicar e remover.
 - **Centro** — canvas com o slide ativo em escala, seletor de zoom, indicador de validade.
-- **Direita** — inspector: seletor de layout no topo, campos de conteúdo, opções de
-  apresentação abaixo, contadores de caractere.
+- **Direita** — inspector: seletor de layout no topo e, abaixo, as seções que o descritor
+  declara, com contadores de caractere.
 - **Topo** — nome do deck, ações de deck (novo, importar, exportar JSON) e o botão de
   exportação com escolha de alvo.
 
@@ -620,12 +620,13 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 2D: o centro funciona; o topo tem o nome do deck e a exportação —
-um botão por alvo do registry, hoje um só, e o menu com escolha de alvo entra quando
-houver mais de um; a direita tem o seletor de layout, que troca o template do slide
-preservando o conteúdo, e o formulário derivado dos descritores, com contadores;
-a esquerda lista os slides com miniatura, número e nome, troca o ativo e tem, no pé, a
-barra que acrescenta e remove — sem marca de transbordo, arraste nem duplicar.
+Estado hoje, depois da 2F: o centro funciona; o topo tem o nome do deck e a exportação —
+um botão por alvo do registry, hoje um só, com spinner enquanto a captura acontece, e o
+menu com escolha de alvo entra quando houver mais de um; a direita tem o seletor de layout,
+que troca o template do slide preservando o conteúdo, e o formulário derivado dos
+descritores, em seções que se ligam e se encolhem, com contadores; a esquerda lista os
+slides com miniatura, número e nome, troca o ativo, rola até ele e tem, no pé, a barra que
+acrescenta e remove — sem marca de transbordo, arraste nem duplicar.
 
 Acrescentar e remover ficam numa barra fixa no pé da coluna, agindo sobre o slide ativo, e
 não como um controle por miniatura: o item da lista é um `<button>` inteiro, e botão dentro
@@ -638,6 +639,45 @@ nascia abaixo da dobra: a única pista de que algo tinha acontecido ficava no ca
 coluna que existe para mostrar onde se está mostrava outro lugar. A rolagem é `nearest` e
 instantânea — não mexe em nada quando o item já está visível, e a §7 do design system não
 anima posição por mais de 8px.
+
+### As seções do inspector
+
+O formulário era duas seções fixas — Conteúdo escrevendo em `fields`, Apresentação em
+`options` —, o desenho espelhando a divisão do modelo da §6. Desde a 2F ele lê `sections`
+do descritor e desenha uma seção por entrada, na ordem declarada:
+
+```
+Layout            o seletor de template; não é seção do descritor
+▾ Cabeçalho  [●]  interruptor `showHeader`; dentro, o campo Kicker
+▾ Conteúdo        os campos sem `section`
+▸ Rodapé     [●]  interruptor `showFooter`; dentro, as cinco peças da faixa
+▾ Apresentação    as opções sem `section` — a grade e as próprias do template
+```
+
+A ordem é a **vertical do slide**, e é declarativa: quem edita procura o controle onde a
+coisa está no slide. Conteúdo e Apresentação entraram na lista como seções sem interruptor
+justamente para isso — fossem duas seções fixas no componente, a posição do Cabeçalho acima
+do conteúdo seria uma regra escrita em `inspector.tsx` em vez de no descritor.
+
+**Uma seção mistura `field` e `option` no desenho, e só no desenho.** O cabeçalho do slide é
+uma faixa com um texto e um interruptor; separá-los em duas seções distantes faria ligar a
+coisa numa e escrever nela na outra. A seção é metadado de desenho: `fields` e `options`
+continuam sendo dois sacos separados no dado, e a regra "conteúdo migra, opções resetam"
+continua inteira. Mover o kicker para `options` resolveria o desenho e quebraria isso —
+opção reseta na troca de layout, e o texto seria perdido justo onde o vocabulário
+compartilhado acabou de garantir que sobrevive. Decisão 44.
+
+Faixa desligada não mostra as sub-opções: não há o que ajustar numa coisa que sumiu do
+slide. O valor delas continua guardado, então ligar de volta traz o que estava.
+
+Encolher é estado do painel, não do slide: mora em `useState` no `Inspector`, sobrevive à
+troca de slide porque o componente não desmonta, e não entra no `persist`, que guarda só o
+deck. O Rodapé nasce encolhido — cinco interruptores que se mexe uma vez —, o resto aberto.
+
+O cabeçalho de uma seção é um `<div>` com dois controles **irmãos**: o gatilho que encolhe e
+o interruptor da faixa. Switch dentro de button é HTML inválido, a mesma armadilha que a
+lista lateral já documenta, e é por isso que não há um `Collapsible` do Base UI aqui — o
+`Trigger` dele envolveria o interruptor junto.
 
 O formulário desenha cinco dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
 a 1D, `list` e `select` desde a 2C. `image` e `code` continuam aparecendo como linha

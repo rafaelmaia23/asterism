@@ -338,6 +338,11 @@ sete `text-bullets` e o `final-cta` —, mora em `src/editor/seed.ts` e é o que
 abre na primeira execução. As quinze tarefas saíram; a 2.5 dissolveu-se na 2.8 e na 2.9, a
 2.4a e a 2.4b nasceram de experimentos, e a 2.13 da decisão 30.
 
+A **2F** veio depois disso, e é o que compor o carrossel de verdade cobrou do que já
+existia: quatro ajustes de uso, nenhum template novo. Ela não reabre o critério de pronto —
+ele já estava cumprido —, e fica aqui em vez de na Etapa 3 porque o que ela mexe é o
+material da Etapa 2.
+
 As quinze tarefas são grandes demais para uma sessão só, então a etapa está dividida em
 **cinco sub-etapas**, no mesmo formato da Etapa 1: dependências resolvidas, critério de
 pronto que se verifica sozinho e um estado do repositório que compila, passa nos testes e
@@ -657,6 +662,74 @@ Resolvido na sessão:
 
 ---
 
+### 2F — ajustes de uso, depois do fecho ✅
+
+Quatro incômodos que o carrossel de doze slides da 2E expôs. A etapa já estava fechada, e
+nenhum deles é template novo — é o que o uso real cobrou do que já existia.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| 2.14 | Spinner no botão de exportar | O ícone vira `loader-circle` girando enquanto a captura acontece, o rótulo e a largura não mudam, e o botão leva `aria-busy` |
+| 2.15 | A lista lateral rola até o slide ativo | Acrescentar um slide num deck de doze leva a lista até ele |
+| 2.16 | Cabeçalho como faixa compartilhada, ligável em todo template | O `kicker` é campo de todos, migra na troca de layout, e `showHeader`/`showFooter` ligam e desligam as duas faixas |
+| 2.17 | Inspector por seções, com interruptor e colapso | O painel desenha as seções que o descritor declara; sub-opção só aparece com a faixa ligada; cada seção encolhe |
+
+Resolvido na sessão:
+
+- **Desabilitado não é sinal de progresso.** O botão de exportar ficava vários segundos com
+  o `opacity-50` do `disabled`, que lê como "não pode" e não como "está indo". A §8 do
+  design system pedia "texto do botão trocado, largura preservada", e a troca virou **do
+  ícone**: `PDF` → `Exportando` mudaria a largura, e preservá-la exigiria uma largura mínima
+  escrita à mão para um estado que dura três segundos. A §8 foi corrigida junto.
+- **O `running` já guardava o id do alvo**, não um booleano, então o spinner aparece só no
+  botão que trabalha enquanto todos desabilitam. Com um alvo só não se nota; com o PNG da
+  §10 do contexto, nota.
+- **A lista já tornava o slide novo o ativo desde a 2.13** — o que faltava era ir junto.
+  Num deck de doze o item nascia abaixo da dobra, e a coluna que existe para mostrar onde se
+  está mostrava outro lugar. Os refs moram num `Map` no `<li>` e não dentro do `Item`, que é
+  `memo` e recebe `onSelect` por id justamente para não receber prop nova por quadro.
+- **Reidratar precisou de um degrau antes de a faixa existir.** Acrescentar `showHeader` como
+  chave obrigatória faria **todo deck salvo ser descartado** pela decisão 31 — os doze slides
+  reprovariam de uma vez e o editor abriria na semente. Chave que falta é dado velho, não
+  dado torto: o slide passou a ser lido por cima dos defaults do template antes de validar, e
+  valor de forma errada continua derrubando o slide. Decisão 41, e ela vale para todo campo
+  futuro, não só para estes.
+- **O topo do slide era a assimetria óbvia da arquitetura.** O rodapé virou peça
+  compartilhada com seis opções na 2B; o cabeçalho continuou um `<div>` escrito à mão dentro
+  da capa, o único template que tinha um. Compartilhá-lo trouxe dois retornos além do óbvio:
+  a migração passou a **preservar o kicker de graça**, pela interseção de chaves da decisão
+  13, e a segunda peça que a faixa ganhar chega num lugar em vez de dez. Decisão 42.
+- **Ligar o cabeçalho empurra o `text-bullets`, em vez de a faixa ser reservada sempre.**
+  Reservar custaria 132px do topo do template mais usado, permanentemente, por uma faixa que
+  ali nasce desligada; empurrar custa um ternário do mesmo formato que o `anchor` já usa no
+  mesmo componente. É a única quebra da regra "ligar uma peça não move as outras", e ela vale
+  porque o rodapé nunca disputou espaço com nada. Decisão 43.
+- **`showFooter` é a faixa, não uma sétima peça.** Desligado, não sobra nada — nem a
+  constelação. Ela continua sem opção própria, e a frase da §10.5 é a mesma de sempre: quem a
+  tira é quem tira o rodapé todo, e um slide sem rodapé não é um rodapé mais enxuto.
+- **A seção do inspector é desenho, e uma delas mistura os dois sacos.** O cabeçalho é uma
+  faixa com um texto e um interruptor, e separá-los em duas seções distantes faria ligar a
+  coisa numa e escrever nela na outra. `fields` e `options` continuam separados no dado, a §6
+  continua inteira, e o que a seção diz é onde o controle aparece. Conteúdo e Apresentação
+  viraram seções como as outras para que a **ordem** também fosse declarativa. Decisão 44.
+- **O interruptor de uma seção vaza para outra se o filtro for só o da própria.** O
+  `showHeader` não declara `section`, então caía em "Apresentação" como linha solta ao lado
+  do mesmo interruptor que já estava no cabeçalho da seção. O filtro passou a excluir **toda**
+  chave que é interruptor de alguma seção, e o teste que pegou isso ficou.
+- **Dois controles com o mesmo nome na mesma coluna.** O `heading` do `text-bullets` se
+  chamava "Cabeçalho" no formulário, e o cabeçalho virou a faixa. Passou a "Título", que é
+  também o nome do papel no vocabulário canônico da §6 — `heading` é o título em todo
+  template. A §11.2 foi atualizada junto.
+- **Nada de `Collapsible` do Base UI.** O `Trigger` dele quer envolver o cabeçalho da seção e
+  envolveria o interruptor junto: switch dentro de button é HTML inválido, a mesma armadilha
+  que a lista lateral documenta para o X por miniatura. São quinze linhas de renderização
+  condicional, e a §7 não pede animação — nada anima posição por mais de 8px.
+- **Conferido no navegador.** Os doze slides da semente saem com quatro cabeçalhos ligados,
+  as quatro capas, e os sete `text-bullets` no layout de sempre. As classes condicionais
+  chegam ao CSS final, que é a armadilha de tree-shaking do `CLAUDE.md`.
+
+---
+
 ## Etapa 3 — Biblioteca
 
 **Objetivo.** Fechar a biblioteca de dez templates e tornar a ferramenta confiável para
@@ -710,8 +783,9 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
 contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
-33 e 34, a 2B as 35 a 38, a 2C a 39 e a 2E a 40. Continua **um** ponto aberto: o foco e o
-raio dos controles de formulário, do experimento 3. Ele não bloqueia nada.
+33 e 34, a 2B as 35 a 38, a 2C a 39, a 2E a 40 e a 2F as 41 a 44. Continua **um** ponto
+aberto: o foco e o raio dos controles de formulário, do experimento 3. Ele não bloqueia
+nada.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
 lado a lado e comparando o resultado — de preferência medido, como nos experimentos 4 e 5.

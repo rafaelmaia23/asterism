@@ -9,17 +9,32 @@
  * também o que a decisão 4 da §16 do documento de contexto compra: o zod valida, o
  * descritor desenha.
  *
- * Duas seções, porque o modelo tem duas — §6: **Conteúdo** escreve em `fields` e
- * **Apresentação** em `options`. Ao trocar de layout, um migra e o outro reseta, e essa
- * regra só existe enquanto os dois não se misturarem.
+ * ## As seções saem do descritor, e a divisão do modelo continua de pé
+ *
+ * O formulário era duas seções fixas, porque o modelo tem duas — §6: `fields` é conteúdo e
+ * `options` é apresentação. Ao trocar de layout, um migra e o outro reseta, e essa regra só
+ * existe enquanto os dois não se misturarem **no dado**.
+ *
+ * Na 2F o desenho deixou de espelhar essa divisão. O cabeçalho do slide é uma faixa com um
+ * texto e um interruptor — o kicker e o `showHeader` —, e separá-los em duas seções
+ * distantes faria ligar a coisa numa e escrever nela na outra. Então a seção passou a ser
+ * **metadado de desenho** no descritor: ela diz onde o controle aparece, nunca onde o valor
+ * mora. `Conteúdo` e `Apresentação` viraram duas seções entre quatro, e é isso que torna a
+ * **ordem** declarativa — sem elas na lista, a posição do Cabeçalho acima do conteúdo seria
+ * uma regra escrita aqui em vez de no descritor. Decisão 44.
+ *
+ * O interruptor de uma seção continua declarado em `options` como qualquer opção, e é este
+ * componente que sabe desenhá-lo no cabeçalho da seção em vez de como mais uma linha. O
+ * contrário — declará-lo na seção — faria `options` deixar de ser a lista completa das
+ * chaves de opção, que é o invariante que o teste de paridade de cada template confere.
  *
  * O store chega por prop, com o singleton como padrão. É o que deixa o teste montar um
  * deck de fixture — inclusive com um template que só existe no teste — sem estado global
  * atravessando de um caso para o outro.
  */
 
-import { useId } from "react";
-import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
+import { useId, useState } from "react";
+import { ArrowDown, ArrowUp, ChevronDown, Plus, X } from "lucide-react";
 import type { StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
 import type { FieldValue, OptionValue } from "@/deck/types";
@@ -37,7 +52,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { get, list } from "@/templates/registry";
-import type { Field } from "@/templates/types";
+import type { Field, FieldSection } from "@/templates/types";
 
 export type InspectorProps = {
   store?: StoreApi<EditorState>;
@@ -296,13 +311,76 @@ function FieldRow({
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Heading({ title }: { title: string }) {
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="font-mono text-xs font-medium tracking-[0.08em] text-ink-500 uppercase">
-        {title}
-      </h2>
-      {children}
+    <h2 className="font-mono text-xs font-medium tracking-[0.08em] text-ink-500 uppercase">
+      {title}
+    </h2>
+  );
+}
+
+/**
+ * Uma seção do formulário: o título, o gatilho que a encolhe, e — quando a seção tem uma —
+ * a chave que liga a faixa inteira.
+ *
+ * **O cabeçalho é um `<div>` com dois controles irmãos, não um `<button>` que envolve
+ * tudo.** Switch dentro de button é HTML inválido, que é a mesma armadilha que a lista
+ * lateral documenta para o X por miniatura. É também o motivo de não haver um
+ * `Collapsible` do Base UI aqui: o `Trigger` dele quer envolver o cabeçalho, e envolveria
+ * o interruptor junto.
+ *
+ * Nada anima. A §7 do design system não anima posição por mais de 8px, e uma seção que
+ * abre é bem mais que isso.
+ */
+function Section({
+  title,
+  open,
+  onToggleOpen,
+  testId,
+  toggle,
+  children,
+}: {
+  title: string;
+  open: boolean;
+  onToggleOpen: () => void;
+  testId: string;
+  toggle?: { label: string; checked: boolean; onCheckedChange: (checked: boolean) => void };
+  children: React.ReactNode;
+}) {
+  const body = useId();
+
+  return (
+    <section data-testid={`section-${testId}`} className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          data-testid={`collapse-${testId}`}
+          aria-expanded={open}
+          aria-controls={body}
+          onClick={onToggleOpen}
+          className="flex flex-1 items-center gap-1.5 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        >
+          <ChevronDown
+            aria-hidden
+            className={`size-3 text-ink-600 ${open ? "" : "-rotate-90"}`}
+          />
+          <Heading title={title} />
+        </button>
+
+        {toggle && (
+          <Switch
+            aria-label={toggle.label}
+            checked={toggle.checked}
+            onCheckedChange={toggle.onCheckedChange}
+          />
+        )}
+      </div>
+
+      {open && (
+        <div id={body} className="flex flex-col gap-4">
+          {children}
+        </div>
+      )}
     </section>
   );
 }
@@ -341,46 +419,137 @@ function LayoutPicker({
   );
 }
 
+/**
+ * A seção em que um controle desenha. Campo sem `section` cai em `content`, opção sem
+ * `section` cai em `style` — as duas sem interruptor. É o que fez as seções chegarem sem
+ * que nenhum descritor de template existente precisasse ser editado.
+ */
+const FIELD_SECTION = "content";
+const OPTION_SECTION = "style";
+
+/**
+ * A única seção que nasce encolhida.
+ *
+ * São cinco interruptores que se mexe uma vez e não se olha mais, e ocupavam metade da
+ * coluna. Encolhida, a coluna abre mostrando o que se edita em vez do que se configurou.
+ */
+const COLLAPSED_AT_FIRST = new Set(["footer"]);
+
 export function Inspector({ store = editorStore }: InspectorProps) {
   const slide = useStore(store, selectActiveSlide);
   const setField = useStore(store, (state) => state.setField);
   const setOption = useStore(store, (state) => state.setOption);
   const setTemplate = useStore(store, (state) => state.setTemplate);
 
+  /**
+   * Encolher é estado do painel, não do slide: fica aqui e não no store, que persiste o
+   * deck e só ele. Sobrevive à troca de slide porque este componente não desmonta, e some
+   * no reload — que é o que preferência de coluna deve fazer enquanto não houver um lugar
+   * para guardar preferência de interface.
+   */
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries([...COLLAPSED_AT_FIRST].map((key) => [key, true])),
+  );
+
   const def = get(slide.template);
+
+  /**
+   * As chaves que desenham como interruptor de seção. São excluídas do corpo de **toda**
+   * seção, e não só da própria: `showHeader` não declara `section`, então cairia em
+   * "Apresentação" — como linha solta, ao lado do mesmo interruptor que já está no
+   * cabeçalho da seção "Cabeçalho".
+   */
+  const toggles = new Set(
+    def.sections
+      .map((section: FieldSection) => section.toggle)
+      .filter((key): key is string => key !== undefined),
+  );
+
+  /** Os controles de uma seção: os campos primeiro, as opções depois, na ordem declarada. */
+  function contentOf(section: FieldSection) {
+    const fields = def.fields.filter(
+      (field: Field) => (field.section ?? FIELD_SECTION) === section.key,
+    );
+
+    const options = def.options.filter(
+      (option: Field) =>
+        (option.section ?? OPTION_SECTION) === section.key && !toggles.has(option.key),
+    );
+
+    return { fields, options };
+  }
 
   return (
     <div className="flex flex-col gap-8 p-4">
-      <Section title="Layout">
+      {/* O seletor de layout não é uma seção do descritor: não desenha campo nenhum, e
+          encolhê-lo esconderia o controle que troca o template do slide. */}
+      <section className="flex flex-col gap-4">
+        <Heading title="Layout" />
         <LayoutPicker
           template={slide.template}
           onChange={(template) => setTemplate(slide.id, template)}
         />
-      </Section>
+      </section>
 
-      <Section title="Conteúdo">
-        {def.fields.map((field: Field) => (
-          <FieldRow
-            key={field.key}
-            field={field}
-            value={slide.fields[field.key]}
-            onChange={(value) => setField(slide.id, field.key, value as FieldValue)}
-          />
-        ))}
-      </Section>
+      {def.sections.map((section: FieldSection) => {
+        const { fields, options } = contentOf(section);
 
-      {def.options.length > 0 && (
-        <Section title="Apresentação">
-          {def.options.map((option: Field) => (
-            <FieldRow
-              key={option.key}
-              field={option}
-              value={slide.options[option.key]}
-              onChange={(value) => setOption(slide.id, option.key, value as OptionValue)}
-            />
-          ))}
-        </Section>
-      )}
+        // O interruptor da seção é uma opção como as outras: se o template não a declara,
+        // a seção não tem faixa para ligar.
+        const toggle = def.options.find((option: Field) => option.key === section.toggle);
+
+        // Seção que não tem controle nenhum nem interruptor não desenha. Sem isso, um
+        // template que não usa o cabeçalho ganharia uma faixa vazia no formulário.
+        if (toggle === undefined && fields.length === 0 && options.length === 0) {
+          return null;
+        }
+
+        const on = toggle === undefined || slide.options[toggle.key] === true;
+        const open = collapsed[section.key] !== true;
+
+        return (
+          <Section
+            key={section.key}
+            testId={section.key}
+            title={section.label}
+            open={open}
+            onToggleOpen={() =>
+              setCollapsed((state) => ({ ...state, [section.key]: !state[section.key] }))
+            }
+            toggle={
+              toggle && {
+                label: toggle.label,
+                checked: on,
+                onCheckedChange: (checked) => setOption(slide.id, toggle.key, checked),
+              }
+            }
+          >
+            {/* Faixa desligada não tem o que ajustar: a seção fica só com o cabeçalho, e é
+                por ele que se liga de volta. O valor dos controles continua no slide. */}
+            {on && (
+              <>
+                {fields.map((field: Field) => (
+                  <FieldRow
+                    key={field.key}
+                    field={field}
+                    value={slide.fields[field.key]}
+                    onChange={(value) => setField(slide.id, field.key, value as FieldValue)}
+                  />
+                ))}
+
+                {options.map((option: Field) => (
+                  <FieldRow
+                    key={option.key}
+                    field={option}
+                    value={slide.options[option.key]}
+                    onChange={(value) => setOption(slide.id, option.key, value as OptionValue)}
+                  />
+                ))}
+              </>
+            )}
+          </Section>
+        );
+      })}
     </div>
   );
 }
