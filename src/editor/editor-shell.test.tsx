@@ -26,7 +26,11 @@ describe("EditorShell", () => {
     // Pelo número do slide, e não pela posição entre os botões da tela: a barra superior
     // também tem botões desde a 1E, e uma posição fixa aqui quebraria de novo no próximo
     // controle que ela ganhar.
-    fireEvent.click(screen.getByRole("button", { name: /02/ }));
+    //
+    // Ancorado no início do nome acessível, que é onde o índice fica: o nome do botão
+    // inclui o slide inteiro, e um `/02/` solto casava também com o "2023" que o carrossel
+    // de referência da 2E trouxe no slide 7.
+    fireEvent.click(screen.getByRole("button", { name: /^02\b/ }));
 
     expect(editorStore.getState().activeId).toBe(segundo.id);
     expect(screen.getByLabelText<HTMLTextAreaElement>("Título").value).toBe(

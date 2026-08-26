@@ -1,7 +1,7 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **Etapa 1 concluída; Etapa 2 em
-> curso: 2A, 2B, 2C e 2D concluídas — a próxima sessão abre a 2E**
+> **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
+> ferramenta publica um carrossel real; a próxima sessão abre a 3A**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 e 2 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. Etapas 1 e 2 estão expandidas; as demais têm apenas objetivo e
@@ -115,8 +115,8 @@ Resolvido na sessão:
   única peça sem consumidor. Nomes em inglês, como manda o CLAUDE.md.
 - **A constelação acima de dez slides não recebe tratamento** nesta etapa: desenha um
   ponto por slide em qualquer contagem, sem janela e sem contador. O recorte da §10.5 do
-  design system continua sendo o experimento 2, na 2.4b, e a seção recebeu a nota do que
-  está implementado até lá.
+  design system era o experimento 2, na 2.4b — e a 2E o **revogou**: o que aqui era
+  provisório virou a regra, sem uma linha de código a mais.
 - **`register` com id repetido lança**, simétrico ao `get` de id desconhecido: quem
   registra é um módulo só, que roda uma vez, então id duplicado é erro de programação e
   não estado de runtime. O registry é uma factory `createRegistry()` com uma instância
@@ -320,7 +320,7 @@ sub-etapa:
 
 ---
 
-## Etapa 2 — Templates
+## Etapa 2 — Templates ✅
 
 **Objetivo.** Os três templates da Fase 1 especificados no design system, com a marcação
 inline funcionando. Ao fim desta etapa a ferramenta publica um carrossel real.
@@ -332,6 +332,11 @@ pela decisão 30.
 
 **Pronto quando** um carrossel de 8 a 12 slides é composto com os três templates,
 usando marcação, e exportado para publicação no LinkedIn sem retoque externo.
+
+**Cumprido na 2E:** o carrossel de referência tem doze slides — quatro `cover-statement`,
+sete `text-bullets` e o `final-cta` —, mora em `src/editor/seed.ts` e é o que a ferramenta
+abre na primeira execução. As quinze tarefas saíram; a 2.5 dissolveu-se na 2.8 e na 2.9, a
+2.4a e a 2.4b nasceram de experimentos, e a 2.13 da decisão 30.
 
 As quinze tarefas são grandes demais para uma sessão só, então a etapa está dividida em
 **cinco sub-etapas**, no mesmo formato da Etapa 1: dependências resolvidas, critério de
@@ -600,21 +605,55 @@ Resolvido na sessão:
   a escolha do vizinho, o deck sobrevivendo ao reload sem aviso de hidratação no console, e
   o slide corrompido à mão no localStorage caindo sozinho.
 
-### 2E — constelação e fecho da etapa
+### 2E — constelação e fecho da etapa ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 2.4b | Resolver o recorte da constelação acima de 10 slides | Ver experimento 2 abaixo. Decidido, a §10.5 do design system é atualizada junto |
 
-A 2.4b vem por último de propósito: o alvo da etapa são 8 a 12 slides, então é aqui que o
-recorte deixa de ser hipótese. O experimento se monta como o 4 se montou — as três
-candidatas lado a lado numa rota descartável, com um deck de 12 slides fabricado, e a
-escolha feita olhando.
+A 2.4b veio por último de propósito: o alvo da etapa são 8 a 12 slides, então é aqui que o
+recorte deixa de ser hipótese. O experimento se montou como o 4 se montou — as candidatas
+lado a lado numa rota descartável, com um deck de 12 slides fabricado, e a escolha feita
+olhando.
 
-Fechado o experimento, a sessão compõe **o carrossel de verdade** com os três templates,
-usando marcação, e o exporta. É o critério de pronto da etapa e é também o teste de
-aceitação que acha o que teste unitário não acha — como a conferência do PDF na 1E achou
-a grade.
+Fechado o experimento, a sessão compôs **o carrossel de verdade** com os três templates,
+usando marcação. É o critério de pronto da etapa e é também o teste de aceitação que acha o
+que teste unitário não acha — como a conferência do PDF na 1E achou a grade.
+
+Resolvido na sessão:
+
+- **O experimento apagou uma regra em vez de escolher entre candidatas.** As três leituras
+  do recorte foram montadas com um deck de 12 slides e nenhuma sobreviveu à comparação com
+  o **controle** — o comportamento sem recorte, que só entrou na rota porque sem ele a
+  pergunta não era respondível. A §10.5 passou a dizer "um ponto por slide, em qualquer
+  contagem", e o `Constellation` não mudou uma linha. Decisão 40.
+- **A regra revogada resolvia um problema que nunca foi medido.** A faixa comporta 26
+  pontos antes de a constelação encostar no handle — 920px de largura útil menos o grupo
+  da esquerda, o chevron e os gaps —, e o teto da Etapa 2 é 12. A medida entrou na §10.5
+  junto com a revogação: o dia em que alguém quiser reabrir o assunto, o número está lá.
+- **Dois testes novos existem só para impedir a regra de voltar.** Um cerca o limiar que
+  existia — 10 e 11 slides se comportam igual —, e o outro conta 24 pontos, muito além de
+  qualquer limiar que alguém pense em reintroduzir.
+- **A semente virou o carrossel de referência**, com doze slides, quatro capas e sete
+  listas. Duas capas caem no miolo, nos slides 6 e 11: a §11.1 dá ao `cover-statement` a
+  função de gancho, e o template de frase isolada é o `text-impact`, que é da Etapa 3.
+  Enquanto a biblioteca não fecha, a capa faz o papel — limitação de biblioteca, não
+  escolha de arquitetura, e não virou decisão da §16 por isso.
+- **O kicker passou a numerar a posição no deck.** Com capa no miolo, numerar as capas
+  entre si faria o slide 6 se anunciar como o terceiro. A §10.5 sempre disse `pilar/ ·
+  índice`; até aqui as duas leituras coincidiam e a diferença não aparecia.
+- **"Um nível de ênfase por bloco" é nível, não ocorrência.** O teste da semente contou
+  ocorrências e reprovou um item com dois `` `código` ``. Nível é o que a §3.4 escreve, e
+  nomear duas variáveis não é enfatizar duas vezes: o teste passou a contar marcadores
+  **distintos** por bloco, que é o que a regra proíbe misturar.
+- **Conteúdo quebra teste que casa por texto solto.** O `editor-shell.test.tsx` clicava no
+  botão da lista com `name: /02/`, e o nome acessível do botão inclui o slide inteiro — o
+  "2023" do slide 7 passou a casar também. Ancorado no início do nome, que é onde o índice
+  fica.
+- **A conferência final no navegador e no PDF é do autor**, e não foi relatada nesta
+  sessão. Os portões automáticos passaram — 308 testes, `tsc`, `eslint` e o build estático
+  —, e nenhum deles substitui olhar as doze páginas do arquivo: foi assim que a 1E achou a
+  grade e a 2B achou a régua camuflada.
 
 ---
 
@@ -671,9 +710,8 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
 contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
-33 e 34, e a 2B as 35 a 38. Continuam
-**dois** pontos abertos: o recorte da constelação, que se resolve na 2E, e o foco e raio
-dos controles de formulário, do experimento 3. Nenhum dos dois bloqueia nada.
+33 e 34, a 2B as 35 a 38, a 2C a 39 e a 2E a 40. Continua **um** ponto aberto: o foco e o
+raio dos controles de formulário, do experimento 3. Ele não bloqueia nada.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
 lado a lado e comparando o resultado — de preferência medido, como nos experimentos 4 e 5.
@@ -690,18 +728,34 @@ Registrado na §11.0 dos templates e na §10.5 do design system, na decisão 18 
 contexto, e em `maiahub-logo.md`. A remoção das quatro peças perdedoras virou a tarefa
 2.4a.
 
-### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b, na 2E
+### ~~Experimento 2 — constelação acima de 10 slides~~ · resolvido
 
-A §10.5 do design system diz "5 pontos mais um contador `03 / 12`" e não diz quais cinco. Três leituras:
+A §10.5 do design system dizia "5 pontos mais um contador `03 / 12`" e não dizia quais
+cinco. As três leituras foram montadas numa rota descartável com um deck de 12 slides,
+mais o **controle** — o comportamento sem recorte —, que é o que faltava para a pergunta
+ser respondível. A tabela do recorte em cada posição, com `●` aceso, `○` apagado e `·`
+não desenhado:
 
-- **Cinco primeiros.** Simples, mas para de comunicar progresso a partir do sexto slide.
-- **Janela deslizante** em torno do atual. É a leitura mais provável, e colide com a
-  regra de que "o atual é simplesmente o último aceso" — numa janela deslizante o último
-  aceso é sempre o mesmo ponto, e a constelação vira decoração.
-- **Amostragem espalhada** pelo deck, tipo 1, 4, 7, 10, 12. Mantém a noção de progresso e
-  perde a de contagem, que o contador ao lado já cobre.
+| Slide | Cinco primeiros | Janela deslizante | Amostragem | Controle |
+|---|---|---|---|---|
+| 01 | `●○○○○·······` | `●○○○○·······` | `●··○··○·○··○` | `●○○○○○○○○○○○` |
+| 03 | `●●●○○·······` | `●●●○○·······` | `●··○··○·○··○` | `●●●○○○○○○○○○` |
+| 05 | `●●●●●·······` | `··●●●○○·····` | `●··●··○·○··○` | `●●●●●○○○○○○○` |
+| 08 | `●●●●●·······` | `·····●●●○○··` | `●··●··●·○··○` | `●●●●●●●●○○○○` |
+| 11 | `●●●●●·······` | `·······●●●●○` | `●··●··●·●··○` | `●●●●●●●●●●●○` |
 
-Montar as três com um deck de 12 slides e escolher.
+**Venceu o controle** — um ponto por slide, em qualquer contagem, sem janela e sem
+contador. Os cinco primeiros congelam no slide 5 e ficam idênticos pelos oito seguintes;
+a janela deslizante é pior do que a previsão acima, porque do slide 4 ao 10 a faixa
+inteira mostra `●●●○○` e só as duas pontas dizem alguma coisa; a amostragem é a única que
+se mexe de ponta a ponta, mas avança em quatro degraus irregulares.
+
+O que a comparação expôs é que o recorte resolvia um problema de espaço que **nunca foi
+medido**: a faixa comporta 26 pontos antes de a constelação encostar no handle, e o teto
+da Etapa 2 é 12. A §10.5 foi reescrita, e o `Constellation` não mudou uma linha — o
+experimento serviu para **apagar** uma regra, que é um resultado tão legítimo quanto
+escolher entre candidatas. Registrado na decisão 40 do documento de contexto e na §10.5
+do design system.
 
 ### ~~Experimento 4 — como desenhar a grade que sobrevive à exportação~~ · resolvido
 

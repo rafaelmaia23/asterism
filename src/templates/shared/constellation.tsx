@@ -6,9 +6,17 @@
  * estado para o slide atual — o atual é simplesmente o último aceso — nem prenúncio do
  * próximo. Um significado por cor.
  *
- * O recorte acima de dez slides que a §10.5 descreve ("5 pontos mais um contador") está
- * reservado à tarefa 2.4b, que decide entre as três leituras do experimento 2. Até lá,
- * doze slides são doze pontos.
+ * **Um ponto por slide, em qualquer contagem.** A §10.5 pedia, acima de dez slides, "5
+ * pontos mais um contador `03 / 12`" sem dizer quais cinco, e o experimento 2 derrubou a
+ * regra em vez de completá-la: as três leituras do recorte foram montadas com um deck de
+ * 12 slides e nenhuma sobreviveu à comparação com o comportamento sem recorte — os cinco
+ * primeiros congelam no slide 5, a janela deslizante fica sete slides sem se mexer, e a
+ * amostragem avança em quatro degraus irregulares. Decisão 40 da §16 do documento de
+ * contexto.
+ *
+ * O recorte existia para resolver um problema de espaço que ninguém tinha medido: a faixa
+ * comporta 26 pontos antes de a constelação encostar no handle. Não há `total` no caminho
+ * deste componente que precise de tratamento especial.
  */
 export function Constellation({ index, total }: { index: number; total: number }) {
   return (

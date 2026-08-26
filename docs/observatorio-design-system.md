@@ -607,13 +607,16 @@ Dois estados apenas:
 Não existe estado para o slide atual — o atual é simplesmente o último aceso.
 Não existe prenúncio do próximo. Um significado por cor.
 
-Acima de 10 slides, mostre 5 pontos mais um contador `03 / 12` em mono.
+**Um ponto por slide, em qualquer contagem.** Não há recorte, não há janela e não há
+contador. Esta seção pedia, acima de 10 slides, "5 pontos mais um contador `03 / 12` em
+mono", e o experimento 2 derrubou a regra: as três leituras possíveis do recorte foram
+montadas com um deck de 12 slides e nenhuma sobreviveu à comparação com o comportamento
+sem recorte. Ver a decisão 40 da §16 do documento de contexto.
 
-> **Pendente.** Quais cinco pontos é o experimento 2, que se resolve na tarefa 2.4b —
-> as três leituras precisam ser montadas com um deck de 12 slides e comparadas. Até lá o
-> `Constellation` implementado desenha um ponto por slide em qualquer contagem: doze
-> slides são doze pontos, sem janela e sem contador. Esta seção é atualizada junto com a
-> 2.4b.
+O limite existe, mas é largo: a faixa comporta **26 pontos** antes de a constelação
+encostar no handle — 920px de largura útil menos o grupo da esquerda, o chevron e os gaps
+de 20px, divididos pelo passo de 24px. Nenhum carrossel de LinkedIn chega perto disso, e
+o dia em que chegar é o dia de reabrir o assunto com um deck real na mão.
 
 **Afordância de deslize** — chevron duplo (Lucide `chevrons-right`), 40px, traço 2.25,
 `azure-400`, à direita da constelação com gap de 20px.
