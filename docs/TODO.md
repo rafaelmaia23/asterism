@@ -115,8 +115,8 @@ Resolvido na sessão:
   única peça sem consumidor. Nomes em inglês, como manda o CLAUDE.md.
 - **A constelação acima de dez slides não recebe tratamento** nesta etapa: desenha um
   ponto por slide em qualquer contagem, sem janela e sem contador. O recorte da §10.5 do
-  design system continua sendo o experimento 2, na 2.4b, e a seção recebeu a nota do que
-  está implementado até lá.
+  design system era o experimento 2, na 2.4b — e a 2E o **revogou**: o que aqui era
+  provisório virou a regra, sem uma linha de código a mais.
 - **`register` com id repetido lança**, simétrico ao `get` de id desconhecido: quem
   registra é um módulo só, que roda uma vez, então id duplicado é erro de programação e
   não estado de runtime. O registry é uma factory `createRegistry()` com uma instância
@@ -671,9 +671,8 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
 contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
-33 e 34, e a 2B as 35 a 38. Continuam
-**dois** pontos abertos: o recorte da constelação, que se resolve na 2E, e o foco e raio
-dos controles de formulário, do experimento 3. Nenhum dos dois bloqueia nada.
+33 e 34, a 2B as 35 a 38, a 2C a 39 e a 2E a 40. Continua **um** ponto aberto: o foco e o
+raio dos controles de formulário, do experimento 3. Ele não bloqueia nada.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
 lado a lado e comparando o resultado — de preferência medido, como nos experimentos 4 e 5.
@@ -690,18 +689,34 @@ Registrado na §11.0 dos templates e na §10.5 do design system, na decisão 18 
 contexto, e em `maiahub-logo.md`. A remoção das quatro peças perdedoras virou a tarefa
 2.4a.
 
-### Experimento 2 — constelação acima de 10 slides · tarefa 2.4b, na 2E
+### ~~Experimento 2 — constelação acima de 10 slides~~ · resolvido
 
-A §10.5 do design system diz "5 pontos mais um contador `03 / 12`" e não diz quais cinco. Três leituras:
+A §10.5 do design system dizia "5 pontos mais um contador `03 / 12`" e não dizia quais
+cinco. As três leituras foram montadas numa rota descartável com um deck de 12 slides,
+mais o **controle** — o comportamento sem recorte —, que é o que faltava para a pergunta
+ser respondível. A tabela do recorte em cada posição, com `●` aceso, `○` apagado e `·`
+não desenhado:
 
-- **Cinco primeiros.** Simples, mas para de comunicar progresso a partir do sexto slide.
-- **Janela deslizante** em torno do atual. É a leitura mais provável, e colide com a
-  regra de que "o atual é simplesmente o último aceso" — numa janela deslizante o último
-  aceso é sempre o mesmo ponto, e a constelação vira decoração.
-- **Amostragem espalhada** pelo deck, tipo 1, 4, 7, 10, 12. Mantém a noção de progresso e
-  perde a de contagem, que o contador ao lado já cobre.
+| Slide | Cinco primeiros | Janela deslizante | Amostragem | Controle |
+|---|---|---|---|---|
+| 01 | `●○○○○·······` | `●○○○○·······` | `●··○··○·○··○` | `●○○○○○○○○○○○` |
+| 03 | `●●●○○·······` | `●●●○○·······` | `●··○··○·○··○` | `●●●○○○○○○○○○` |
+| 05 | `●●●●●·······` | `··●●●○○·····` | `●··●··○·○··○` | `●●●●●○○○○○○○` |
+| 08 | `●●●●●·······` | `·····●●●○○··` | `●··●··●·○··○` | `●●●●●●●●○○○○` |
+| 11 | `●●●●●·······` | `·······●●●●○` | `●··●··●·●··○` | `●●●●●●●●●●●○` |
 
-Montar as três com um deck de 12 slides e escolher.
+**Venceu o controle** — um ponto por slide, em qualquer contagem, sem janela e sem
+contador. Os cinco primeiros congelam no slide 5 e ficam idênticos pelos oito seguintes;
+a janela deslizante é pior do que a previsão acima, porque do slide 4 ao 10 a faixa
+inteira mostra `●●●○○` e só as duas pontas dizem alguma coisa; a amostragem é a única que
+se mexe de ponta a ponta, mas avança em quatro degraus irregulares.
+
+O que a comparação expôs é que o recorte resolvia um problema de espaço que **nunca foi
+medido**: a faixa comporta 26 pontos antes de a constelação encostar no handle, e o teto
+da Etapa 2 é 12. A §10.5 foi reescrita, e o `Constellation` não mudou uma linha — o
+experimento serviu para **apagar** uma regra, que é um resultado tão legítimo quanto
+escolher entre candidatas. Registrado na decisão 40 do documento de contexto e na §10.5
+do design system.
 
 ### ~~Experimento 4 — como desenhar a grade que sobrevive à exportação~~ · resolvido
 
