@@ -22,9 +22,13 @@ function renderBullets(overrides: Partial<typeof textBullets.defaults> = {}) {
  * CLAUDE.md.
  */
 describe("text-bullets", () => {
-  test("renderiza o cabeçalho e um item por entrada da lista", () => {
+  test("renderiza o título e um item por entrada da lista", () => {
     renderBullets({
-      fields: { heading: "Três coisas que eu mudaria", items: ["Um", "Dois", "Três"] },
+      fields: {
+        kicker: "log/ · 01",
+        heading: "Três coisas que eu mudaria",
+        items: ["Um", "Dois", "Três"],
+      },
     });
 
     expect(screen.getByText("Três coisas que eu mudaria")).toBeDefined();
@@ -33,7 +37,7 @@ describe("text-bullets", () => {
 
   test("cada item leva o travessão da §11.2, e ele fica fora da árvore acessível", () => {
     const { container } = renderBullets({
-      fields: { heading: "Cabeçalho", items: ["Um", "Dois"] },
+      fields: { kicker: "log/ · 01", heading: "Título", items: ["Um", "Dois"] },
     });
 
     const markers = container.querySelectorAll("li > span[aria-hidden]");
@@ -44,10 +48,11 @@ describe("text-bullets", () => {
     expect(markers[0].className).toContain("font-mono");
   });
 
-  test("os itens são interpretados como marcação — o cabeçalho não", () => {
+  test("os itens são interpretados como marcação — o título não", () => {
     const { container } = renderBullets({
       fields: {
-        heading: "Um [[cabeçalho]] literal",
+        kicker: "log/ · 01",
+        heading: "Um [[título]] literal",
         items: ["Um ponto com [[destaque]]"],
       },
     });
@@ -59,8 +64,8 @@ describe("text-bullets", () => {
     );
 
     expect(accent?.textContent).toBe("destaque");
-    // O cabeçalho sai com os colchetes na tela: a §11.2 não lhe dá marcação.
-    expect(screen.getByText("Um [[cabeçalho]] literal")).toBeDefined();
+    // O título sai com os colchetes na tela: a §11.2 não lhe dá marcação.
+    expect(screen.getByText("Um [[título]] literal")).toBeDefined();
   });
 
   test("anchor center centraliza o bloco; top encosta no topo da região", () => {
@@ -100,5 +105,42 @@ describe("text-bullets", () => {
   test("o descritor declara fundo plain e grupo content", () => {
     expect(textBullets.background).toBe("plain");
     expect(textBullets.group).toBe("content");
+  });
+
+  /**
+   * O único dos três templates em que o cabeçalho disputa espaço: a região 80–230 já é do
+   * título do slide. Ligar a faixa empurra as duas regiões de baixo, e desligá-la devolve o
+   * layout de sempre — inteiro, sem faixa reservada no topo. Nos dois estados o miolo acaba
+   * em 1160, no topo do rodapé: 294+866 de um lado, 426+734 do outro.
+   *
+   * As faixas em si não são verificáveis (`happy-dom` não faz layout); o que se guarda é a
+   * classe que decide, que é a mesma escolha que o teste de `anchor` faz acima.
+   */
+  describe("o cabeçalho empurra o conteúdo, e só quando ligado", () => {
+    test("desligado, o layout é o de sempre", () => {
+      renderBullets();
+
+      expect(screen.queryByTestId("header-band")).toBeNull();
+      expect(screen.getByTestId("heading-region").className).toContain("top-[80px]");
+      expect(screen.getByTestId("items-region").className).toContain("top-[294px]");
+      expect(screen.getByTestId("items-region").className).toContain("h-[866px]");
+    });
+
+    test("ligado, as duas regiões de baixo descem", () => {
+      renderBullets({ options: { ...defaults.options, showHeader: true } });
+
+      expect(screen.queryByTestId("header-band")).not.toBeNull();
+      expect(screen.getByTestId("heading-region").className).toContain("top-[212px]");
+      expect(screen.getByTestId("items-region").className).toContain("top-[426px]");
+      expect(screen.getByTestId("items-region").className).toContain("h-[734px]");
+    });
+  });
+
+  test("o rodapé inteiro some com o interruptor da faixa", () => {
+    renderBullets({ options: { ...defaults.options, showFooter: false } });
+
+    expect(screen.queryByRole("img", { name: "maiahub" })).toBeNull();
+    expect(screen.queryByText("@rafael")).toBeNull();
+    expect(screen.queryAllByTestId("constellation-dot")).toHaveLength(0);
   });
 });

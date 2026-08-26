@@ -1,16 +1,39 @@
 /**
  * `text-bullets` — o desenvolvimento, §11.2 dos templates.
  *
- * O template mais usado de um carrossel, e o primeiro com rodapé de identidade: cabeçalho
- * no topo, itens no miolo, `Footer` na última faixa.
+ * O template mais usado de um carrossel, e o primeiro com rodapé de identidade: título no
+ * topo, itens no miolo, `Footer` na última faixa.
  *
  * As três regiões, em faixa vertical sobre o canvas:
  *
- *   Cabeçalho   80 – 230    `slide-heading`, até duas linhas
+ *   Título      80 – 230    `slide-heading`, até duas linhas
  *   Itens      294 – 1160   lista, ancorada pela opção `anchor`
  *   Rodapé    1238 – 1270   glyph, handle, constelação — o `Footer` se posiciona sozinho
  *
- * O cabeçalho é literal e os itens aceitam marcação: é a §11.2, e dentro dela ainda vale
+ * ## Com o kicker ligado, tudo desce uma faixa
+ *
+ * É o único dos três templates em que o cabeçalho compartilhado disputa espaço: a região
+ * 80–230 já é do título do slide. Ligado o `showHeader`, o kicker toma 80–148 e as duas
+ * regiões de baixo descem um `--slide-gap-block`:
+ *
+ *   Kicker      80 – 148    o `Header` compartilhado, que se posiciona sozinho
+ *   Título     212 – 362    a mesma altura de 150px, 132px abaixo
+ *   Itens      426 – 1160   o mesmo fim, 734px em vez de 866
+ *
+ * **Empurrar só quando ligado**, em vez de reservar a faixa sempre, é a decisão 43. As duas
+ * variantes custam um ternário; reservar sempre custaria 132px do topo do template mais
+ * usado do sistema, permanentemente, para uma faixa que nasce desligada aqui. É a única
+ * quebra da regra "ligar uma peça não move as outras" que o rodapé estabeleceu na 2B, e ela
+ * vale porque o rodapé nunca disputou espaço com nada: mover o que está embaixo dele seria
+ * mover o nada.
+ *
+ * Os números saem do ritmo que o template já tinha — `--slide-pad` 80, faixa do kicker 68,
+ * `--slide-gap-block` 64 — e são classes **literais** porque o Tailwind varre o fonte: uma
+ * constante em JS não chega ao CSS final. Ver a armadilha no `CLAUDE.md`.
+ *
+ * Quatro itens de duas linhas ocupam 624px, então continuam cabendo nos 734.
+ *
+ * O título é literal e os itens aceitam marcação: é a §11.2, e dentro dela ainda vale
  * a regra de um nível de ênfase por bloco da §3.4 do design system — negrito, código e
  * marca-texto no mesmo slide se anulam.
  *
@@ -25,6 +48,7 @@
 
 import { Inline } from "@/markup/inline";
 import { Footer } from "@/templates/shared/footer";
+import { Header } from "@/templates/shared/header";
 import {
   textBulletsSchema,
   fields,
@@ -44,7 +68,15 @@ function TextBullets({
 }: TemplateComponentProps<BulletsFields, BulletsOptions>) {
   return (
     <div className="relative h-full w-full">
-      <div className="absolute top-[80px] right-[var(--slide-pad)] left-[var(--slide-pad)] h-[150px]">
+      <Header kicker={content.kicker} show={settings.showHeader} />
+
+      <div
+        data-testid="heading-region"
+        className={[
+          "absolute right-[var(--slide-pad)] left-[var(--slide-pad)] h-[150px]",
+          settings.showHeader ? "top-[212px]" : "top-[80px]",
+        ].join(" ")}
+      >
         <h2 className="slide-heading text-ink-100">{content.heading}</h2>
       </div>
 
@@ -52,7 +84,8 @@ function TextBullets({
         data-testid="items-region"
         data-anchor={settings.anchor}
         className={[
-          "absolute top-[294px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[866px] flex-col",
+          "absolute right-[var(--slide-pad)] left-[var(--slide-pad)] flex flex-col",
+          settings.showHeader ? "top-[426px] h-[734px]" : "top-[294px] h-[866px]",
           settings.anchor === "top" ? "justify-start" : "justify-center",
         ].join(" ")}
       >
@@ -76,6 +109,7 @@ function TextBullets({
         handle={deck.handle}
         index={index}
         total={total}
+        showFooter={settings.showFooter}
         showRule={settings.showRule}
         showLogo={settings.showLogo}
         showLogoPlate={settings.showLogoPlate}

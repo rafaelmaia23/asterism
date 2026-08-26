@@ -1,3 +1,4 @@
+import { sharedSections } from "@/templates/shared/sections";
 import { describe, expect, test } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { z } from "zod";
@@ -41,6 +42,7 @@ register({
   label: "Template de teste",
   group: "content",
   background: "plain",
+  sections: sharedSections,
   fields: fakeFields,
   options: fakeOptions,
   schema: z.object({
@@ -115,8 +117,7 @@ describe("Inspector", () => {
     fireEvent.click(screen.getByTestId("layout-trigger"));
     fireEvent.keyDown(screen.getByRole("option", { name: "Tópicos" }), { key: "Enter" });
 
-    // O `text-bullets` chama o título de "Cabeçalho" e não declara etiqueta nenhuma.
-    expect(screen.getByLabelText<HTMLTextAreaElement>("Cabeçalho").value).toBe("Um título");
+    expect(screen.getByLabelText<HTMLTextAreaElement>("Título").value).toBe("Um título");
     expect(screen.queryByLabelText("Etiqueta")).toBeNull();
   });
 

@@ -57,6 +57,7 @@ describe("final-cta", () => {
   test("o fecho aceita marcação; lead e CTA são literais", () => {
     const { container } = renderFinal({
       fields: {
+        kicker: "log/ · 01",
         heading: "Escrevo sobre os [[erros]]",
         lead: "Um [[complemento]] literal",
         cta: "blog.maiahub.com.br",

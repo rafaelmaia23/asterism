@@ -71,9 +71,9 @@ describe("final-cta", () => {
     expect(options[0]).toBe(showGridOption);
   });
 
-  test("showArrow é toggle e vem depois das seis compartilhadas", () => {
+  test("showArrow é toggle e vem depois das oito compartilhadas", () => {
     expect(options.at(-1)).toMatchObject({ key: "showArrow", type: "toggle" });
-    expect(options).toHaveLength(7);
+    expect(options).toHaveLength(9);
   });
 
   test("nasce grid, no grupo final, e com o rodapé completo da decisão 29", () => {

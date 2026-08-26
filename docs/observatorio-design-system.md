@@ -31,7 +31,7 @@ uso, que é o que não cabe em CSS.
 | 5–8       | Forma, ícones, movimento, estados                       | Componente novo no editor              | `--radius` e afins             |
 | 9         | Mapeamento shadcn e as duas armadilhas de nome          | Instalar componente shadcn novo        | `globals.css`, `@theme inline` |
 | 10.1–10.4 | Superfícies, marcadores inline, bloco de código, shiki  | Parser, `<Inline>`, bloco de código    | 10.1 e 10.2 (`inline.tsx`)     |
-| 10.5      | Kicker, constelação, chevron, rodapé, callout           | Peças recorrentes dos slides           | —                              |
+| 10.5      | Cabeçalho, kicker, constelação, chevron, rodapé, callout | Peças recorrentes dos slides           | —                              |
 | 11        | Layout, campos e comportamento de cada template         | Implementar um template                | `observatorio-templates.md`    |
 | 12–13     | Fontes, licenças, artefatos do sistema                  | Raramente                              | —                              |
 
@@ -596,13 +596,35 @@ Gerado a partir destes tokens, não importado pronto — senão o bloco de códi
 
 ### 10.5 Componentes recorrentes
 
-**Kicker** — canto superior esquerdo, `slide-meta`, `azure-400`.
+**Cabeçalho** — a faixa do topo, 80–148, dentro do padding. Simétrica ao rodapé, e opção do
+slide pela chave `showHeader`.
+
+| Peça | Chave | Descrição |
+| --- | --- | --- |
+| Kicker | — | `slide-meta` `azure-400`, canto superior esquerdo |
+
+Uma peça só, por enquanto, e ela não tem opção própria: o kicker é o que a faixa é, do mesmo
+jeito que a constelação é o que o rodapé é. Quem o tira é quem tira a faixa.
+
+**Desligada, a faixa não existe** — não é uma faixa vazia de 68px. É a única diferença de
+comportamento entre ela e o rodapé, e vem de onde as duas ficam: um template pode ter
+conteúdo colado no topo, e nenhum tem conteúdo colado no fim. Ver a §11.2 dos templates, que
+é onde isso se paga.
+
+Cada template declara com o que o slide **nasce**. Só a capa nasce com o cabeçalho ligado —
+esta seção prendia o kicker à capa, e o que era regra virou padrão, pela mesma forma da
+decisão 25. Decisão 42.
+
+**Kicker** — canto superior esquerdo do cabeçalho, `slide-meta`, `azure-400`.
 Formato `pilar/ · índice`, por exemplo `api/ · 04`.
 
 O formato é **convenção, não derivação**. O kicker é um campo de texto digitado à mão,
 não é montado a partir de `deck.meta.pillar` com a posição do slide. Derivar daria
 consistência automática ao custo de não poder escrever outra coisa ali, e a liberdade
 venceu. A contrapartida é que reordenar slides não reescreve o índice sozinho.
+
+Kicker vazio com a faixa ligada é escolha válida: o slide mantém o ritmo da série sem
+escrever nada ali. Quem não quer a faixa desliga a opção.
 
 **Constelação de progresso** — rodapé direito. Um ponto por slide, 12px de diâmetro,
 gap 12px, alinhada à direita dentro do padding.
@@ -638,8 +660,8 @@ permanece é a do fim: **no último slide a seta não é desenhada**, com a opç
 não, porque ali não há para onde deslizar. A supressão é por posição no deck, não por
 template.
 
-**Rodapé** — a faixa presente em **todos** os slides. Alinhada à base, dentro do padding.
-Seis peças, e cinco delas são opção do slide:
+**Rodapé** — a faixa da base, dentro do padding, e opção do slide pela chave `showFooter`.
+Seis peças, e cinco delas são opção também:
 
 | Peça | Chave | Descrição |
 | --- | --- | --- |
@@ -647,8 +669,16 @@ Seis peças, e cinco delas são opção do slide:
 | Logo | `showLogo` | `MaiahubGlyph` a 32px em `ink-200` |
 | Fundo da logo | `showLogoPlate` | Quadrado de 56px, `slide-raised`, borda 1px `ink-700`, raio 12px |
 | Handle | `showHandle` | `slide-meta` `ink-400`, gap 20px após a logo |
-| Constelação | — | Sem opção: progresso é o que a faixa é |
+| Constelação | — | Sem opção própria: progresso é o que a faixa é |
 | Chevron | `showChevron` | À direita da constelação, gap 20px |
+
+**`showFooter` é a faixa, não uma sétima peça.** As cinco opções escolhem o que a faixa
+mostra; o interruptor escolhe se ela existe. Desligado, não sobra nada — nem a constelação.
+
+A constelação continua sem opção própria, e a frase da tabela é a mesma de sempre:
+desligá-la sozinha não faz sentido, porque progresso é o que a faixa é. O que a 2F
+acrescentou foi poder desligar a faixa inteira, e um slide sem rodapé não contradiz a regra
+porque não é um rodapé.
 
 Cada template declara com o que o slide **nasce** e quem edita decide daí em diante — a
 forma da decisão 25, a mesma que a grade de fundo tem desde a 1E. Esta seção dizia

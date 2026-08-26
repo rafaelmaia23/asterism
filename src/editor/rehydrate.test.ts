@@ -25,7 +25,7 @@ function makeDeck(): Deck {
       {
         id: "s2",
         template: "text-bullets",
-        fields: { heading: "O que o log dizia", items: ["um", "dois"] },
+        fields: { kicker: "log/ · 02", heading: "O que o log dizia", items: ["um", "dois"] },
         options: { ...get("text-bullets").defaults.options },
       },
     ],

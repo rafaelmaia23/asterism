@@ -15,7 +15,16 @@ import { Constellation } from "@/templates/shared/constellation";
  * exceto a capa" e o chevron a "somente a capa"; as duas frases viraram o valor com que
  * cada template nasce, e quem edita decide daí em diante.
  *
- * A **constelação não tem opção**: progresso é o que a faixa é.
+ * ## `showFooter` é a faixa, não uma sexta peça
+ *
+ * As cinco opções escolhem **o que a faixa mostra**; o `showFooter` escolhe **se ela
+ * existe**. Desligado, não sobra nada: nem régua, nem identidade, nem seta — e nem a
+ * constelação.
+ *
+ * A **constelação continua sem opção própria**: progresso é o que a faixa é, e um rodapé sem
+ * ele não seria um rodapé mais enxuto, seria outra coisa. Desligá-la sozinha continua
+ * impossível, e é a mesma frase de sempre; o que a 2F acrescentou foi poder desligar a
+ * frase inteira. Um slide sem rodapé nenhum não contradiz a regra, porque não é um rodapé.
  *
  * ## Ligar uma peça não move as outras
  *
@@ -66,6 +75,7 @@ export function Footer({
   handle,
   index,
   total,
+  showFooter,
   showRule,
   showLogo,
   showLogoPlate,
@@ -75,12 +85,17 @@ export function Footer({
   handle: string;
   index: number;
   total: number;
+  showFooter: boolean;
   showRule: boolean;
   showLogo: boolean;
   showLogoPlate: boolean;
   showHandle: boolean;
   showChevron: boolean;
 }) {
+  if (!showFooter) {
+    return null;
+  }
+
   // No último slide não há para onde deslizar, e a seta que convida ao próximo mentiria.
   // A regra mora aqui porque o `Footer` já recebe a posição para desenhar a constelação:
   // escrita uma vez, ela não pode divergir entre dez templates.

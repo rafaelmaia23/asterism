@@ -1,3 +1,4 @@
+import { sharedSections } from "@/templates/shared/sections";
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
 import { createTemplateRegistry } from "@/templates/registry";
@@ -9,6 +10,7 @@ function stub(id: string): AnyTemplateDef {
     label: id,
     group: "content",
     background: "plain",
+    sections: sharedSections,
     fields: [],
     options: [],
     schema: z.object({ fields: z.object({}), options: z.object({}) }),

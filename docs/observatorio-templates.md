@@ -38,11 +38,22 @@ de `defaults`.
 Todo template ocupa 1080×1350 com padding de 80px em todos os lados, o que dá uma
 largura útil de **920px**. Nada de logo ou CTA a menos de 60px da borda.
 
-O rodapé ocupa a última faixa, com a linha de base do conteúdo alinhada a 80px do
+**Todo template tem duas faixas, e as duas são opção do slide.**
+
+O **cabeçalho** ocupa 80–148 e traz o kicker em `slide-meta` `azure-400`. A capa é o único
+template que **nasce** com ele ligado. Desligado, a faixa não existe — não é uma faixa vazia
+de 68px —, e é isso que permite a um template com conteúdo no topo recuperar o espaço em vez
+de reservá-lo para sempre. A §11.2 é onde isso se paga.
+
+O **rodapé** ocupa a última faixa, com a linha de base do conteúdo alinhada a 80px do
 fundo. Composição: `MaiahubGlyph` a 32px em `ink-200`, com ou sem a placa atrás, gap 20px,
 handle em `slide-meta` `ink-400` à esquerda; constelação à direita, e o chevron depois
 dela. Acima da faixa, opcionalmente, a régua. A capa é o único template que **nasce** sem
 logo e sem handle — é padrão, não trava. Ver a §10.5 do design system.
+
+`showHeader` e `showFooter` são interruptores **de faixa**, não peças a mais: desligados, a
+faixa inteira some, e no rodapé isso inclui a constelação. As cinco opções do rodapé
+escolhem o que ele mostra; o interruptor escolhe se ele existe.
 
 A peça é a **glyph**, escolhida por comparação visual das três só-símbolo a 32px sobre a
 superfície do slide. A escolha contraria a faixa de 16–24px que a documentação da marca
@@ -61,26 +72,40 @@ Os limites de caractere na tabela de campos são **conselho, não trava**. O cam
 mais; o contador fica âmbar ao passar do limite e o guard de transbordo é quem reprova
 de fato, medindo altura real.
 
-**Todo template expõe seis opções compartilhadas**, que vêm dos descritores em
+**Todo template expõe oito opções compartilhadas**, que vêm dos descritores em
 `src/templates/shared/options.ts` e abrem a lista de opções, nesta ordem:
 
-| Chave | Efeito |
-| --- | --- |
-| `showGrid` | Grade de fundo |
-| `showRule` | Régua entre o conteúdo e o rodapé |
-| `showLogo` | A glyph no rodapé |
-| `showLogoPlate` | O fundo quadrado atrás da glyph |
-| `showHandle` | O `@handle` no rodapé |
-| `showChevron` | A afordância de deslize |
+| Chave | Seção | Efeito |
+| --- | --- | --- |
+| `showGrid` | — | Grade de fundo |
+| `showHeader` | — | A faixa do cabeçalho |
+| `showFooter` | — | A faixa do rodapé, inteira |
+| `showRule` | `footer` | Régua entre o conteúdo e o rodapé |
+| `showLogo` | `footer` | A glyph no rodapé |
+| `showLogoPlate` | `footer` | O fundo quadrado atrás da glyph |
+| `showHandle` | `footer` | O `@handle` no rodapé |
+| `showChevron` | `footer` | A afordância de deslize |
+
+**E um campo compartilhado**, de `src/templates/shared/fields.ts`, que abre a lista de
+campos de todo template:
+
+| Chave | Tipo | Limite | Marcação | Seção | Descrição |
+| --- | --- | --- | --- | --- | --- |
+| `kicker` | `text` | 12 | não | `header` | Pilar e índice, ex. `api/ · 04` |
 
 Em todas vale a mesma regra: o descritor do template diz apenas com que valor o slide
 **nasce**, e a escolha é de quem edita — §4.3 e §10.5 do design system, decisão 25. O
 `background` do template é o padrão de `showGrid`, e nada mais.
 
-A ordem é a de leitura da faixa, de fora para dentro, e é a ordem em que o inspector
-desenha os controles. A tabela de opções de cada template abaixo **omite as seis**, que
-são comuns a todos, e lista só o que é próprio dele; a tabela de padrões, no bloco
-`defaults` ao fim de cada seção, traz todas.
+A coluna **Seção** é metadado do inspector, não do dado: diz em que faixa do formulário o
+controle aparece. As cinco peças do rodapé são sub-opções da faixa e só aparecem com ela
+ligada; o kicker aparece dentro da seção "Cabeçalho", junto do interruptor que o liga,
+apesar de ser conteúdo e não apresentação. Ver a §14 do documento de contexto.
+
+A ordem é a de leitura vertical do slide, e dentro do rodapé a da faixa de fora para
+dentro; é a ordem em que o inspector desenha os controles. A tabela de campos e a de opções
+de cada template abaixo **omitem os compartilhados**, e listam só o que é próprio dele; as
+tabelas de padrões, no bloco `defaults` ao fim de cada seção, trazem tudo.
 
 ---
 
@@ -94,15 +119,19 @@ ali para quem quiser assinar a capa.
 
 #### Regiões
 
-| Região | Faixa vertical | Conteúdo                                       |
-| ------ | -------------- | ---------------------------------------------- |
-| Kicker | 80 – 148       | `slide-meta`, `azure-400`                      |
-| Título | 300 – 1160     | `slide-display`, alinhado à **base** da região |
-| Rodapé | 1238 – 1270    | A faixa compartilhada; nasce com constelação e chevron |
+| Região    | Faixa vertical | Conteúdo                                       |
+| --------- | -------------- | ---------------------------------------------- |
+| Cabeçalho | 80 – 148       | A faixa compartilhada; nasce **ligada** — o único template em que isso acontece |
+| Título    | 300 – 1160     | `slide-display`, alinhado à **base** da região |
+| Rodapé    | 1238 – 1270    | A faixa compartilhada; nasce com constelação e chevron |
 
 O título ser alinhado à base da região é a decisão estrutural do template: com uma linha
 ou com quatro, a última linha pousa sempre na mesma altura. Sem isso, cada capa do
 carrossel teria um ritmo diferente e a série perderia identidade.
+
+**O título não se move com o cabeçalho.** A região dele começa em 300 nos dois estados, e
+os 152px entre as duas faixas são respiro, não espaçamento — é o que mantém a âncora de base
+funcionando igual com a faixa ligada ou desligada.
 
 #### Elementos
 
@@ -116,16 +145,17 @@ carrossel teria um ritmo diferente e a série perderia identidade.
 
 #### Campos
 
-| Chave     | Tipo       | Limite | Marcação | Descrição                       |
-| --------- | ---------- | ------ | -------- | ------------------------------- |
-| `kicker`  | `text`     | 12     | não      | Pilar e índice, ex. `api/ · 04` |
-| `heading` | `textarea` | 70     | sim      | Declaração ou pergunta          |
+| Chave     | Tipo       | Limite | Marcação | Descrição              |
+| --------- | ---------- | ------ | -------- | ---------------------- |
+| `heading` | `textarea` | 70     | sim      | Declaração ou pergunta |
+
+Nenhum outro próprio — o `kicker` era declarado aqui até a 2F e virou compartilhado, como o
+`showChevron` antes dele. A capa passou a ser apenas o único template que nasce com a faixa
+ligada.
 
 #### Opções
 
-Nenhuma própria — a capa expõe só as seis compartilhadas da §11.0. O `showChevron` era
-próprio dela até a 2B; virou compartilhado, e a capa passou a ser apenas o único template
-que nasce com ele ligado.
+Nenhuma própria — a capa expõe só as oito compartilhadas da §11.0.
 
 #### Comportamento
 
@@ -144,7 +174,7 @@ demais em 96px e não deve ser usado em título.
 defaults: {
   fields:  { kicker: "log/ · 01", heading: "Um título que declara algo em vez de prometer" },
   options: {
-    showGrid: true, showRule: false,
+    showGrid: true, showHeader: true, showFooter: true, showRule: false,
     showLogo: false, showLogoPlate: true, showHandle: false,
     showChevron: true,
   },
@@ -157,21 +187,41 @@ defaults: {
 
 **Função** desenvolvimento · **Fundo** `plain` · **Grupo** `content`
 
-O template mais usado de um carrossel. Cabeçalho no topo, itens no miolo, rodapé fixo.
+O template mais usado de um carrossel. Título no topo, itens no miolo, rodapé fixo.
 
 #### Regiões
 
-| Região    | Faixa vertical | Conteúdo                                    |
-| --------- | -------------- | ------------------------------------------- |
-| Cabeçalho | 80 – 230       | `slide-heading`, até duas linhas            |
-| Itens     | 294 – 1160     | Lista, centralizada verticalmente na região |
-| Rodapé    | 1238 – 1270    | Logo, handle, constelação                   |
+**Com o cabeçalho desligado**, que é como o template nasce:
+
+| Região | Faixa vertical | Conteúdo                                    |
+| ------ | -------------- | ------------------------------------------- |
+| Título | 80 – 230       | `slide-heading`, até duas linhas            |
+| Itens  | 294 – 1160     | Lista, centralizada verticalmente na região |
+| Rodapé | 1238 – 1270    | Logo, handle, constelação                   |
+
+**Com o cabeçalho ligado**, as duas regiões de baixo descem um `--slide-gap-block`:
+
+| Região    | Faixa vertical | Conteúdo                                     |
+| --------- | -------------- | -------------------------------------------- |
+| Cabeçalho | 80 – 148       | A faixa compartilhada, com o kicker           |
+| Título    | 212 – 362      | A mesma altura de 150px, 132px abaixo         |
+| Itens     | 426 – 1160     | O mesmo fim, 734px de altura em vez de 866    |
+| Rodapé    | 1238 – 1270    | Sem mudança                                   |
+
+É o único dos três templates em que ligar o cabeçalho move alguma coisa, e a única quebra
+da regra "ligar uma peça não move as outras" que a §10.5 estabeleceu para o rodapé.
+**Empurrar só quando ligado**, em vez de reservar a faixa sempre, é a decisão 43: duas
+variantes custam um ternário no componente; reservar sempre custaria 132px do topo do
+template mais usado do sistema, permanentemente, por uma faixa que aqui nasce desligada.
+A regra do rodapé continua valendo onde foi escrita — ele nunca disputou espaço com nada.
+
+Quatro itens de duas linhas ocupam 624px, então continuam cabendo nos 734.
 
 #### Elementos
 
 | Elemento             | Token                                           | Cor         |
 | -------------------- | ----------------------------------------------- | ----------- |
-| Cabeçalho            | `slide-heading` (56px Oxanium 600, altura 1.15) | `ink-100`   |
+| Título               | `slide-heading` (56px Oxanium 600, altura 1.15) | `ink-100`   |
 | Marcador             | travessão `—` em `slide-body` mono              | `azure-400` |
 | Item                 | `slide-body` (40px Sora 400, altura 1.5)        | `ink-100`   |
 | Gap marcador → texto | 32px                                            | —           |
@@ -182,16 +232,21 @@ travessão em JetBrains Mono puxa para o registro de terminal, que é o do siste
 
 #### Campos
 
-| Chave     | Tipo       | Limite                      | Marcação | Descrição          |
-| --------- | ---------- | --------------------------- | -------- | ------------------ |
-| `heading` | `textarea` | 60                          | não      | Cabeçalho do slide |
-| `items`   | `list`     | 4 itens, 80 caracteres cada | sim      | Tópicos            |
+| Chave     | Tipo       | Limite                      | Marcação | Descrição       |
+| --------- | ---------- | --------------------------- | -------- | --------------- |
+| `heading` | `textarea` | 60                          | não      | Título do slide |
+| `items`   | `list`     | 4 itens, 80 caracteres cada | sim      | Tópicos         |
+
+O rótulo do `heading` no inspector é **"Título"**, e era "Cabeçalho" até a 2F: o cabeçalho
+passou a ser a faixa do topo, e o formulário mostraria dois controles com o mesmo nome na
+mesma coluna. "Título" é também o nome do papel no vocabulário canônico da §6 do documento
+de contexto — `heading` é o título em todo template.
 
 #### Opções
 
 | Chave    | Tipo     | Padrão   | Efeito                                                                        |
 | -------- | -------- | -------- | ----------------------------------------------------------------------------- |
-| `anchor` | `select` | `center` | `center` distribui os itens no miolo; `top` encosta logo abaixo do cabeçalho |
+| `anchor` | `select` | `center` | `center` distribui os itens no miolo; `top` encosta logo abaixo do título |
 
 #### Comportamento
 
@@ -208,11 +263,12 @@ marca-texto no mesmo slide competem entre si e anulam a hierarquia. Escolha um.
 ```ts
 defaults: {
   fields: {
+    kicker: "log/ · 01",
     heading: "Três coisas que eu mudaria",
     items: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
   },
   options: {
-    showGrid: false, showRule: false,
+    showGrid: false, showHeader: false, showFooter: true, showRule: false,
     showLogo: true, showLogoPlate: true, showHandle: true,
     showChevron: false,
     anchor: "center",
@@ -233,9 +289,14 @@ mesmo gesto tipográfico. A constelação aparece inteira acesa.
 
 | Região   | Faixa vertical | Conteúdo                                 |
 | -------- | -------------- | ---------------------------------------- |
-| Vazio    | 80 – 400       | Respiro, sempre                          |
+| Vazio    | 80 – 400       | Respiro                                  |
 | Conteúdo | 400 – 1160     | Título, lead e CTA, alinhados à **base** |
 | Rodapé   | 1238 – 1270    | Logo, handle, constelação toda acesa     |
+
+**O respiro é o que a região é com o cabeçalho desligado**, que é como o template nasce. A
+faixa compartilhada cabe em 80–148 sem empurrar nada, porque os 320px acima do conteúdo já
+estavam vazios: é o único template em que ligá-la sai de graça. Trocar respiro por etiqueta
+é escolha de quem edita — esta seção recomenda o vazio, não o obriga.
 
 #### Elementos
 
@@ -289,12 +350,13 @@ volta, e é o template que decide não desenhar o bloco.
 ```ts
 defaults: {
   fields: {
+    kicker: "log/ · 01",
     heading: "Escrevo sobre os erros antes dos acertos.",
     lead: "Backend, infra e o que aprendo quebrando os dois.",
     cta: "blog.maiahub.com.br",
   },
   options: {
-    showGrid: true, showRule: false,
+    showGrid: true, showHeader: false, showFooter: true, showRule: false,
     showLogo: true, showLogoPlate: true, showHandle: true,
     showChevron: false,
     showArrow: true,

@@ -217,7 +217,9 @@ describe("store do editor", () => {
       const slide = store.getState().deck.slides[0];
       expect(slide.template).toBe("text-bullets");
       expect(slide.fields.heading).toBe("Primeiro");
-      expect("kicker" in slide.fields).toBe(false);
+      // O kicker atravessa desde a 2F: virou campo compartilhado, e a interseção de
+      // chaves passou a alcançá-lo sem que `migrateFields` mudasse.
+      expect(slide.fields.kicker).toBe("log/ · 01");
       expect(slide.fields.items).toEqual(get("text-bullets").defaults.fields.items);
     });
 
