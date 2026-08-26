@@ -589,6 +589,13 @@ não como um controle por miniatura: o item da lista é um `<button>` inteiro, e
 de botão é HTML inválido; e a §6 do design system diz que ícone nunca substitui rótulo em
 ação destrutiva, o que um X pendurado em cada uma das doze miniaturas seria.
 
+**A lista rola até o slide ativo.** Quem rola é o `<ol>`, e não a coluna — a coluna é quem
+segura a barra do pé. Acrescentar já tornava o slide novo o ativo, mas num deck de doze ele
+nascia abaixo da dobra: a única pista de que algo tinha acontecido ficava no canvas, e a
+coluna que existe para mostrar onde se está mostrava outro lugar. A rolagem é `nearest` e
+instantânea — não mexe em nada quando o item já está visível, e a §7 do design system não
+anima posição por mais de 8px.
+
 O formulário desenha cinco dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
 a 1D, `list` e `select` desde a 2C. `image` e `code` continuam aparecendo como linha
 inerte com o rótulo — pular um tipo sem controle em silêncio faria um campo novo sumir do

@@ -16,9 +16,22 @@
  *
  * Clicar troca o ativo; a barra do pé acrescenta e remove — 2.13, decisão 30. Marca de
  * transbordo, reordenação por arraste e duplicar são das etapas seguintes.
+ *
+ * **A lista rola até o ativo, e é ela quem rola.** Quem tem `overflow-y-auto` é o `<ol>`, não
+ * a coluna — a coluna é quem segura a barra do pé no lugar. Acrescentar um slide já o tornava
+ * ativo desde a 2.13, mas num deck de doze ele nascia abaixo da dobra e a única pista de que
+ * algo tinha acontecido ficava no canvas.
+ *
+ * Os refs moram num `Map` **aqui**, no `<li>`, e não dentro do `Item`. O `Item` é `memo` e
+ * recebe `onSelect` por id justamente para não receber closure nova a cada quadro; passar um
+ * ref por item o obrigaria a estabilizar mais uma prop por slide, e o `<li>` é desenhado por
+ * este componente de qualquer forma.
+ *
+ * `scrollIntoView` não é medida: ele não lê altura para dimensionar coisa nenhuma, então a
+ * proibição da §13 — a que impede o `ResizeObserver` acima — não o alcança.
  */
 
-import { memo } from "react";
+import { memo, useEffect, useRef } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import type { StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
@@ -104,6 +117,15 @@ export function SlideList({ store = editorStore }: SlideListProps) {
   const addSlide = useStore(store, (state) => state.addSlide);
   const removeSlide = useStore(store, (state) => state.removeSlide);
 
+  const rows = useRef(new Map<SlideId, HTMLLIElement>());
+
+  useEffect(() => {
+    // `block: "nearest"` não mexe em nada quando o item já está visível, que é o caso de
+    // quase todo clique na própria lista; e sem `behavior` a rolagem é instantânea, porque
+    // a §7 do design system não anima posição por mais de 8px.
+    rows.current.get(activeId)?.scrollIntoView({ block: "nearest" });
+  }, [activeId]);
+
   return (
     <div className="flex h-full flex-col">
       {/* O testid distingue esta lista das que os próprios slides desenham dentro das
@@ -113,7 +135,17 @@ export function SlideList({ store = editorStore }: SlideListProps) {
         className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-2"
       >
         {deck.slides.map((slide, position) => (
-          <li key={slide.id}>
+          <li
+            key={slide.id}
+            ref={(row) => {
+              if (row === null) {
+                rows.current.delete(slide.id);
+                return;
+              }
+
+              rows.current.set(slide.id, row);
+            }}
+          >
             <Item
               slide={slide}
               position={position}
