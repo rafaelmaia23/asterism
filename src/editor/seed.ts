@@ -13,16 +13,22 @@
  * campo, o deck semente o ganha junto. Por isso este módulo mora em `src/editor` e não em
  * `src/deck`, que não conhece a biblioteca de templates — a seta é `templates → deck`.
  *
- * **Quatro capas, e uma delas no miolo.** A §11.1 dá ao `cover-statement` a função de
- * gancho, e num carrossel de doze slides a narrativa pede mais de um momento de frase
- * isolada — a virada no slide 6 e o fecho do argumento no 11. O template que existe para
- * isso é o `text-impact`, que é da Etapa 3; enquanto ele não existe, a capa faz o papel.
- * É limitação de biblioteca, não escolha de arquitetura, e some quando a biblioteca
- * fechar.
+ * **Duas capas e dois respiros.** Num carrossel de doze slides a narrativa pede mais de um
+ * momento de frase isolada — a virada no slide 6 e o fecho do argumento no 11 —, e até a 3C
+ * quem fazia esse papel era a capa: o `text-impact` não existia, e a 2E registrou isso como
+ * limitação de biblioteca, não escolha de arquitetura. A tarefa 3.9 fecha a dívida, e os
+ * slides 6 e 11 passaram ao template que existe para isso.
  *
- * **O kicker numera a posição no deck**, não a ordem entre as capas. É a convenção da
- * §10.5 do design system, e com capa no miolo ela deixou de ser trivial: numerar as capas
- * entre si faria o slide 6 se anunciar como o terceiro.
+ * As duas capas que sobraram cobrem de uma linha a quatro, e é assim que a âncora de base
+ * da §11.1 se confere: a última linha pousa na mesma altura nas duas. Ao lado delas, os
+ * dois `text-impact` mostram o **mesmo corpo tipográfico com o gesto oposto** — 96px
+ * centralizado nos dois eixos contra 96px ancorado à base e à esquerda. As duas leituras
+ * ficam comparáveis na lista lateral sem trocar opção nenhuma.
+ *
+ * **O kicker numera a posição no deck**, não a ordem entre os slides do mesmo template. É a
+ * convenção da §10.5 do design system, e vale para os dois templates de `slide-display`:
+ * numerar as capas entre si faria a segunda dizer "02" por coincidência, e o respiro do
+ * slide 11 não teria número nenhum.
  *
  * **A marcação aparece uma vez por bloco**, nunca duas. É a regra de um nível de ênfase
  * por bloco da §3.4 do design system, e ela vale dentro da lista também: um item marcado
@@ -35,11 +41,13 @@ import { get } from "@/templates";
 
 const COVER = "cover-statement";
 const BULLETS = "text-bullets";
+const IMPACT = "text-impact";
 const FINAL = "final-cta";
 
 type Spec =
   | { template: typeof COVER; heading: string }
   | { template: typeof BULLETS; heading: string; items: string[]; anchor: OptionValue }
+  | { template: typeof IMPACT; heading: string }
   | { template: typeof FINAL; heading: string; lead: string; cta: string };
 
 /**
@@ -51,10 +59,16 @@ type Spec =
  * é assim que a âncora de base da §11.1 se confere, vendo a última linha pousar sempre na
  * mesma altura. As âncoras das listas alternam entre `center` e `top` pelo mesmo motivo —
  * as duas leituras da §11.2 ficam comparáveis sem trocar opção nenhuma.
+ *
+ * As duas frases de impacto são curtas, que é o alvo da §11.5: acima de três linhas o
+ * template está sendo usado como capa, que é justamente o que elas eram até a 3C.
  */
 const SLIDES: Spec[] = [
   { template: COVER, heading: "O cache [[mentiu]]" },
-  { template: COVER, heading: "Todo painel dizia que estava [[tudo bem]]" },
+  {
+    template: COVER,
+    heading: "Todo painel dizia que estava tudo bem, e [[todo painel estava certo]]",
+  },
   {
     template: BULLETS,
     heading: "O que os usuários viam",
@@ -86,10 +100,7 @@ const SLIDES: Spec[] = [
     ],
     anchor: "center",
   },
-  {
-    template: COVER,
-    heading: "Três semanas de investigação para encontrar um [[bug de uma linha]]",
-  },
+  { template: IMPACT, heading: "Três semanas para uma [[linha de código]]" },
   {
     template: BULLETS,
     heading: "A linha que ninguém tinha lido",
@@ -131,7 +142,7 @@ const SLIDES: Spec[] = [
     ],
     anchor: "center",
   },
-  { template: COVER, heading: "Sistema saudável é o que você [[consegue ver]] quebrar" },
+  { template: IMPACT, heading: "Saudável é o sistema que você [[vê]] quebrar" },
   {
     template: FINAL,
     heading: "Escrevo sobre o que [[quebra]] antes do que funciona",
@@ -154,10 +165,18 @@ function withFields(
   };
 }
 
+/** `log/ · 06` — o pilar do deck e a posição do slide, na convenção da §10.5. */
+function kickerAt(position: number): string {
+  return `log/ · ${String(position).padStart(2, "0")}`;
+}
+
 function build(spec: Spec, position: number): Slide {
-  if (spec.template === COVER) {
-    return withFields(COVER, {
-      kicker: `log/ · ${String(position).padStart(2, "0")}`,
+  // Os dois templates de `slide-display` levam o kicker numerado. Nem todo slide o mostra —
+  // só a capa nasce com o cabeçalho ligado —, mas o valor existe de qualquer forma, e é o
+  // que faz ligar a faixa entregar o número certo em vez do default do descritor.
+  if (spec.template === COVER || spec.template === IMPACT) {
+    return withFields(spec.template, {
+      kicker: kickerAt(position),
       heading: spec.heading,
     });
   }

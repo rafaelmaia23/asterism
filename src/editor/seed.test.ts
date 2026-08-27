@@ -16,34 +16,40 @@ function slidesOf(template: string) {
 
 describe("createSeedDeck", () => {
   /**
-   * O critério de pronto da Etapa 2 é "um carrossel de 8 a 12 slides composto com os três
+   * O critério de pronto da Etapa 2 era "um carrossel de 8 a 12 slides composto com os três
    * templates". A semente **é** esse carrossel desde a 2E — deixou de ser o deck de seis
    * slides que existia só para dar o que olhar —, e este é o teste que amarra o módulo ao
-   * critério da etapa em vez de a um número escrito à mão.
+   * critério da etapa em vez de a um número escrito à mão. A 3C acrescentou o quarto, e a
+   * 3G fecha o deck com os dez.
    */
-  test("é um carrossel de 8 a 12 slides com os três templates", () => {
+  test("é um carrossel de 8 a 12 slides com os quatro templates que ele usa", () => {
     const { slides } = createSeedDeck();
 
     expect(slides.length).toBeGreaterThanOrEqual(8);
     expect(slides.length).toBeLessThanOrEqual(12);
     expect(new Set(slides.map((slide) => slide.template))).toEqual(
-      new Set(["cover-statement", "text-bullets", "final-cta"]),
+      new Set(["cover-statement", "text-bullets", "text-impact", "final-cta"]),
     );
   });
 
-  test("a narrativa alterna capa e lista, e fecha no final-cta", () => {
+  /**
+   * Os slides 6 e 11 eram capa até a 3C, e não porque a narrativa pedisse capa ali: o
+   * template de frase isolada não existia, e a 2E registrou isso como limitação de
+   * biblioteca. A tarefa 3.9 é o que fecha a dívida.
+   */
+  test("a narrativa alterna capa, lista e respiro, e fecha no final-cta", () => {
     expect(createSeedDeck().slides.map((slide) => slide.template)).toEqual([
       "cover-statement",
       "cover-statement",
       "text-bullets",
       "text-bullets",
       "text-bullets",
-      "cover-statement",
+      "text-impact",
       "text-bullets",
       "text-bullets",
       "text-bullets",
       "text-bullets",
-      "cover-statement",
+      "text-impact",
       "final-cta",
     ]);
   });
@@ -58,14 +64,20 @@ describe("createSeedDeck", () => {
   });
 
   /**
-   * O kicker numera a **posição no deck**, não a ordem entre as capas — §10.5 do design
-   * system. Com capa no miolo, numerar as capas entre si faria o slide 06 se anunciar
-   * como o terceiro, e o índice do kicker é justamente o que diz onde a pessoa está.
+   * O kicker numera a **posição no deck**, não a ordem entre os slides do mesmo template —
+   * §10.5 do design system. Numerar as capas entre si faria a segunda se anunciar como a
+   * segunda estando na posição 2 por coincidência, e o índice do kicker é justamente o que
+   * diz onde a pessoa está.
+   *
+   * Vale para os slides de `slide-display` — capa e frase de impacto —, que são os que a
+   * série numera. Nos dois o cabeçalho nasce desligado ou ligado conforme o template, mas o
+   * valor existe de qualquer forma: ligar a faixa entrega o número certo em vez do default
+   * do descritor.
    */
   test("o kicker numera a posição do slide no deck", () => {
-    const { slides } = createSeedDeck();
-    const kickers = slides.flatMap((slide, index) =>
-      slide.template === "cover-statement" ? [[index + 1, slide.fields.kicker]] : [],
+    const numerados = new Set(["cover-statement", "text-impact"]);
+    const kickers = createSeedDeck().slides.flatMap((slide, index) =>
+      numerados.has(slide.template) ? [[index + 1, slide.fields.kicker]] : [],
     );
 
     expect(kickers).toEqual([
@@ -91,6 +103,25 @@ describe("createSeedDeck", () => {
     for (const cover of slidesOf("cover-statement")) {
       expect(String(cover.fields.kicker).length).toBeLessThanOrEqual(12);
       expect(rendered(cover.fields.heading).length).toBeLessThanOrEqual(70);
+    }
+  });
+
+  test("as frases de impacto cabem nos limites da §11.5", () => {
+    for (const impacto of slidesOf("text-impact")) {
+      expect(String(impacto.fields.kicker).length).toBeLessThanOrEqual(12);
+      expect(rendered(impacto.fields.heading).length).toBeLessThanOrEqual(70);
+    }
+  });
+
+  /**
+   * "Frase curta é o alvo" — §11.5. Duas ou três linhas ainda funcionam; acima disso o
+   * template está sendo usado como capa, que é justamente o que a semente fazia antes da
+   * 3C. ~19 caracteres por linha em 96px sobre 920px de largura útil, então o teto de duas
+   * linhas são 38 caracteres com folga.
+   */
+  test("as frases de impacto são curtas, não capas disfarçadas", () => {
+    for (const impacto of slidesOf("text-impact")) {
+      expect(rendered(impacto.fields.heading).length).toBeLessThanOrEqual(42);
     }
   });
 
@@ -177,6 +208,12 @@ describe("createSeedDeck", () => {
    * Os títulos de capa vão de uma linha a quatro: é assim que a âncora de base da §11.1
    * se confere, vendo a última linha pousar sempre na mesma altura. ~19 caracteres por
    * linha em 96px sobre 920px de largura útil.
+   *
+   * A 3C tirou duas capas do deck e a faixa passou a caber em duas: a do slide 1 com uma
+   * linha e a do slide 2 com quatro. É de propósito que a capa longa tenha ficado na
+   * semente — as duas leituras do mesmo corpo tipográfico, âncora de base na capa e
+   * centralização no `text-impact`, ficam comparáveis na lista lateral sem trocar opção
+   * nenhuma.
    */
   test("os títulos de capa cobrem de uma linha a quatro", () => {
     const lengths = slidesOf("cover-statement").map((cover) =>
