@@ -406,11 +406,38 @@ acontecer. Ver decisão 23.
 ### Guard de transbordo
 
 Slide tem altura fixa, então texto longo transborda — é a falha número um deste tipo
-de ferramenta. Um `ResizeObserver` no bloco de conteúdo compara `scrollHeight` com
-`clientHeight` e marca o slide como inválido no canvas e na lista lateral. O contador
-de caracteres por campo vem do `max` do descritor.
+de ferramenta. Um `ResizeObserver` mede a região de conteúdo e marca o slide como inválido
+no canvas e na lista lateral. O contador de caracteres por campo vem do `max` do descritor.
 
 Não é polimento opcional. É o que separa uma ferramenta utilizável de um brinquedo.
+
+**Quem declara a região medida é o template**, e a §11.x de cada um a marca com **⌐** na
+tabela de regiões. O guard é convenção compartilhada, não recurso de um template: vive em
+`src/render/overflow.tsx` e os dez o consomem pelo mesmo hook.
+
+**São dois nós, não um.** A faixa tem altura de spec — `h-[866px]` escrita no template — e
+o bloco de conteúdo dentro dela cresce com o texto; o guard compara a altura do **conteúdo**
+com a da **faixa**. Comparar `scrollHeight` com `clientHeight` no mesmo elemento, que é o
+teste óbvio, reprova em silêncio nos templates que ancoram o conteúdo à base: o que estoura
+sobe acima da borda superior, e o que sobe não entra no `scrollHeight` do pai. O
+`cover-statement` e o `final-cta` são exatamente esse caso.
+
+As duas propriedades são medidas de layout e **não enxergam o `transform: scale()`** do
+`SlideFrame` — a mesma leitura vale a 1:1 no palco de exportação, a k ≈ 0,28 no canvas e a
+k = 0,2 na miniatura da lista, e é por isso que cada `SlideView` mede a si mesmo em vez de
+haver estado de transbordo no store. `getBoundingClientRect` não serve aqui: essa enxerga
+a escala.
+
+Duas condições que o guard impõe a quem o usa, as duas da mesma família da armadilha da
+§13. A faixa medida **não pode ser dimensionada pelo conteúdo** — `min-h` no lugar de `h`
+realimenta a medida. E a marca que o resultado desenha **não pode mexer no layout medido**,
+senão medir muda o que se mede: por isso ela é a borda do quadro externo do `SlideFrame`,
+que já tem 1px nos dois estados, vive fora do `transform` e fica fora do nó que a
+exportação captura — o PDF não sai com borda vermelha.
+
+A medida se repete em `document.fonts.ready`: antes de Oxanium e Sora carregarem, o texto é
+medido com a fonte de fallback e a altura é outra. É a mesma espera que o palco de
+exportação da §10 já faz, pelo mesmo motivo.
 
 ## 10. Exportação
 
