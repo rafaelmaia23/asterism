@@ -2,9 +2,10 @@
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
 > ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates, a
-> 3B entregou o guard de transbordo e o alinhamento dos controles e a 3C acrescentou os
-> dois de texto — a biblioteca tem cinco dos dez; a próxima sessão abre a 3D, shiki e o
-> `code-window`, que é a de maior risco técnico da etapa**
+> 3B entregou o guard de transbordo e o alinhamento dos controles, a 3C acrescentou os dois
+> de texto e a 3D trouxe o shiki e o `code-window` — a biblioteca tem seis dos dez, e o
+> risco técnico da etapa já passou; a próxima sessão abre a 3E, `code-annotated` e
+> `compare-2col`**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -974,7 +975,7 @@ Resolvido na sessão:
   `h-[1080px]`, `h-[948px]`, `max-w-[760px]` e as outras saíram no bundle — é a armadilha
   do `CLAUDE.md` conferida onde ela se manifesta, que é no build de produção e não no teste.
 
-### 3D — shiki e `code-window`
+### 3D — shiki e `code-window` ✅
 
 A sub-etapa de maior risco técnico da etapa.
 
@@ -993,6 +994,63 @@ no mesmo commit.
 Fecha conferindo **no PDF**, medindo cor no bitmap como a 2A e a 2B fizeram: o realce sai
 como `<span>` colorido, que é a classe de risco que já atravessou a rasterização duas vezes
 — o que não atravessa é gradiente.
+
+Resolvido na sessão:
+
+- **A armadilha não foi enfrentada: foi retirada do caminho.** O shiki tem um modo
+  síncrono — `createHighlighterCoreSync` com o motor de regex em JavaScript e as gramáticas
+  importadas estaticamente —, e com ele não existe realce que chegue depois de nada. O
+  palco continua esperando só as fontes, o guard mede uma vez, nenhum teste de template
+  precisa de `await` e não há um quadro em que o código apareça sem cor. Decisão 51. O que
+  a escolha custa é bundle, e ele foi medido nos dois lados: **1.881KB antes, 2.766KB
+  depois** — 864KB crus, 133KB comprimidos. Numa ferramenta local de um usuário só, é o
+  lado barato da troca.
+- **A lista de linguagens ficou nas nove da §11.6.** A conta por gramática — `ts` 190KB,
+  `tsx` 186, `js` 185, `python` 77, `bash` 78, `css` 52, `sql` 25, `json` 3 — mostrou que
+  `js` é a única cara e dispensável, porque a gramática de TypeScript é superconjunto da de
+  JavaScript. Ficou mesmo assim: escolher a linguagem certa no select vale os 185KB numa
+  ferramenta que roda local. As nove são todas compatíveis com o motor em JavaScript,
+  conferido na tabela do shiki **antes** de escolher o caminho síncrono, e não depois.
+- **"Gerado dos tokens" precisava de um teste para ser verdade.** A §10.4 já mandava gerar
+  o tema, e um módulo com os dez hex escritos à mão cumpre a letra e não a regra: o dia em
+  que a rampa mudar no `globals.css`, o tema fica para trás em silêncio. O `theme.test.ts`
+  lê o CSS e compara cor por cor, e é ele que faz a §10.4 e o código serem a mesma coisa.
+  Ler `var()` em tempo de execução não serve — a cor vai para `style` inline e teria de
+  resolver dentro do `foreignObject` do palco, e um token sem classe é podado pelo Tailwind
+  antes de existir. Decisão 52.
+- **Duas correções que o teste pegou e a revisão não pegaria.** O shiki devolve o token em
+  `content`, não em `text`, e devolve hex em **caixa alta** — `#60A5FA` contra o `#60a5fa`
+  do sistema. A primeira o `tsc` acharia; a segunda não acharia ninguém, e o sintoma seria
+  uma busca por cor que não encontra o slide. As duas normalizações moram no `tokenize`.
+- **O nome do arquivo é o único `slide-meta` em caixa baixa.** A utility versaliza, e a
+  §10.5 justifica: a caixa alta é da escala, não do conteúdo. Nome de arquivo inverte a
+  justificativa — `CACHE.TS` não é o mesmo nome em outra caixa, é um arquivo que não existe
+  no repositório, num slide cujo assunto é o código daquele arquivo. Decisão 53, escrita na
+  §10.3 e na §11.6 no mesmo commit.
+- **A janela é a forma mais fácil de errar a armadilha da §13.** A tentação é dar
+  `h-[866px]` à janela e deixá-la ocupar a região: isso desenharia um painel vazio de 866px
+  para quatro linhas de código e faria o guard medir uma coisa dimensionada pelo que ela
+  contém. A faixa tem altura de spec, a janela tem a altura do código, e o teste do
+  template exige que a janela **não** tenha classe de altura.
+- **A conta da §11.6 fecha na régua.** Região de 866px menos os 92 da barra e os 32 do
+  padding de baixo dão 742px, e a 51px por linha são 14 — o mesmo teto que a §10.3 escreve
+  por outro caminho. Os 92px da barra também se decompuseram: 32 de padding, 28 do nome do
+  arquivo, 32 até a primeira linha. A §11.6 ganhou as duas contas por extenso.
+- **O realce atravessou a rasterização, e foi medido no bitmap** — método da 2A e da 2B,
+  numa página de 2160×2700 extraída do PDF com `pdfimages`. A janela: **2.952.408px** de
+  `#1e293b`. O realce: `#60a5fa` 38.205px na palavra-chave, `#94a3b8` 18.884 no operador,
+  `#bfdbfe` 15.777 na função, `#fada8d` 10.424 no tipo, `#e2e8f0` 20.718 na base, `#d4e373`
+  1.832 na string, e `#334155` 1.484 nos três pontos da barra. Comentário e número saíram
+  em zero porque o código do slide não tinha nenhum dos dois — ausência de conteúdo, não de
+  cor. **O que não atravessa continua sendo o gradiente**, e o tema não tem nenhum: as seis
+  cores presentes chegaram inteiras, sem uma cor intermediária no meio.
+- **A geometria também foi medida, e não conferida a olho.** No mesmo bitmap, a janela
+  ocupa **x 80–1000 e y 308–1146**: 920px de largura, que são os úteis da §11.0 com os 80
+  de padding dos dois lados, e 838px de altura dentro da região de 866 — centralizada com
+  14px sobrando em cima e embaixo, exatamente o que "centralizada verticalmente" quer
+  dizer. E 838 é 92 da barra mais 714 de código mais 32 de padding: **14 linhas a 51px**,
+  o teto da §10.3 batendo no arquivo exportado. A placa da logo aparece em y 1227–1280, com
+  o rodapé inteiro abaixo da janela.
 
 ### 3E — `code-annotated` e `compare-2col`
 

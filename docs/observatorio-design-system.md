@@ -30,7 +30,7 @@ uso, que é o que não cabe em CSS.
 | 4.3       | Grid de fundo e a compensação de `--slide-scale`        | Mexer no fundo ou na escala do preview | `slide-grid.tsx` + `@utility slide-grid` |
 | 5–8       | Forma, ícones, movimento, estados                       | Componente novo no editor              | `--radius` e afins             |
 | 9         | Mapeamento shadcn e as duas armadilhas de nome          | Instalar componente shadcn novo        | `globals.css`, `@theme inline` |
-| 10.1–10.4 | Superfícies, marcadores inline, bloco de código, shiki  | Parser, `<Inline>`, bloco de código    | 10.1 e 10.2 (`inline.tsx`)     |
+| 10.1–10.4 | Superfícies, marcadores inline, bloco de código, shiki  | Parser, `<Inline>`, bloco de código    | `inline.tsx`; `src/code/theme.ts` |
 | 10.5      | Cabeçalho, kicker, constelação, chevron, rodapé, callout | Peças recorrentes dos slides           | —                              |
 | 11        | Layout, campos e comportamento de cada template         | Implementar um template                | `observatorio-templates.md`    |
 | 12–13     | Fontes, licenças, artefatos do sistema                  | Raramente                              | —                              |
@@ -634,6 +634,11 @@ barra `crown-500`.
 
 Gerado a partir destes tokens, não importado pronto — senão o bloco de código é a
 única coisa do carrossel que não parece do sistema.
+
+Em código é `src/code/theme.ts`, e o que impede a paleta de divergir desta tabela é o teste
+ao lado dele: ele lê o `globals.css` e exige que cada cor abaixo seja a que o token declara.
+Dois nomes aqui são apelido da rampa inteira — `azure-400` é `azure-radiance-400` e
+`crown-400` é `crown-of-thorns-400`.
 
 | Escopo                | Cor                           |
 | --------------------- | ----------------------------- |
