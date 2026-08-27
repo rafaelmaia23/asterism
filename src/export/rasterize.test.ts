@@ -60,4 +60,67 @@ describe("rasterize", () => {
 
     expect(frame.height).toBe(2160);
   });
+
+  /**
+   * O reset que o `preflight` do Tailwind faz na página não atravessa a clonagem: dentro do
+   * `foreignObject` vale a folha do agente de usuário outra vez, e `<p>`, `<h2>` e `<ul>`
+   * voltam a ter margem de `1em`. Medido em quatro dos cinco templates, e visível no
+   * `final-cta`, cujo bloco de fecho descia 96px por cima do rodapé. Decisão 50.
+   *
+   * O teste não prova o pixel — `happy-dom` não faz layout —, prova que a folha é
+   * injetada no clone e o que ela diz. O pixel se confere no PDF.
+   */
+  describe("o reset do preflight entra no clone", () => {
+    function cloneHook() {
+      const call = domToPng.mock.calls.at(-1) as unknown as [
+        HTMLElement,
+        { onCloneNode?: (node: Node) => void },
+      ];
+
+      return call[1].onCloneNode;
+    }
+
+    test("a captura recebe um `onCloneNode`", async () => {
+      await rasterize(source(), 2);
+
+      expect(cloneHook()).toBeTypeOf("function");
+    });
+
+    test("ele põe a folha como primeiro filho do clone", async () => {
+      await rasterize(source(), 2);
+
+      const cloned = document.createElement("div");
+      cloned.append(document.createElement("p"));
+
+      cloneHook()?.(cloned);
+
+      const style = cloned.firstElementChild;
+
+      expect(style?.tagName).toBe("STYLE");
+      // Zera margem e padding de tudo, e tira o marcador e o recuo das listas.
+      expect(style?.textContent).toContain("margin:0");
+      expect(style?.textContent).toContain("padding:0");
+      expect(style?.textContent).toContain("list-style:none");
+    });
+
+    /**
+     * Seletor universal, nunca `!important` nem seletor de tag: o clone traz o estilo
+     * computado **em linha**, e estilo em linha vence a folha. O `padding` de 32px do
+     * callout e o do bloco de código continuam valendo; some só o que ninguém declarou.
+     */
+    test("a folha não usa !important — estilo em linha tem de vencer", async () => {
+      await rasterize(source(), 2);
+
+      const cloned = document.createElement("div");
+      cloneHook()?.(cloned);
+
+      expect(cloned.firstElementChild?.textContent).not.toContain("!important");
+    });
+
+    test("um clone que não é elemento não quebra a captura", async () => {
+      await rasterize(source(), 2);
+
+      expect(() => cloneHook()?.(document.createTextNode("x"))).not.toThrow();
+    });
+  });
 });

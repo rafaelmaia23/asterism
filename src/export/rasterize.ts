@@ -25,6 +25,35 @@ import type { Frame, RenderSource } from "@/export/types";
  */
 const BACKGROUND = "#020617";
 
+/**
+ * O reset que o `preflight` do Tailwind faz na página e que **não atravessa a captura**.
+ *
+ * A clonagem copia estilo computado para dentro de um `foreignObject`, e ali dentro vale a
+ * folha do agente de usuário outra vez. Onde o preflight zerava por folha — `margin` de
+ * `<p>`, `<h2>`, `<ul>`, o `padding-inline-start` da lista — o clone não carrega nada, e o
+ * navegador aplica os defaults dele: `1em` de margem em cada parágrafo, medido no corpo
+ * tipográfico do slide, que a 72px são 72px de espaço que ninguém pediu.
+ *
+ * O sintoma foi o `final-cta` no PDF, com o bloco de fecho 96px abaixo do lugar, por cima
+ * do rodapé — mas o defeito nunca foi dele: era de todo template que desenha `<p>` ou
+ * `<ul>`, e nos outros ele só não colidia com nada. Ver a §13 do documento de contexto.
+ *
+ * A folha entra com **especificidade de seletor universal**, abaixo de qualquer estilo em
+ * linha: o que o clone declarou de verdade — o `padding` do bloco de código, por exemplo —
+ * continua vencendo. Ela zera só o que ninguém declarou.
+ */
+const RESET = "*,::before,::after{margin:0;padding:0}ul,ol{list-style:none}";
+
+function applyReset(cloned: Node): void {
+  if (!(cloned instanceof Element)) {
+    return;
+  }
+
+  const style = cloned.ownerDocument.createElement("style");
+  style.textContent = RESET;
+  cloned.prepend(style);
+}
+
 export async function rasterize(source: RenderSource, scale: number): Promise<Frame> {
   const { node } = source;
   const width = node.offsetWidth;
@@ -35,6 +64,7 @@ export async function rasterize(source: RenderSource, scale: number): Promise<Fr
     width,
     height,
     backgroundColor: BACKGROUND,
+    onCloneNode: applyReset,
   });
 
   return { slide: source.slide, width: width * scale, height: height * scale, data };

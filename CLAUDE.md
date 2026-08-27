@@ -118,6 +118,15 @@ suporte a `oklch()` é irregular. Nada de OKLCH dentro de `.slide-canvas`.
 **Fontes sempre same-origin.** Oxanium, Sora e JetBrains Mono via `next/font/local`.
 Fonte de CDN não é inlinada na captura e o PDF sai em Arial.
 
+**O reset do Tailwind não atravessa a captura.** Dentro do `foreignObject` vale a folha do
+agente de usuário: `<p>`, `<h2>` e `<ul>` recuperam `1em` de margem, que a 72px são 72px de
+espaçamento inventado. O `rasterize` reinjeta o reset por `onCloneNode` — decisão 50, §13 do
+documento de contexto. Layout do PDF que não bate com o preview começa a se investigar aqui.
+
+**Sonda de medida não pode pintar o nó medido.** Dar fundo a um elemento para achá-lo no
+bitmap cria um atributo `style`, e isso muda o que a clonagem copia — o defeito some
+justamente onde se olha. Compare **dois bitmaps** do mesmo nó intocado.
+
 **Tailwind faz tree-shaking de tokens.** Variável declarada em `@theme` que nenhuma
 classe referencia não chega ao CSS final. O bloco da superfície carrossel é
 `@theme static` justamente por ser lido via `var()` dentro dos templates.
