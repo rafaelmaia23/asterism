@@ -15,14 +15,20 @@ describe("biblioteca de templates", () => {
     expect(get("final-cta").label).toBe("Fechamento");
   });
 
+  test("o context está registrado e sai por id", () => {
+    expect(get("context").label).toBe("Contexto");
+  });
+
   /**
    * A ordem de registro é a ordem em que a biblioteca se apresenta — no seletor de
-   * layout, e em qualquer lista futura. É a narrativa de um carrossel: a capa abre, os
-   * tópicos desenvolvem, o CTA fecha.
+   * layout, e em qualquer lista futura. É a narrativa de um carrossel, e é a da tabela da
+   * §11 dos templates: a capa abre, o contexto segura, os tópicos desenvolvem, o CTA
+   * fecha. Um template novo entra onde a narrativa o põe, não no fim da lista.
    */
-  test("a 2C fecha a Fase 1 com três templates, na ordem de registro", () => {
+  test("a 3C acrescenta o context, na posição narrativa dele", () => {
     expect(list().map((def) => def.id)).toEqual([
       "cover-statement",
+      "context",
       "text-bullets",
       "final-cta",
     ]);

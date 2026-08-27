@@ -473,8 +473,13 @@ Nenhuma própria — o `context` expõe só as oito compartilhadas da §11.0.
 
 #### Comportamento
 
-**Título vazio** — a região some e o corpo sobe para 80. É um slide de parágrafo puro, e é
-uma escolha válida quando o texto já abre com a própria tese.
+**Título vazio** — a região some e o corpo sobe para 80, tomando os 1080px inteiros. É um
+slide de parágrafo puro, e é uma escolha válida quando o texto já abre com a própria tese.
+
+Com o cabeçalho **ligado**, o corpo sobe para **212** e não para 80: a faixa do topo
+continua ocupada, e o que o título liberou são os 214px entre 212 e 426. São quatro
+combinações de cabeçalho e título, e nas quatro o corpo acaba em 1160, no topo do rodapé —
+866, 1080, 734 ou 948px de altura.
 
 **Parágrafo único.** O campo aceita quebra de linha, mas dois parágrafos num slide de
 carrossel quase sempre são dois slides. Quem precisa de mais de um bloco tem o
