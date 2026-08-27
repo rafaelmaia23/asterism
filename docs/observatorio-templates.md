@@ -248,8 +248,11 @@ O template mais usado de um carrossel. Título no topo, itens no miolo, rodapé 
 | Itens ⌐   | 426 – 1160     | O mesmo fim, 734px de altura em vez de 866    |
 | Rodapé    | 1238 – 1270    | Sem mudança                                   |
 
-É o único dos três templates em que ligar o cabeçalho move alguma coisa, e a única quebra
-da regra "ligar uma peça não move as outras" que a §10.5 estabeleceu para o rodapé.
+Foi o primeiro template em que ligar o cabeçalho move alguma coisa, e a quebra da regra
+"ligar uma peça não move as outras" que a §10.5 estabeleceu para o rodapé. O `context` da
+§11.4 repete a mesma geometria, número por número, e não por acaso: os dois são o miolo do
+carrossel, e um empurrar 132px enquanto o outro reserva a faixa seria uma diferença sem
+motivo entre slides vizinhos.
 **Empurrar só quando ligado**, em vez de reservar a faixa sempre, é a decisão 43: duas
 variantes custam um ternário no componente; reservar sempre custaria 132px do topo do
 template mais usado do sistema, permanentemente, por uma faixa que aqui nasce desligada.

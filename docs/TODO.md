@@ -1,9 +1,10 @@
 # asterism — plano de execução
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
-> ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates e a
-> 3B entregou o guard de transbordo e o alinhamento dos controles; a próxima sessão abre a
-> 3C, os dois templates de texto**
+> ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates, a
+> 3B entregou o guard de transbordo e o alinhamento dos controles e a 3C acrescentou os
+> dois de texto — a biblioteca tem cinco dos dez; a próxima sessão abre a 3D, shiki e o
+> `code-window`, que é a de maior risco técnico da etapa**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -924,7 +925,7 @@ Resolvido na sessão:
   `pointer-events-none` obrigou cada variante a dizer que o hover não vale desabilitado, e é
   o que `not-disabled:hover:` faz hoje nos seis componentes.
 
-### 3C — os dois de texto: `context` e `text-impact`
+### 3C — os dois de texto: `context` e `text-impact` ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
@@ -935,6 +936,43 @@ Resolvido na sessão:
 São os dois que não pedem nada novo do inspector — usam os tipos que a 1D e a 2C já
 desenham. É por isso que abrem a sequência de templates: a primeira sessão de template da
 etapa não precisa gastar nada com formulário.
+
+Resolvido na sessão:
+
+- **A sessão custou o que a 3A prometeu que custaria.** Nenhum token novo, nenhuma linha em
+  `globals.css`, nenhum componente e nenhuma dependência: os dois templates são três
+  arquivos cada, duas linhas em `templates/index.ts` e nada mais. É o retorno de ter
+  especificado a biblioteca como conjunto — os `defaults` da §11.4 e da §11.5 foram
+  transcritos do documento, não decididos aqui.
+- **A §11.4 tinha um estado a menos do que o template tem.** "Título vazio — a região some e
+  o corpo sobe para 80" só descrevia metade: com o cabeçalho ligado o corpo sobe para
+  **212**, porque a faixa do topo continua ocupada. São quatro combinações de cabeçalho e
+  título, não duas, e nas quatro o corpo acaba em 1160. A §11.4 ganhou a linha no mesmo
+  commit, pela Regra 2. Não virou decisão da §16: é o caso particular da regra que a §11.0
+  já dava aos dez — região com valor vazio some junto com o gap.
+- **Quatro geometrias não cabem num ternário.** As classes do `context` viraram uma tabela
+  de quatro chaves no módulo, e não um encadeamento dentro da string de classe. É a mesma
+  restrição do `text-bullets` — classe literal, porque o Tailwind varre o fonte —, só que
+  com o dobro dos estados: escritas como expressão, seriam ilegíveis exatamente no lugar em
+  que a geometria do template mora.
+- **O `text-impact` não precisou de código para recentralizar.** A §11.5 diz que ligar o
+  cabeçalho desce a frase 66px, metade do que as outras regiões descem inteiro. Isso é o que
+  centralizar dentro de uma faixa 132px menor faz sozinho: as duas alturas são a única
+  diferença entre os dois estados, e os 66px saem da conta, não de uma regra.
+- **A troca da semente levaria embora a capa de quatro linhas.** Os slides 6 e 11 eram as
+  duas capas mais longas do deck, e sem elas sobravam duas de uma e duas linhas — a faixa
+  que a 2E montou de propósito para conferir a âncora de base da §11.1 olhando. A capa do
+  slide 2 alongou para 65 caracteres e as duas frases de impacto encurtaram, que é o que a
+  §11.5 pede de qualquer forma: "frase curta é o alvo", e acima de três linhas o template
+  está sendo usado como capa — que é justamente o que elas eram. Os dois pares ficaram
+  vizinhos na lista lateral, e é ali que se vê o **mesmo corpo tipográfico com o gesto
+  oposto**: 96px ancorado à base contra 96px centralizado nos dois eixos.
+- **O kicker posicional passou a valer para os dois templates de `slide-display`.** Custa
+  nada e fica certo no dia em que alguém ligar o cabeçalho num respiro; sem isso os slides 6
+  e 11 herdariam o `log/ · 06` do descritor, e o 11 se anunciaria como o sexto.
+- **A conferência das classes arbitrárias foi feita no CSS construído, não no navegador.**
+  `h-[1080px]`, `h-[948px]`, `max-w-[760px]` e as outras saíram no bundle — é a armadilha
+  do `CLAUDE.md` conferida onde ela se manifesta, que é no build de produção e não no teste.
 
 ### 3D — shiki e `code-window`
 
