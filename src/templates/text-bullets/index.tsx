@@ -33,6 +33,10 @@
  *
  * Quatro itens de duas linhas ocupam 624px, então continuam cabendo nos 734.
  *
+ * A região dos itens é a que o guard de transbordo mede — o **⌐** da §11.2 —, e é o
+ * template em que ela muda de tamanho: o mesmo conteúdo pode caber nos 866 e estourar nos
+ * 734 quando o cabeçalho liga. A faixa é quem tem altura; a `<ul>` é quem cresce.
+ *
  * O título é literal e os itens aceitam marcação: é a §11.2, e dentro dela ainda vale
  * a regra de um nível de ênfase por bloco da §3.4 do design system — negrito, código e
  * marca-texto no mesmo slide se anulam.
@@ -47,6 +51,7 @@
  */
 
 import { Inline } from "@/markup/inline";
+import { useOverflowGuard } from "@/render/overflow";
 import { Footer } from "@/templates/shared/footer";
 import { Header } from "@/templates/shared/header";
 import {
@@ -66,6 +71,8 @@ function TextBullets({
   index,
   total,
 }: TemplateComponentProps<BulletsFields, BulletsOptions>) {
+  const { region, content: block } = useOverflowGuard();
+
   return (
     <div className="relative h-full w-full">
       <Header kicker={content.kicker} show={settings.showHeader} />
@@ -81,7 +88,9 @@ function TextBullets({
       </div>
 
       <div
+        ref={region}
         data-testid="items-region"
+        data-guarded
         data-anchor={settings.anchor}
         className={[
           "absolute right-[var(--slide-pad)] left-[var(--slide-pad)] flex flex-col",
@@ -89,7 +98,7 @@ function TextBullets({
           settings.anchor === "top" ? "justify-start" : "justify-center",
         ].join(" ")}
       >
-        <ul className="flex flex-col gap-[var(--slide-gap-item)]">
+        <ul ref={block} className="flex flex-col gap-[var(--slide-gap-item)]">
           {content.items.map((item, position) => (
             // A chave é a posição: item de lista não tem id no modelo, e reordenar no
             // inspector reescreve o array inteiro de qualquer forma.

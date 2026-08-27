@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { render, screen } from "@testing-library/react";
 import type { DeckMeta } from "@/deck/types";
 import { finalCta } from "@/templates/final-cta";
+import { describeGuardedRegion } from "@/test/overflow";
 
 const deck: DeckMeta = { handle: "@rafael", pillar: "log" };
 const { defaults } = finalCta;
@@ -125,4 +126,8 @@ describe("final-cta", () => {
     expect(finalCta.background).toBe("grid");
     expect(finalCta.group).toBe("final");
   });
+
+  // A região é o bloco inteiro de fecho, 400–1160 — a §11.3 a marca com ⌐. Título, lead e
+  // CTA moram num bloco de conteúdo só, que é o nó que o guard mede.
+  describeGuardedRegion(finalCta);
 });

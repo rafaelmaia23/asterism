@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { coverStatement } from "@/templates/cover-statement";
+import { describeGuardedRegion } from "@/test/overflow";
 import type { DeckMeta } from "@/deck/types";
 
 const deck: DeckMeta = { handle: "@rafael", pillar: "log" };
@@ -91,4 +92,8 @@ describe("cover-statement", () => {
     expect(coverStatement.background).toBe("grid");
     expect(coverStatement.group).toBe("cover");
   });
+
+  // A região é o título, 300–1160 — a §11.1 a marca com ⌐. É o caso que o guard só pega
+  // medindo dois nós: o título é ancorado à **base**, então texto demais estoura para cima.
+  describeGuardedRegion(coverStatement);
 });

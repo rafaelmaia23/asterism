@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { textBullets } from "@/templates/text-bullets";
+import { describeGuardedRegion } from "@/test/overflow";
 import type { DeckMeta } from "@/deck/types";
 
 const deck: DeckMeta = { handle: "@rafael", pillar: "log" };
@@ -143,4 +144,8 @@ describe("text-bullets", () => {
     expect(screen.queryByText("@rafael")).toBeNull();
     expect(screen.queryAllByTestId("constellation-dot")).toHaveLength(0);
   });
+
+  // A região é a dos itens — a §11.2 a marca com ⌐ —, e é a que muda de altura quando o
+  // cabeçalho liga: 866px vira 734px, e o mesmo conteúdo pode passar a transbordar.
+  describeGuardedRegion(textBullets);
 });

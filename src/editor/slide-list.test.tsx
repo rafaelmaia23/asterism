@@ -3,6 +3,8 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { Deck } from "@/deck/types";
 import { createEditorStore } from "@/editor/store";
 import { SlideList, THUMBNAIL_WIDTH } from "@/editor/slide-list";
+import { fakeResizeObserver, stubLayout } from "@/test/layout";
+import { overflowRegion } from "@/test/overflow";
 import "@/templates";
 
 const SLIDE_ID = "id-que-nao-pode-vazar";
@@ -205,6 +207,69 @@ describe("SlideList", () => {
       fireEvent.click(items()[1]);
 
       expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
+    });
+  });
+
+  /**
+   * O critério da 3.5: a lista mostra o slide inválido **sem que o canvas precise estar
+   * nele**. Ela consegue porque a miniatura é o mesmo `SlideView` do canvas, então cada
+   * item mede a si mesmo — não há estado de transbordo no store, e não há nada a sincronizar.
+   */
+  describe("marca de transbordo", () => {
+    let layout: () => void;
+    let observer: ReturnType<typeof fakeResizeObserver>;
+
+    beforeEach(() => {
+      layout = stubLayout();
+      observer = fakeResizeObserver();
+    });
+
+    afterEach(() => {
+      observer.restore();
+      layout();
+    });
+
+    function bands(container: HTMLElement) {
+      return [...container.querySelectorAll<HTMLElement>("[data-guarded]")];
+    }
+
+    test("a linha do slide que transborda ganha a marca, e ele não é o ativo", () => {
+      const { container } = renderList();
+
+      // O ativo é o primeiro; quem transborda é o segundo.
+      overflowRegion(bands(container)[1], observer.flush);
+
+      expect(within(items()[1]).getByLabelText("Transborda")).toBeDefined();
+      expect(within(items()[0]).queryByLabelText("Transborda")).toBeNull();
+    });
+
+    test("a miniatura do slide inválido leva a borda crown-400 do quadro", () => {
+      const { container } = renderList();
+
+      overflowRegion(bands(container)[1], observer.flush);
+
+      const quadro = within(items()[1]).getByTestId("slide-frame");
+      expect(quadro.className).toContain("border-crown-of-thorns-400");
+      expect(within(items()[0]).getByTestId("slide-frame").className).toContain(
+        "border-ink-700",
+      );
+    });
+
+    test("nenhum slide transbordando, nenhuma marca", () => {
+      renderList();
+
+      expect(screen.queryAllByLabelText("Transborda")).toHaveLength(0);
+    });
+
+    test("o conteúdo voltando a caber apaga a marca", () => {
+      const { container } = renderList();
+
+      overflowRegion(bands(container)[1], observer.flush);
+      expect(within(items()[1]).getByLabelText("Transborda")).toBeDefined();
+
+      overflowRegion(bands(container)[1], observer.flush, 800, 400);
+
+      expect(within(items()[1]).queryByLabelText("Transborda")).toBeNull();
     });
   });
 });

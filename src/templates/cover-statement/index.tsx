@@ -22,13 +22,17 @@
  * sobre Oxanium 700 e `==marca==` fica pesada demais em 96px. §11.1 dos templates.
  *
  * A âncora do título na base é a decisão estrutural do template: com uma linha ou com
- * quatro, a última linha pousa sempre na mesma altura, e a série mantém o ritmo. As
+ * quatro, a última linha pousa sempre na mesma altura, e a série mantém o ritmo. É também
+ * por isso que o guard de transbordo mede **dois nós** e não um: o título é a região
+ * marcada com **⌐** na §11.1, e o que não cabe nela sobe acima da borda de cima, onde o
+ * `scrollHeight` da própria faixa não enxergaria. As
  * laterais saem de `--slide-pad`, nunca de 920px escrito à mão; a altura total do quadro
  * é do `SlideFrame`, e nada aqui conhece 1080 ou 1350. O fundo `grid` também é dele, que
  * o lê de `meta.background`.
  */
 
 import { Inline } from "@/markup/inline";
+import { useOverflowGuard } from "@/render/overflow";
 import {
   coverStatementSchema,
   fields,
@@ -48,12 +52,19 @@ function CoverStatement({
   index,
   total,
 }: TemplateComponentProps<CoverFields, CoverOptions>) {
+  const { region, content: block } = useOverflowGuard();
+
   return (
     <div className="relative h-full w-full">
       <Header kicker={content.kicker} show={settings.showHeader} />
 
-      <div className="absolute top-[300px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[860px] items-end">
-        <p className="slide-display text-ink-100">
+      <div
+        ref={region}
+        data-testid="heading-region"
+        data-guarded
+        className="absolute top-[300px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[860px] items-end"
+      >
+        <p ref={block} className="slide-display text-ink-100">
           <Inline>{content.heading}</Inline>
         </p>
       </div>
