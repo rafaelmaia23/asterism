@@ -22,7 +22,9 @@ const fakeFields: Field[] = [
   { key: "items", type: "list", label: "Tópicos", maxItems: 4, maxPerItem: 10, md: true },
   // Sem limite no descritor, para provar que o contador nasce do descritor e não do tipo.
   { key: "cta", type: "text", label: "Destino" },
-  // Tipo que continua sem controle depois da 2C — é ele que guarda a linha inerte.
+  // O bloco de código da 3.11: o limite é em **linhas**, e não em caracteres.
+  { key: "code", type: "code", label: "Código", maxLines: 3 },
+  // Tipo que continua sem controle depois da 3D — é ele que guarda a linha inerte.
   { key: "image", type: "image", label: "Imagem" },
 ];
 
@@ -92,6 +94,7 @@ function makeDeck(): Deck {
           heading: "Um título",
           items: ["a", "b"],
           cta: "blog.maiahub.com.br",
+          code: "const a = 1\nconst b = 2",
           image: "",
         },
         options: { showHeader: true, showFooter: true, showChevron: true, anchor: "center" },
@@ -235,7 +238,7 @@ describe("Inspector", () => {
   /**
    * Tipo ainda não editável aparece assim mesmo. Pular em silêncio faria o critério
    * "campo novo aparece sozinho" passar por acidente no dia em que o campo novo for uma
-   * imagem ou um bloco de código — os dois que sobraram depois da 2C.
+   * imagem — o único que sobrou depois da 3D.
    */
   test("tipo não suportado aparece como linha inerte, com o rótulo", () => {
     renderInspector();
@@ -244,6 +247,47 @@ describe("Inspector", () => {
 
     expect(linha.textContent).toContain("Imagem");
     expect(linha.querySelector("input, textarea")).toBeNull();
+  });
+
+  /**
+   * O campo `code` da 3.11 — §11.6 dos templates.
+   *
+   * O que ele tem de próprio é o contador: onde os outros contam caracteres contra `max`,
+   * este conta **linhas** contra `maxLines`. É o limite que a §10.3 do design system dá ao
+   * bloco de código, e é o que quem escreve precisa ver enquanto cola.
+   */
+  describe("o campo de código", () => {
+    test("o contador conta linhas contra o `maxLines` do descritor", () => {
+      renderInspector();
+
+      expect(screen.getByTestId("counter-code").textContent).toBe("2/3");
+    });
+
+    test("passar do limite tinge o contador e não trava a digitação", () => {
+      const { store } = renderInspector();
+      const longo = ["um", "dois", "três", "quatro"].join("\n");
+
+      fireEvent.change(screen.getByLabelText("Código"), { target: { value: longo } });
+
+      expect(store.getState().deck.slides[0].fields.code).toBe(longo);
+      expect(screen.getByTestId("counter-code").textContent).toBe("4/3");
+      expect(screen.getByTestId("counter-code").className).toContain("text-warning");
+      expect(screen.getByLabelText("Código")).not.toHaveProperty("maxLength", 3);
+    });
+
+    test("é monoespaçado, como o código que ele guarda", () => {
+      renderInspector();
+
+      expect(screen.getByLabelText("Código").className).toContain("font-mono");
+    });
+
+    test("campo vazio conta zero linha, e não uma", () => {
+      renderInspector();
+
+      fireEvent.change(screen.getByLabelText("Código"), { target: { value: "" } });
+
+      expect(screen.getByTestId("counter-code").textContent).toBe("0/3");
+    });
   });
 });
 

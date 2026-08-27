@@ -23,6 +23,10 @@ describe("biblioteca de templates", () => {
     expect(get("text-impact").label).toBe("Frase de impacto");
   });
 
+  test("o code-window está registrado e sai por id", () => {
+    expect(get("code-window").label).toBe("Código");
+  });
+
   /**
    * A ordem de registro é a ordem em que a biblioteca se apresenta — no seletor de
    * layout, e em qualquer lista futura. É a narrativa de um carrossel, e é a da tabela da
@@ -30,12 +34,13 @@ describe("biblioteca de templates", () => {
    * impacto dá o respiro, o CTA fecha. Um template novo entra onde a narrativa o põe, não
    * no fim da lista.
    */
-  test("a 3C acrescenta os dois de texto, nas posições narrativas deles", () => {
+  test("a 3D acrescenta o code-window na posição narrativa dele", () => {
     expect(list().map((def) => def.id)).toEqual([
       "cover-statement",
       "context",
       "text-bullets",
       "text-impact",
+      "code-window",
       "final-cta",
     ]);
   });

@@ -91,6 +91,25 @@ function maxOf(field: Field): number | undefined {
 }
 
 /**
+ * O que o contador conta neste campo, e contra o quê.
+ *
+ * Em quase todo campo é caractere contra `max`. No `code` é **linha** contra `maxLines`,
+ * porque é em linha que o limite do bloco de código é escrito — as 14 da §10.3 do design
+ * system saem da altura da região dividida pela altura da linha, e contar caractere ali
+ * não diria nada a quem cola um trecho. A leitura do contador continua a mesma: quanto do
+ * orçamento já foi gasto.
+ *
+ * Campo de código vazio tem **zero** linha, e não uma: `"".split("\n")` devolve um item.
+ */
+function budget(field: Field, text: string): { count: number; max?: number } {
+  if (field.type === "code") {
+    return { count: text === "" ? 0 : text.split("\n").length, max: field.maxLines };
+  }
+
+  return { count: text.length, max: maxOf(field) };
+}
+
+/**
  * Um item de campo `list`: a textarea com o texto, os três botões de ordem e remoção, e o
  * contador contra `maxPerItem`.
  *
@@ -259,7 +278,7 @@ function FieldRow({
         <label htmlFor={id} className="text-sm text-ink-300">
           {field.label}
         </label>
-        <Counter testId={`counter-${field.key}`} count={text.length} max={maxOf(field)} />
+        <Counter testId={`counter-${field.key}`} {...budget(field, text)} />
       </div>
 
       {field.type === "text" && (
@@ -276,6 +295,21 @@ function FieldRow({
           id={id}
           rows={field.rows}
           value={text}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      )}
+
+      {/* O bloco de código, §11.6 dos templates. Monoespaçado porque o que se digita ali é
+          código, e a indentação precisa se ver enquanto se escreve; `rows` é o teto do
+          descritor, para que o campo mostre de uma vez o que o slide comporta. Sem
+          `maxLength`, como nenhum controle deste formulário tem — o limite é conselho, e
+          quem reprova é o guard. */}
+      {field.type === "code" && (
+        <Textarea
+          id={id}
+          rows={field.maxLines}
+          value={text}
+          className="font-mono"
           onChange={(event) => onChange(event.target.value)}
         />
       )}
@@ -301,12 +335,17 @@ function FieldRow({
         </Select>
       )}
 
-      {/* Tipo ainda sem controle — `image` e `code`, os dois que sobraram depois da 2C.
+      {/* Tipo ainda sem controle — só `image`, desde que a 3D deu o dela ao `code`.
           Aparece assim mesmo: pular em silêncio faria um campo novo sumir do formulário
-          sem aviso. */}
-      {field.type !== "text" && field.type !== "textarea" && field.type !== "select" && (
-        <span className="text-sm text-ink-600">Ainda não editável aqui</span>
-      )}
+          sem aviso. A condição continua sendo **a negação dos tipos desenhados**, e não
+          `=== "image"`: escrita pelo positivo, o tipo que a Etapa 4 acrescentar sumiria do
+          formulário sem uma linha sequer. */}
+      {field.type !== "text" &&
+        field.type !== "textarea" &&
+        field.type !== "select" &&
+        field.type !== "code" && (
+          <span className="text-sm text-ink-600">Ainda não editável aqui</span>
+        )}
     </div>
   );
 }
