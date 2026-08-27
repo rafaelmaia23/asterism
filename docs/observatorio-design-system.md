@@ -471,6 +471,26 @@ Um botão que carrega leva `aria-busy`. É o que diz a mesma coisa a quem não v
 o que continua dizendo com `prefers-reduced-motion: reduce`, em que o spinner não gira — o
 ícone diferente ainda é um segundo sinal, e nenhum dos dois depende de movimento.
 
+As seis linhas foram escritas pensando em **superfície**, e o experimento 3 as cobrou em
+controles que não são superfície. Duas leituras ficaram fixadas ali, sem que nenhuma regra
+mudasse:
+
+**Num preenchimento cheio, "subir um degrau" é o tom 300 sobre o tom 400.** É o que o hover
+do botão primário faz — `azure-400` → `azure-300` —, e do destrutivo — `crown-400` →
+`crown-300`. Escurecer por opacidade, que é como o preset `nova` resolvia, é mudança de cor
+e não de degrau, e vai na direção contrária: no escuro, a superfície que responde ao ponteiro
+sobe, não afunda.
+
+**Em controle sem texto, quem vai a `ink-600` é a marca.** O desabilitado dá texto `ink-600`
+com a superfície intacta; num interruptor não há texto, e o que escurece é o polegar. A
+trilha fica como está, porque a linha diz superfície inalterada — e o `cursor: not-allowed`
+só aparece se o controle continuar recebendo ponteiro, o que exclui `pointer-events: none`
+como forma de desabilitar.
+
+E o **inválido é a borda, e só ela**: sem anel translúcido em volta, que é o que os presets
+costumam acrescentar. É a mesma borda `crown-400` com que o `asterism` marca o slide que
+transborda, e um sinal só vale mais que dois parecidos.
+
 ---
 
 ## 9. Aplicação — tokens shadcn/ui
@@ -512,6 +532,33 @@ Os presets do CLI trazem escolhas próprias que nem sempre batem com a §2.4 —
 própria cor, em vez do padrão uniforme "tom 400 de preenchimento, tom 950 de texto".
 Toda instalação de componente novo precisa dessa conferência, senão a divergência volta
 sem ninguém notar.
+
+A auditoria completa aconteceu uma vez, no experimento 3, com os seis componentes juntos —
+`button`, `card`, `input`, `select`, `switch` e `textarea`. **O que ela encontrou é a lista
+de conferência de todo componente novo**, porque tudo aqui vem do mesmo preset e volta pelo
+mesmo caminho:
+
+| O que o preset traz                                     | O que vale             |
+| ------------------------------------------------------- | ---------------------- |
+| `focus-visible:ring-3` com `ring/50` e sem offset       | O anel da §5           |
+| `rounded-lg` em controle, `rounded-xl` em cartão        | 6px e 8px, §5          |
+| `hover:` na cor com opacidade                           | Um degrau acima, §8    |
+| `active:translate-y-px`                                 | `scale(0.98)`, §8      |
+| `disabled:opacity-50` com `pointer-events-none`         | Texto `ink-600`, §8    |
+| `aria-invalid:ring-3` translúcido junto da borda        | Só a borda, §8         |
+| `shadow-md` em popup                                    | Nenhuma sombra, §1     |
+| Duplicatas `dark:` de valores que já são os únicos      | Colapsar               |
+
+Duas armadilhas de token apareceram junto. **`--radius-xl` não existe** neste tema — só
+`sm`, `md` e `lg` —, então `rounded-xl` cai no default do Tailwind, 12px, e não numa medida
+do sistema; use `rounded-lg` em cartão. E a folha ordena por **peso de variante**, não pela
+ordem das classes na string: uma regra de um variante perde para uma de dois, ainda que
+escrita depois. Quando o valor certo precisa vencer duas regras `dark:` do preset, ou se
+escreve com o mesmo número de variantes, ou se marca com `!`.
+
+A classe `dark` no `<html>` está sempre presente e não há tema claro, então `dark:` no
+componente não é condição: é o valor que de fato vale, com um variante a mais para brigar
+com o resto. Nas variantes que se toca, colapse.
 
 Fora do vocabulário shadcn, como cores de tema do Tailwind:
 
