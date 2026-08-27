@@ -19,17 +19,23 @@ describe("biblioteca de templates", () => {
     expect(get("context").label).toBe("Contexto");
   });
 
+  test("o text-impact está registrado e sai por id", () => {
+    expect(get("text-impact").label).toBe("Frase de impacto");
+  });
+
   /**
    * A ordem de registro é a ordem em que a biblioteca se apresenta — no seletor de
    * layout, e em qualquer lista futura. É a narrativa de um carrossel, e é a da tabela da
-   * §11 dos templates: a capa abre, o contexto segura, os tópicos desenvolvem, o CTA
-   * fecha. Um template novo entra onde a narrativa o põe, não no fim da lista.
+   * §11 dos templates: a capa abre, o contexto segura, os tópicos desenvolvem, a frase de
+   * impacto dá o respiro, o CTA fecha. Um template novo entra onde a narrativa o põe, não
+   * no fim da lista.
    */
-  test("a 3C acrescenta o context, na posição narrativa dele", () => {
+  test("a 3C acrescenta os dois de texto, nas posições narrativas deles", () => {
     expect(list().map((def) => def.id)).toEqual([
       "cover-statement",
       "context",
       "text-bullets",
+      "text-impact",
       "final-cta",
     ]);
   });
