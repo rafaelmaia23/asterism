@@ -1,8 +1,9 @@
 # asterism — plano de execução
 
 > **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
-> ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates; a
-> próxima sessão abre a 3B, o guard de transbordo e os estados dos controles**
+> ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates e a
+> 3B entregou o guard de transbordo e o alinhamento dos controles; a próxima sessão abre a
+> 3C, os dois templates de texto**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -866,7 +867,7 @@ Resolvido na sessão:
   etapa. A lista de linguagens do `lang` está escrita na §11.6, mas quem a fecha contra o
   bundle é a 3D.
 
-### 3B — guard de transbordo e estados dos controles
+### 3B — guard de transbordo e estados dos controles ✅
 
 As duas coisas transversais ao que já existe, antes de os sete chegarem. As duas são
 questões da §8 do design system — o estado **Inválido** e o de **Foco** —, o que faz a
@@ -882,6 +883,46 @@ Os três templates atuais são adaptados aqui; os sete de 3C em diante já nasce
 declarado. A auditoria das variantes do shadcn contra a §2.4 acontece na mesma passada da
 3.6 — é mexer nos mesmos arquivos, e a §9 do design system já manda conferir toda
 instalação de componente.
+
+Resolvido na sessão:
+
+- **Medir um nó só reprovaria em silêncio em dois dos três templates.** A tarefa dizia
+  "comparando `scrollHeight` com `clientHeight`", que é o teste óbvio e o que a §9 do
+  contexto escrevia — e ele não pega conteúdo ancorado à **base**, porque o que estoura sobe
+  acima da borda de cima e não entra no `scrollHeight` do pai. A capa alinha o título à base
+  desde a 1.7; o `final-cta` faz o mesmo com o bloco de fecho. O guard passou a medir dois
+  nós: a faixa, que tem altura de spec, e o bloco de conteúdo dentro dela. Decisão 47.
+- **O guard não precisou de estado no store.** `scrollHeight` e `clientHeight` são medidas de
+  layout e não enxergam o `transform: scale()`, então a mesma leitura vale a 1:1 na
+  exportação, a k ≈ 0,28 no canvas e a k = 0,2 na miniatura. Como a lista lateral desenha
+  todos os slides pelo mesmo `SlideView`, **cada slide desenhado mede a si mesmo**, e o
+  critério "a lista mostra o inválido sem o canvas estar nele" saiu de graça.
+- **A marca mora fora do nó capturado**, na borda do quadro externo — senão o PDF sairia com
+  borda vermelha. E há um segundo motivo, que é do guard: aquela borda já existe em 1px nos
+  dois estados, então marcar não muda medida nenhuma. Marca que altera o layout medido faz
+  medir mudar o que se mede. Decisão 48.
+- **O `final-cta` ganhou um bloco de conteúdo.** Era o único dos três em que título, lead e
+  CTA eram filhos diretos da faixa, e sem um nó que cresça não há o que comparar.
+- **`describeGuardedRegion` é uma linha por template.** O teste não pergunta se existe uma
+  `div` com altura fixa: ele engorda o conteúdo da faixa e exige que o slide marque. Um
+  template que esquecesse de pendurar os refs passaria em qualquer teste de classe, e os sete
+  que faltam vão chegar por aqui.
+- **A auditoria achou três divergências além das duas registradas.** A 1D tinha anotado anel
+  de foco e raio; olhando as seis linhas da §8 de uma vez, hover, ativo e desabilitado também
+  divergiam, mais o anel translúcido do `aria-invalid` e a `shadow-md` do popup do `select` —
+  esta contra a §1, que não tem sombra projetada. **Os componentes cederam em tudo**, decisão
+  49, e a lista virou tabela de conferência na §9 do design system para o próximo componente
+  instalado.
+- **Duas armadilhas de token, das que só aparecem mexendo.** `--radius-xl` não é declarado
+  neste tema, então `rounded-xl` do cartão caía no default do Tailwind — 12px, e não uma
+  medida do sistema; a divergência do cartão era de 4px, e não dos 2px que este arquivo tinha
+  calculado. E a folha ordena por **peso de variante**, não pela ordem das classes na string:
+  o polegar desabilitado do interruptor perdia para duas regras `dark:` do preset escritas
+  antes dele. As duas ficaram na §9 do design system.
+- **Desabilitar sem `pointer-events: none`.** A §8 pede `cursor: not-allowed`, e com o
+  ponteiro desligado o cursor é o do pai — a regra não tinha como valer. Tirar o
+  `pointer-events-none` obrigou cada variante a dizer que o hover não vale desabilitado, e é
+  o que `not-disabled:hover:` faz hoje nos seis componentes.
 
 ### 3C — os dois de texto: `context` e `text-impact`
 
@@ -993,9 +1034,9 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
 contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
-33 e 34, a 2B as 35 a 38, a 2C a 39, a 2E a 40 e a 2F as 41 a 44. Continua **um** ponto
-aberto: o foco e o raio dos controles de formulário, do experimento 3, que a divisão da
-Etapa 3 agendou para a 3B. Ele não bloqueia nada.
+33 e 34, a 2B as 35 a 38, a 2C a 39, a 2E a 40, a 2F as 41 a 44, a 3A as 45 e 46 e a 3B as
+47 a 49. **Nenhum ponto continua aberto**: o experimento 3, que era o último, foi resolvido
+na 3B.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
 lado a lado e comparando o resultado — de preferência medido, como nos experimentos 4 e 5.
@@ -1091,7 +1132,7 @@ grade e em slide reduzido: ficou `ink-600`. As três candidatas `sun` foram desc
 Registrado nas decisões 35 a 38 do documento de contexto, na §10.5 e na §4.3 do design
 system, na §11.0 e na §11.1 dos templates, e em `maiahub-logo.md`.
 
-### Experimento 3 — foco e raio dos controles de formulário · agendado para a 3B
+### ~~Experimento 3 — foco e raio dos controles de formulário~~ · resolvido
 
 A auditoria da 1D encontrou duas divergências entre os componentes shadcn instalados e o
 design system. As duas vêm do preset `nova`, entraram no bootstrap com `button`, `input` e
@@ -1112,3 +1153,28 @@ O `card` não tem anel de foco e não usa `rounded-lg`: ele traz `rounded-xl`, q
 `--radius` de 6px da §9 resolve em 10px, onde a §5 dá 8px a cartão. É uma terceira
 divergência, da mesma origem, e por isso a auditoria da tarefa 3.6 olha **todas** as
 variantes na mesma passada, e não só as duas desta lista.
+
+**Resolvido na 3B.** Os seis componentes foram montados numa rota descartável, no molde dos
+experimentos 4 e 5, com cada linha em duas colunas: o preset como instalado e o que o
+documento pede. **O documento venceu em todas**, e a §9 do design system, que já dizia que
+quem cede é o componente, ganhou a tabela de conferência para a próxima instalação.
+
+A auditoria completa encontrou mais do que a lista acima previa:
+
+| Linha | Preset `nova` | O que passou a valer |
+| --- | --- | --- |
+| Foco | `ring-3`, `ring/50`, sem offset | 2px `azure-500` cheio, offset 2px — §5 |
+| Raio, controle | `rounded-lg`, 8px | `rounded-md`, 6px — §5 |
+| Raio, cartão | `rounded-xl`, **12px** | `rounded-lg`, 8px — §5 |
+| Hover | a cor a 80% de opacidade | um degrau acima: `azure-300`, `ink-700` — §8 |
+| Ativo | `translate-y-px` | `scale(0.98)` — §8 |
+| Desabilitado | `opacity-50`, sem cursor | texto `ink-600`, `not-allowed` — §8 |
+| Inválido | borda mais anel translúcido | só a borda `crown-400` — §8 |
+| Popup do `select` | `shadow-md` | sem sombra — §1 |
+| Destrutivo | fundo tingido a 10% | `crown-400` com texto `crown-950` — §2.4 |
+
+O cartão era **12px e não 10px**: `--radius-xl` não é declarado neste tema, então
+`rounded-xl` caía no default do Tailwind em vez de sair do `--radius`. A conta acima estava
+errada porque a variável que ela supunha existir não existe.
+
+Registrado na decisão 49 do documento de contexto, na §8 e na §9 do design system.
