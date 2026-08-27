@@ -40,3 +40,44 @@ export function stubLayout(): () => void {
     }
   };
 }
+
+/**
+ * Um `ResizeObserver` que dispara quando o teste mandar.
+ *
+ * O do `happy-dom` existe e nunca dispara, o que basta para o guard — a primeira medida é
+ * síncrona na montagem. Não basta para o caso interessante: **o conteúdo cresceu depois**,
+ * que no navegador é o observador que percebe. Este stub guarda os callbacks vivos e
+ * `flush()` os chama.
+ *
+ * Instale antes do `render`: o que já foi observado com o construtor original não volta.
+ */
+export function fakeResizeObserver(): { flush: () => void; restore: () => void } {
+  const original = globalThis.ResizeObserver;
+  const callbacks = new Set<ResizeObserverCallback>();
+
+  class Fake implements ResizeObserver {
+    constructor(private readonly callback: ResizeObserverCallback) {
+      callbacks.add(callback);
+    }
+
+    observe() {}
+    unobserve() {}
+
+    disconnect() {
+      callbacks.delete(this.callback);
+    }
+  }
+
+  globalThis.ResizeObserver = Fake;
+
+  return {
+    flush() {
+      for (const callback of [...callbacks]) {
+        callback([], {} as ResizeObserver);
+      }
+    },
+    restore() {
+      globalThis.ResizeObserver = original;
+    },
+  };
+}

@@ -38,6 +38,7 @@
  */
 
 import { Inline } from "@/markup/inline";
+import { useOverflowGuard } from "@/render/overflow";
 import {
   finalCtaSchema,
   fields,
@@ -58,33 +59,44 @@ function FinalCta({
   total,
 }: TemplateComponentProps<FinalCtaFields, FinalCtaOptions>) {
   const lead = content.lead.trim();
+  const { region, content: block } = useOverflowGuard();
 
   return (
     <div className="relative h-full w-full">
       <Header kicker={content.kicker} show={settings.showHeader} />
 
-      <div className="absolute top-[400px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[760px] flex-col justify-end">
-        <p className="slide-title text-ink-100">
-          <Inline>{content.heading}</Inline>
-        </p>
-
-        {/* O lead é literal: a §11.3 dá marcação só ao fecho. */}
-        {lead !== "" && (
-          <p className="slide-lead mt-[var(--slide-gap-item)] text-ink-400">{lead}</p>
-        )}
-
-        <div
-          data-testid="cta-block"
-          className="mt-[var(--slide-gap-block)] rounded-none border-l-[4px] border-azure-radiance-400 bg-slide-surface px-[40px] py-[32px]"
-        >
-          <p className="slide-code text-azure-radiance-400">
-            {settings.showArrow && (
-              <span data-testid="cta-arrow" aria-hidden>
-                {"→ "}
-              </span>
-            )}
-            {content.cta}
+      <div
+        ref={region}
+        data-testid="content-region"
+        data-guarded
+        className="absolute top-[400px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[760px] flex-col justify-end"
+      >
+        {/* Título, lead e CTA num bloco só — é o nó que o guard mede contra a faixa. Sem
+            ele, os três seriam filhos diretos e a região não teria altura de conteúdo para
+            comparar: o que estoura aqui sobe, porque o bloco é ancorado à base. */}
+        <div ref={block}>
+          <p className="slide-title text-ink-100">
+            <Inline>{content.heading}</Inline>
           </p>
+
+          {/* O lead é literal: a §11.3 dá marcação só ao fecho. */}
+          {lead !== "" && (
+            <p className="slide-lead mt-[var(--slide-gap-item)] text-ink-400">{lead}</p>
+          )}
+
+          <div
+            data-testid="cta-block"
+            className="mt-[var(--slide-gap-block)] rounded-none border-l-[4px] border-azure-radiance-400 bg-slide-surface px-[40px] py-[32px]"
+          >
+            <p className="slide-code text-azure-radiance-400">
+              {settings.showArrow && (
+                <span data-testid="cta-arrow" aria-hidden>
+                  {"→ "}
+                </span>
+              )}
+              {content.cta}
+            </p>
+          </div>
         </div>
       </div>
 
