@@ -248,8 +248,11 @@ O template mais usado de um carrossel. Título no topo, itens no miolo, rodapé 
 | Itens ⌐   | 426 – 1160     | O mesmo fim, 734px de altura em vez de 866    |
 | Rodapé    | 1238 – 1270    | Sem mudança                                   |
 
-É o único dos três templates em que ligar o cabeçalho move alguma coisa, e a única quebra
-da regra "ligar uma peça não move as outras" que a §10.5 estabeleceu para o rodapé.
+Foi o primeiro template em que ligar o cabeçalho move alguma coisa, e a quebra da regra
+"ligar uma peça não move as outras" que a §10.5 estabeleceu para o rodapé. O `context` da
+§11.4 repete a mesma geometria, número por número, e não por acaso: os dois são o miolo do
+carrossel, e um empurrar 132px enquanto o outro reserva a faixa seria uma diferença sem
+motivo entre slides vizinhos.
 **Empurrar só quando ligado**, em vez de reservar a faixa sempre, é a decisão 43: duas
 variantes custam um ternário no componente; reservar sempre custaria 132px do topo do
 template mais usado do sistema, permanentemente, por uma faixa que aqui nasce desligada.
@@ -473,8 +476,13 @@ Nenhuma própria — o `context` expõe só as oito compartilhadas da §11.0.
 
 #### Comportamento
 
-**Título vazio** — a região some e o corpo sobe para 80. É um slide de parágrafo puro, e é
-uma escolha válida quando o texto já abre com a própria tese.
+**Título vazio** — a região some e o corpo sobe para 80, tomando os 1080px inteiros. É um
+slide de parágrafo puro, e é uma escolha válida quando o texto já abre com a própria tese.
+
+Com o cabeçalho **ligado**, o corpo sobe para **212** e não para 80: a faixa do topo
+continua ocupada, e o que o título liberou são os 214px entre 212 e 426. São quatro
+combinações de cabeçalho e título, e nas quatro o corpo acaba em 1160, no topo do rodapé —
+866, 1080, 734 ou 948px de altura.
 
 **Parágrafo único.** O campo aceita quebra de linha, mas dois parágrafos num slide de
 carrossel quase sempre são dois slides. Quem precisa de mais de um bloco tem o
