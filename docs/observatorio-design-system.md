@@ -618,6 +618,13 @@ Superfície `--slide-raised`, raio 12px, sem borda. Barra superior com três pon
 `ink-700` de 10px e o nome do arquivo em `slide-meta`. Padding interno 32px.
 **Máximo de 14 linhas** por slide — se passar, quebre em dois slides.
 
+**O nome do arquivo é a única peça `slide-meta` em caixa baixa.** A utility versaliza, e a
+§10.5 diz por quê: no kicker e no handle a caixa alta é da escala, não do conteúdo —
+`api/ · 04` é digitado assim e sai versal sem que o dado mude. Nome de arquivo é a exceção
+porque é a única peça `slide-meta` que é um **identificador literal**: `CACHE.TS` desmente o
+nome que está no repositório, e o slide passa a mostrar um arquivo que não existe. Em código
+é `normal-case` sobre a utility. Decisão 53 da §16 do documento de contexto.
+
 Realce de linha: fundo `sun-950`, `border-left: 4px solid sun-400`, raio 0.
 
 Diff: adicionado `pacifika-950` com barra `pacifika-500`; removido `crown-950` com

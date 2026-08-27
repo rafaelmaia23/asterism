@@ -618,13 +618,23 @@ de contexto: o que se mede não pode ser dimensionado pelo que contém.
 | Título          | `slide-heading` (56px Oxanium 600, altura 1.15)    | `ink-100`        |
 | Janela          | superfície `slide-raised`, raio 12px, **sem borda** | —                |
 | Pontos da barra | três círculos de 10px, gap 16px                    | `ink-700`        |
-| Nome do arquivo | `slide-meta` (28px mono, tracking 0.12em)          | `ink-400`        |
+| Nome do arquivo | `slide-meta` **em caixa baixa** (28px mono, 0.12em) | `ink-400`        |
 | Código          | `slide-code` (34px JetBrains Mono, altura 1.5)     | tema da §10.4    |
 
 Geometria da janela: padding interno de 32px — o `--slide-pad-code` da §4.2 —, barra
 superior de 92px contando o padding, e o código começando aí. Numa região de 866px isso
 deixa 742px para o código, e a 51px por linha dão **14 linhas**, que é exatamente o teto
 que a §10.3 escreve. O número não foi escolhido duas vezes: a régua confirma a regra.
+
+Os 92px da barra são 32 de padding, 28 do nome do arquivo — `slide-meta` tem altura de
+linha 1 — e 32 até a primeira linha de código. Entre os pontos e o nome, os mesmos 32px:
+dentro da janela, o ritmo é o do `--slide-pad-code`, e não o dos gaps da §4.2, que são da
+grade do slide.
+
+**O nome do arquivo sai em caixa baixa**, contra a versalização que a utility `slide-meta`
+aplica ao kicker e ao handle. É a exceção da §10.3 do design system, e ela vale só aqui:
+nome de arquivo é identificador literal, e `CACHE.TS` mostra um arquivo que não existe no
+repositório.
 
 #### Campos
 
