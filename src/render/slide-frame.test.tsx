@@ -93,6 +93,36 @@ describe("SlideFrame", () => {
     expect(canvas().className).not.toContain("border");
   });
 
+  /**
+   * A §8 do design system dá borda `crown-400` ao estado inválido, e o quadro externo é o
+   * único lugar onde ela pode morar: dentro do `transform` ela encolheria com a escala e —
+   * pior — entraria no nó que a exportação captura, e o PDF sairia com borda vermelha.
+   */
+  test("o slide que transborda troca a borda do quadro por crown-400", () => {
+    render(
+      <SlideFrame format={FORMAT} overflow>
+        <p>conteúdo</p>
+      </SlideFrame>,
+    );
+
+    expect(frame().className).toContain("border-crown-of-thorns-400");
+    expect(frame().className).not.toContain("border-ink-700");
+    expect(frame().dataset.overflow).toBe("true");
+    expect(canvas().className).not.toContain("border");
+  });
+
+  test("sem transbordo o quadro mantém a borda de sempre", () => {
+    render(
+      <SlideFrame format={FORMAT}>
+        <p>conteúdo</p>
+      </SlideFrame>,
+    );
+
+    expect(frame().className).toContain("border-ink-700");
+    expect(frame().className).not.toContain("crown");
+    expect(frame().dataset.overflow).toBeUndefined();
+  });
+
   test("renderiza o conteúdo dentro da raiz do slide", () => {
     render(
       <SlideFrame format={FORMAT}>

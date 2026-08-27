@@ -49,6 +49,16 @@ export type SlideFrameProps = {
    * descritor de cada um.
    */
   background?: TemplateBackground;
+  /**
+   * O slide não cabe na região que o guard mede — §9 do documento de contexto. A borda do
+   * quadro vira `crown-400`, que é o que a §8 do design system dá ao estado inválido.
+   *
+   * A marca mora **aqui**, na camada de fora, e não é acidente de conveniência: dentro do
+   * `transform` ela encolheria com a escala e entraria no nó capturado pela exportação — o
+   * PDF sairia com borda vermelha. Como a borda já existe em 1px nos dois estados, marcar
+   * não muda medida nenhuma, e o guard não realimenta a si mesmo.
+   */
+  overflow?: boolean;
   children: ReactNode;
 };
 
@@ -57,14 +67,18 @@ export function SlideFrame({
   scale = 1,
   background = "plain",
   canvasRef,
+  overflow = false,
   children,
 }: SlideFrameProps) {
   return (
     <div
       data-testid="slide-frame"
+      data-overflow={overflow ? "true" : undefined}
       // `box-content` para que a borda cresça para fora: o miolo mede exatamente o
       // slide escalado, e a linha não come 2px do conteúdo.
-      className="box-content border border-ink-700"
+      className={`box-content border ${
+        overflow ? "border-crown-of-thorns-400" : "border-ink-700"
+      }`}
       style={{ width: format.w * scale, height: format.h * scale }}
     >
       <div

@@ -14,8 +14,13 @@
  * traria de volta o laço da 1C. A largura é constante do módulo, e a escala sai dela com
  * `deck.format` — nunca com 1080 escrito à mão, §12.
  *
- * Clicar troca o ativo; a barra do pé acrescenta e remove — 2.13, decisão 30. Marca de
- * transbordo, reordenação por arraste e duplicar são das etapas seguintes.
+ * Clicar troca o ativo; a barra do pé acrescenta e remove — 2.13, decisão 30. Reordenação
+ * por arraste e duplicar são das etapas seguintes.
+ *
+ * **A marca de transbordo não precisou de estado global.** Cada miniatura é um `SlideView`
+ * montado, e cada `SlideView` mede a si mesmo (§9 do documento de contexto), então a lista
+ * mostra o slide inválido sem que o canvas precise estar nele — o `Item` só guarda o que a
+ * própria miniatura lhe contou.
  *
  * **A lista rola até o ativo, e é ela quem rola.** Quem tem `overflow-y-auto` é o `<ol>`, não
  * a coluna — a coluna é quem segura a barra do pé no lugar. Acrescentar um slide já o tornava
@@ -31,8 +36,8 @@
  * proibição da §13 — a que impede o `ResizeObserver` acima — não o alcança.
  */
 
-import { memo, useEffect, useRef } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { memo, useEffect, useRef, useState } from "react";
+import { Plus, TriangleAlert, Trash2 } from "lucide-react";
 import type { StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
 import type { Deck, DeckMeta, Slide, SlideId } from "@/deck/types";
@@ -75,6 +80,11 @@ const Item = memo(function Item({
   active,
   onSelect,
 }: ItemProps) {
+  // O estado é local, e vem da miniatura medindo a si mesma: a §9 do documento de contexto
+  // não guarda transbordo no store, e `setOverflow` já é estável, então o `memo` continua
+  // valendo. `useState` do React, e não `useEditor`.
+  const [overflow, setOverflow] = useState(false);
+
   return (
     <button
       type="button"
@@ -96,6 +106,18 @@ const Item = memo(function Item({
           {String(position + 1).padStart(2, "0")}
         </span>
         <span className="truncate text-xs text-ink-500">{get(slide.template).label}</span>
+
+        {/* A borda `crown-400` do quadro já marca a miniatura, mas a 1px num quadro de
+            216px ela é discreta demais para se ler varrendo a coluna. O ícone é o segundo
+            sinal, e leva rótulo em vez de `aria-hidden`: ícone que significa não é
+            decorativo — §6 do design system. */}
+        {overflow && (
+          <TriangleAlert
+            className="ml-auto size-4 shrink-0 self-center text-crown-of-thorns-400"
+            strokeWidth={1.75}
+            aria-label="Transborda"
+          />
+        )}
       </span>
 
       <SlideView
@@ -105,6 +127,7 @@ const Item = memo(function Item({
         index={position}
         total={total}
         scale={THUMBNAIL_WIDTH / format.w}
+        onOverflow={setOverflow}
       />
     </button>
   );
