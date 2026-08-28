@@ -526,9 +526,34 @@ mais — autosave e undo sobre um estado que ainda não sabe editar não teriam 
 guardar. A 2D acrescentou `setTemplate`, `addSlide` e `removeSlide`, que são o que faz
 compor, e o `persist` por cima deste mesmo store — tarefa 2.12: a Fase 1 do §15 promete um
 carrossel publicável e um deck que some no reload não cumpre a promessa. O **IndexedDB
-chega na 3F**, com os dois templates de mídia que o pedem: um template cujo campo principal
+chegou na 3F**, com os dois templates de mídia que o pedem: um template cujo campo principal
 não tem onde guardar valor não está entregue, e é a mesma razão pela qual a decisão 30
 antecipou o `addSlide`. O `zundo` fica para a **Etapa 4**, junto com o resto do editor.
+
+### O binário mora fora do deck, e a ponte é um cache de módulo
+
+O `idb-keyval` está em `src/images/storage.ts`, num banco próprio — `asterism`, prateleira
+`images` —, e ele não sabe o que é um deck: guarda blob por id, e quem liga uma coisa à
+outra é o campo `image` do template. São dois armazenamentos separados porque a cota é
+diferente em uma ordem de grandeza, e nada além do `ImageId` atravessa para o `localStorage`.
+
+Entre o id que o slide guarda e o `<img>` que o template desenha falta uma URL, e ler o
+banco é assíncrono enquanto o template é síncrono. A ponte é o `src/images/cache.ts`: um
+`Map<ImageId, string>` de object URLs no módulo, com `useImageUrl` para quem renderiza e
+`preloadImages` para o palco de exportação, que monta uma raiz React própria e precisa das
+URLs **antes** de renderizar — um `<img>` cujo `src` chega no quadro seguinte não está no
+bitmap. O cache fica fora do store de propósito: o store persiste o deck e só o deck, e um
+object URL não é estado a guardar, é um handle do documento vivo que morre no reload.
+Decisão 55.
+
+A URL do preview é `blob:`; a conversão para `data:` é o `modern-screenshot` que faz na
+clonagem, e é lá que ela precisa acontecer, porque dentro do `foreignObject` a origem é
+opaca. É a mesma armadilha que põe as três fontes em `next/font/local`.
+
+**A imagem é reduzida a 2160px no maior lado na importação** — o 1080 do formato vezes a
+escala 2 do alvo PDF, que é a maior resolução que o arquivo consegue aproveitar. O que passa
+disso é peso puro em quatro lugares: o banco, o DOM, o `foreignObject` da captura e o base64
+do `.json` da Etapa 4. Decisão 56.
 
 **Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
 deixa de bater com o código quando um template some ou muda de chave, e a resposta é
@@ -583,6 +608,17 @@ slide que não estava ativo não mexe no ativo.
 
 Apenas upload local. Imagem por URL externa contamina o canvas e faz a exportação
 falhar em silêncio. Não é limitação técnica — é decisão de escopo.
+
+**Blob órfão não é coletado, e é escolha.** Trocar a imagem de um slide, ou remover o slide,
+deixa o blob anterior no banco sem ninguém apontando para ele. A 3F não apaga nada: o
+`zundo` da Etapa 4 desfaz a troca e devolve o `ImageId`, e um blob apagado no caminho faria
+o desfazer trazer o slide de volta sem a imagem. A varredura é do import/export da Etapa 4,
+que é quem terá o deck inteiro à mão — e que numa tela de múltiplos decks precisa ter, senão
+apaga a imagem do deck que não está aberto. Decisão 57.
+
+O caso inverso já é estado válido e desenhado: **id no deck, blob ausente**. O schema passa,
+porque o id é uma string válida; a imagem some e o slide fica, que é a decisão 31 intacta. O
+template desenha "Sem imagem", o mesmo estado de um slide que nunca teve uma.
 
 ## 12. Formato como dado
 
