@@ -89,6 +89,10 @@ npx tsc --noEmit # checagem de tipos
 - Commits **não são assinados pelo Claude**: sem `Co-Authored-By`, sem menção a
   ferramenta, sem emoji de robô no rodapé.
 - Mensagens no imperativo, curtas, uma linha quando couber.
+- **Branch de feature morre com o merge.** Terminado o trabalho e mesclada em `dev`, a
+  branch é apagada na mesma sessão — `git branch -d <nome>`, que recusa se ainda houver
+  commit fora de `dev`. Só `main` e `dev` são permanentes. Branch mesclada que fica é lixo
+  que esconde as vivas: uma lista de onze não diz mais o que está em andamento.
 
 ## Regra 1 — decisões de produto não são suas
 
