@@ -780,6 +780,30 @@ slide é um `code-window`.
 **Explicação vazia** — o bloco de código desce e ocupa 294 – 1160, e o slide vira um
 `code-window` com mais uma chave guardada. Funciona, mas trocar o layout é mais honesto.
 
+**Título vazio** — a região some e o bloco sobe, como em qualquer template da §11.0. Sobe
+para 80 com o cabeçalho desligado e para 212 com ele ligado: a faixa do topo continua
+ocupada, e o bloco toma o que sobra.
+
+**As oito faixas do bloco.** Este é o único template cuja faixa de conteúdo depende de três
+interruptores em vez de dois, e a tabela abaixo é o cruzamento das duas de cima com as duas
+regras de região vazia. O **topo** é o mesmo do `code-window`; o **fim** é o que este
+template acrescenta — 826 com a explicação embaixo, 1160 sem ela.
+
+| Cabeçalho | Título | Explicação | Faixa do bloco |
+| --------- | ------ | ---------- | -------------- |
+| desligado | sim    | sim        | 294 – 826      |
+| desligado | sim    | não        | 294 – 1160     |
+| desligado | não    | sim        | 80 – 826       |
+| desligado | não    | não        | 80 – 1160      |
+| ligado    | sim    | sim        | 426 – 826      |
+| ligado    | sim    | não        | 426 – 1160     |
+| ligado    | não    | sim        | 212 – 826      |
+| ligado    | não    | não        | 212 – 1160     |
+
+A explicação **não aparece na tabela porque não se move**: 890 – 1160 nas oito, sempre que
+existe. É a mesma razão da variação de cabeçalho acima — quem paga o espaço é o código, não
+a prosa.
+
 **Marcação** — a explicação aceita, e `` `código` `` inline é o marcador natural aqui: citar
 um identificador do bloco acima é exatamente o que a anotação faz.
 
