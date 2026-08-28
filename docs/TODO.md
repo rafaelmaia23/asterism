@@ -3,9 +3,9 @@
 > **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
 > ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates, a
 > 3B entregou o guard de transbordo e o alinhamento dos controles, a 3C acrescentou os dois
-> de texto, a 3D trouxe o shiki e o `code-window` e a 3E fechou os dois mais densos — a
-> biblioteca tem oito dos dez, e o que falta são os dois de mídia; a próxima sessão abre a
-> 3F, `split-vertical` e `image-caption`, com o caminho mínimo de imagem**
+> de texto, a 3D trouxe o shiki e o `code-window`, a 3E fechou os dois mais densos e a 3F
+> trouxe as imagens com os dois de mídia — **a biblioteca tem os dez**; a próxima sessão é a
+> 3G, que recompõe o carrossel de referência e fecha a Etapa 3**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -1112,7 +1112,7 @@ Resolvido na sessão:
   que é a `slide-hairline` da decisão 38 se comportando dos dois lados: compensa no preview
   reduzido, onde 1px fixo não pintaria, e não engorda a k = 1, onde a compensação não entra.
 
-### 3F — imagens: `split-vertical` e `image-caption`
+### 3F — imagens: `split-vertical` e `image-caption` ✅
 
 A antecipação decidida acima. **Só o caminho mínimo**: guardar, escolher, exibir e
 rasterizar uma imagem local.
@@ -1133,12 +1133,67 @@ esperar o `decode()` antes de capturar, como já espera as fontes.
 IndexedDB não é slide torto: o schema passa, porque o id é uma string válida. A imagem some
 e o slide fica — a regra continua sendo derrubar só o que não passa, e um id órfão passa.
 
+Decidido na sessão, antes de escrever código:
+
+| Questão | Decisão |
+|---|---|
+| Até onde vai o `ratio` do descritor | **Moldura de preview**, e nada além. Recorte com alça, travado na proporção, é dívida anotada |
+| Blob órfão no IndexedDB | **Nada apaga na 3F.** A varredura é do import/export da Etapa 4 |
+| Foto de 4000×3000 | **Reduz para 2160px no maior lado** na importação |
+| Os rótulos no seletor | **Texto e imagem** e **Imagem e legenda** — cada um diz as duas peças e a ordem delas no slide |
+
+Resolvido na sessão:
+
+- **A armadilha das fontes tem duas metades, e a primeira não é a esperada.** A esperada era
+  o `decode()`, e ela é real. A outra é anterior à montagem: um `<img>` sem URL no primeiro
+  quadro **não é um `<img>` vazio** — é o estado "Sem imagem" que o template desenha de
+  propósito, e é ele que iria para o bitmap. Por isso o palco pré-carrega os `ImageId` do
+  deck *antes* de `createRoot`, e espera o `decode()` *depois*, ao lado do
+  `document.fonts.ready`. As duas esperas cercam a montagem, e nenhuma das duas sozinha
+  basta.
+- **Quais campos são imagem sai dos descritores, e isso decidiu onde a função mora.** O
+  `collectImageIds` ficou em `src/export/stage.tsx` e não em `src/images` porque aquela pasta
+  é **folha**: o `ImageBand` dos templates importa `src/images`, então `src/images` importar o
+  registry fecharia um ciclo. O efeito colateral é o certo — o campo de imagem do template
+  que a Etapa 4 acrescentar entra na lista sozinho, sem uma linha aqui.
+- **O `image` não subiu para `shared/fields.ts`, e a decisão 54 não se aplica.** A §6 exige
+  mesma chave com o mesmo **tipo de campo**, e está cumprida — há teste de migração provando
+  que trocar entre os dois preserva a imagem. O que difere é o `ratio`, e ele acompanha a
+  região: um descritor compartilhado teria de escolher um dos dois e mentir para o outro. É
+  o precedente do `heading` da 3E. Decisão 58.
+- **A §11.10 tinha o mesmo defeito que a §11.7 tinha antes da 3E**: duas tabelas para cruzar
+  na hora de implementar, o que vira oito decisões em vez de uma. As oito geometrias entraram
+  na seção. E uma delas o documento não decidia — com o título vazio, a legenda **sobe sem
+  crescer**: os 90px são as duas linhas que a própria §11.10 promete, e é essa promessa que o
+  guard cobra. Uma faixa que crescesse até 1160 aceitaria três linhas onde o desenho quer
+  duas, e a diferença só apareceria num slide publicado.
+- **A conferência foi medida no PDF, e ela responde à pergunta que só o arquivo responde.**
+  Sonda descartável com firefox headless, uma foto sintética de 4000×3000 em magenta — cor
+  que o Observatório não tem, então qualquer pixel magenta no arquivo é pixel de imagem —,
+  importada pelo caminho real e exportada pelo alvo PDF de verdade. Cinco páginas de
+  2160×2700 extraídas com `pdfimages` e medidas com o ImageMagick.
+  **A imagem atravessa**: `#ff00ff` chega ao arquivo em `srgb(255,0,255)`, sem desvio.
+  `split-vertical` em `cover`: x 1280–2160 e y 0–2348, que são os 640–1080 e 0–1174 da §11.9
+  na escala 2, com o rodapé inteiro abaixo. Em `contain` e com o cabeçalho ligado: a faixa
+  **não se move** — mesmos x 1280–2160 e y 0–2348 — e a imagem cabe inteira em 880×660,
+  centralizada em y 844–1504, com o que sobra em `srgb(15,23,42)`, que é o `slide-surface`
+  exato. `image-caption` com título e legenda: y 0–1820; com os dois campos vazios: y 0–2348,
+  o teto da §11.0 e nem um pixel além. A legenda saiu com máximo 184 no canal, que é o
+  `ink-400` `#94a3b8` no arquivo, e o título com 249, que é o `ink-100`.
+- **A redução foi medida, e não conferida por leitura.** 4000×3000 entrou e 2160×1620 ficou
+  guardado — o `fitWithin` na única resolução que o PDF aproveita. Decisão 56.
+- **Os dois critérios da 3.15 se conferem no navegador, e passam.** O deck salvo tem 5.550
+  bytes, **não contém `data:` nem `base64`** e contém o `ImageId`. E o caso do id órfão:
+  reidratando um deck de doze slides com um `ImageId` que o banco não tem, voltam **doze de
+  doze**, com o id órfão intacto no campo — a decisão 31 fazendo exatamente o que promete.
+
 ### 3G — fecho da etapa
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 3.19 | Recompor o carrossel de referência com os dez templates | O critério de pronto da etapa, conferido no navegador **e** no PDF |
 
+A biblioteca chegou aos dez na 3F, então esta sessão só compõe: nenhum template a escrever.
 É a sessão que acha o que teste unitário não acha, como a conferência da 1E achou a grade e
 a da 2B achou a régua camuflada. Também é a primeira vez que o guard da 3B tem os dez
 templates para provar contra, e a primeira em que a semente exercita a biblioteca inteira.
@@ -1158,6 +1213,13 @@ imagens embutidas em base64.
 `ImageId`, subiram para a 3F junto com os dois templates de mídia que as pedem: sem elas o
 critério de pronto da Etapa 3 é inalcançável. O que fica aqui é o `.json` autocontido, que
 é assunto de import/export e não de armazenamento.
+
+**E fica a coleta de blob órfão**, que a 3F deixou de propósito — decisão 57. Trocar a
+imagem de um slide ou remover o slide deixa o binário no banco sem ninguém apontando para
+ele. Apagar cedo quebraria o undo desta mesma etapa: o `zundo` devolve o `ImageId` e o blob
+não voltaria com ele. O lugar é o import/export, que é quem terá o deck inteiro à mão — e
+que na tela de múltiplos decks **precisa** ter, senão a limpeza apaga a imagem do deck que
+não está aberto.
 
 Apenas upload local de imagem. URL externa contamina o canvas e faz a exportação falhar
 em silêncio.
