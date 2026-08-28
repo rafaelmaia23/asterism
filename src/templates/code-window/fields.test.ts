@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { LANG_IDS } from "@/code/langs";
 import { codeWindowSchema, fields, options } from "@/templates/code-window/fields";
 import { codeWindowMeta } from "@/templates/code-window/meta";
-import { kickerField } from "@/templates/shared/fields";
+import { codeFields, kickerField } from "@/templates/shared/fields";
 import { sharedOptions } from "@/templates/shared/options";
 
 describe("code-window", () => {
@@ -37,6 +37,18 @@ describe("code-window", () => {
 
   test("o kicker é o campo compartilhado, não uma cópia — decisão 14", () => {
     expect(fields.find((field) => field.key === "kicker")).toBe(kickerField);
+  });
+
+  /**
+   * O simétrico do teste do kicker, e o que a §6 cobra dos dois templates de código: a
+   * mesma chave com a mesma **forma** na biblioteca inteira. Por identidade de objeto, e
+   * não por propriedade — dois descritores iguais escritos em dois arquivos passam num
+   * `toMatchObject` e divergem no dia em que um limite mudar num só.
+   */
+  test("os três do bloco de código são os compartilhados, não cópias — §6", () => {
+    for (const field of codeFields) {
+      expect(fields).toContain(field);
+    }
   });
 
   test("as opções são exatamente as oito compartilhadas", () => {

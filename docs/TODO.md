@@ -3,9 +3,9 @@
 > **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
 > ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates, a
 > 3B entregou o guard de transbordo e o alinhamento dos controles, a 3C acrescentou os dois
-> de texto e a 3D trouxe o shiki e o `code-window` — a biblioteca tem seis dos dez, e o
-> risco técnico da etapa já passou; a próxima sessão abre a 3E, `code-annotated` e
-> `compare-2col`**
+> de texto, a 3D trouxe o shiki e o `code-window` e a 3E fechou os dois mais densos — a
+> biblioteca tem oito dos dez, e o que falta são os dois de mídia; a próxima sessão abre a
+> 3F, `split-vertical` e `image-caption`, com o caminho mínimo de imagem**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -1052,7 +1052,7 @@ Resolvido na sessão:
   o teto da §10.3 batendo no arquivo exportado. A placa da logo aparece em y 1227–1280, com
   o rodapé inteiro abaixo da janela.
 
-### 3E — `code-annotated` e `compare-2col`
+### 3E — `code-annotated` e `compare-2col` ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
@@ -1060,6 +1060,57 @@ Resolvido na sessão:
 | 3.14 | `compare-2col` completo — §11.8 dos templates | As duas colunas dentro dos 920px úteis, com o par de rótulos |
 
 Os dois mais densos da biblioteca, e é aqui que o guard da 3B começa a pagar.
+
+Decidido na sessão, antes de escrever código:
+
+| Questão | Decisão |
+|---|---|
+| O rótulo do `code-annotated` no seletor | **Código anotado** — ao lado de "Código", e a diferença numa palavra |
+| O rótulo do `compare-2col` | **Comparação** — a função, e não o par de rótulos, que é editável |
+| Até onde vai a conferência | Navegador nos dois, bitmap medido no caminho real de exportação |
+
+Resolvido na sessão:
+
+- **"Reusa o bloco de código da 3D" não era só a janela.** A peça de `shared/code-window.tsx`
+  já estava em `shared/` esperando o segundo template, mas os **descritores** de `file`,
+  `lang` e `code` moravam dentro do `code-window` — e a §6 do documento de contexto exige que
+  a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, porque a migração
+  compara chave e forma. Copiados, os dois passariam em qualquer teste de propriedade e
+  divergiriam no dia em que um limite mudasse num só, com o sintoma mais caro que a
+  ferramenta tem: trocar o layout de um slide de código e perder o código. Subiram para
+  `shared/fields.ts`, ao lado do kicker, e o teste é de **identidade de objeto**. Decisão 54.
+  `heading` **não** subiu junto, apesar de os dois o declararem com os mesmos 60: o limite
+  acompanha a região, e a região é do template.
+- **O `code-annotated` tem oito faixas, não quatro.** A §11.7 dava duas tabelas — cabeçalho
+  ligado e desligado —, e cruzá-las com a regra de região vazia da §11.0 e com a cláusula de
+  explicação vazia da própria §11.7 dá **três** interruptores, não dois: o topo do bloco sai
+  do cabeçalho e do título, como em todos, e o **fim** sai da explicação — 826 com ela, 1160
+  sem. As oito entraram na §11.7 em vez de ficarem só na tabela literal do componente, que é
+  o que faria a próxima sessão redecidi-las.
+- **Duas regiões guardadas num template só não pediram nada de novo.** O `useOverflowGuard`
+  é por chamada, com chave de `useId`, então dois guards convivem no mesmo escopo e basta um
+  reprovar. O `describeGuardedRegion` da 3B já tinha o parâmetro `regions` escrito para este
+  dia, e o `code-annotated` é o primeiro a passar 2.
+- **O `compare-2col` tem uma região guardada, e não duas.** A §11.8 marca "Colunas ⌐" numa
+  linha só, e o nó que cresce é a **linha flex**: num flex-row a altura é a da coluna mais
+  alta, que é exatamente o que precisa ser comparado com os 866px da faixa. Dois guards
+  mediriam a mesma coisa por dois caminhos.
+- **Os 24px da coluna são da coluna.** A §11.8 dava o gap entre o rótulo e a régua e não
+  dizia nada do que vem depois dela; ficou o mesmo degrau entre a régua e o conteúdo, e a
+  seção passou a dizê-lo. É o raciocínio dos 32px dentro da janela de código: dentro de um
+  bloco, o ritmo é o do bloco, e não os degraus da §4.2, que são da grade do slide.
+- **A geometria foi medida em dois bitmaps, e o segundo é o da exportação.** A conferência
+  saiu em rota descartável com firefox headless, e depois pelo **caminho real** — o palco da
+  §10 com `withExportStage`, `rasterize` na mesma escala 2 do alvo PDF, e o bitmap de
+  2160×2700 medido com o ImageMagick. No `code-annotated`: janela em y 945–1294, que são os
+  472,5–647 de canvas — **centralizada nos 532px da faixa** com 178,5px sobrando de cada lado
+  —, e as quatro linhas da explicação em 904, 964, 1024 e 1084, todas dentro da faixa
+  890–1160. No `compare-2col`: as duas réguas em y 692, com segmentos de 856px em x 160–1015
+  e 1144–1999, que são **428 + 64 + 428** dentro dos 920 úteis. Os números do preview e os da
+  exportação batem linha a linha, que é o que o reset reinjetado da decisão 50 promete.
+- **A régua da coluna saiu com 1px de spec no arquivo.** Dois pixels no bitmap de escala 2,
+  que é a `slide-hairline` da decisão 38 se comportando dos dois lados: compensa no preview
+  reduzido, onde 1px fixo não pintaria, e não engorda a k = 1, onde a compensação não entra.
 
 ### 3F — imagens: `split-vertical` e `image-caption`
 

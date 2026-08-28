@@ -780,6 +780,30 @@ slide é um `code-window`.
 **Explicação vazia** — o bloco de código desce e ocupa 294 – 1160, e o slide vira um
 `code-window` com mais uma chave guardada. Funciona, mas trocar o layout é mais honesto.
 
+**Título vazio** — a região some e o bloco sobe, como em qualquer template da §11.0. Sobe
+para 80 com o cabeçalho desligado e para 212 com ele ligado: a faixa do topo continua
+ocupada, e o bloco toma o que sobra.
+
+**As oito faixas do bloco.** Este é o único template cuja faixa de conteúdo depende de três
+interruptores em vez de dois, e a tabela abaixo é o cruzamento das duas de cima com as duas
+regras de região vazia. O **topo** é o mesmo do `code-window`; o **fim** é o que este
+template acrescenta — 826 com a explicação embaixo, 1160 sem ela.
+
+| Cabeçalho | Título | Explicação | Faixa do bloco |
+| --------- | ------ | ---------- | -------------- |
+| desligado | sim    | sim        | 294 – 826      |
+| desligado | sim    | não        | 294 – 1160     |
+| desligado | não    | sim        | 80 – 826       |
+| desligado | não    | não        | 80 – 1160      |
+| ligado    | sim    | sim        | 426 – 826      |
+| ligado    | sim    | não        | 426 – 1160     |
+| ligado    | não    | sim        | 212 – 826      |
+| ligado    | não    | não        | 212 – 1160     |
+
+A explicação **não aparece na tabela porque não se move**: 890 – 1160 nas oito, sempre que
+existe. É a mesma razão da variação de cabeçalho acima — quem paga o espaço é o código, não
+a prosa.
+
 **Marcação** — a explicação aceita, e `` `código` `` inline é o marcador natural aqui: citar
 um identificador do bloco acima é exatamente o que a anotação faz.
 
@@ -834,6 +858,10 @@ e não como duas listas soltas.
 | Régua    | `slide-hairline` sob o rótulo, na largura da coluna, gap 24px | `ink-700`   |
 | Conteúdo | `slide-caption` (32px Sora 400, altura 1.4)                  | `ink-100`   |
 
+Os 24px do gap valem também entre a régua e o conteúdo: dentro da coluna o ritmo é o da
+coluna, e não os degraus da §4.2, que são da grade do slide. É o mesmo raciocínio dos 32px
+dentro da janela de código, na §11.6.
+
 **O conteúdo desce um degrau da escala, para 32px.** Numa coluna de 428px, `slide-body`
 40px daria 21 caracteres por linha; `slide-caption` 32px dá cerca de 27, encostando na faixa
 de 28 a 42 da §3.4. É o preço honesto de duas colunas num canvas de 1080, e é a mesma
@@ -877,6 +905,14 @@ caracteres são conselho para manter os dois numa linha só.
 **Colunas de tamanhos diferentes** — não se equalizam, e não deveriam: as duas começam no
 topo e cada uma acaba onde acaba. Forçar altura igual encheria a menor de espaço em branco
 com o rótulo pendurado longe do conteúdo.
+
+**Título vazio** — a região some e as colunas sobem, como em qualquer template da §11.0:
+para 80 com o cabeçalho desligado, para 212 com ele ligado. São as mesmas quatro
+combinações do `context`, e nas quatro as colunas acabam em 1160.
+
+**O guard mede a linha das duas colunas, não cada uma.** A marca ⌐ da tabela de regiões é
+uma só de propósito: num par lado a lado, a altura que interessa é a da coluna mais alta, e
+é ela que a linha tem. Dois guards mediriam a mesma coisa por dois caminhos.
 
 **Marcação** — vale nas duas colunas, e a regra de um nível de ênfase por bloco da §3.4 vale
 para o slide inteiro, não por coluna. `` `código` `` inline é o marcador mais útil aqui, e
