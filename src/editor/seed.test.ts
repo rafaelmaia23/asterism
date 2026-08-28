@@ -286,6 +286,31 @@ describe("createSeedDeck", () => {
   });
 
   /**
+   * A janela de código comporta **41 caracteres** por linha, e esse número não está em
+   * descritor nenhum: `maxLines` conta linhas, e o guard de transbordo mede altura. Linha
+   * larga demais não reprova em lugar nenhum — vaza pela direita, por cima do padding de
+   * 32px da §4.2 do design system, e só aparece olhando o slide.
+   *
+   * A conta é medida e não estimada: 920px de janela menos 32 de cada lado são 856, e o
+   * avanço da JetBrains Mono a 34px é 20,4px — 41,9 caracteres. A §11.6 dizia 45, que é o
+   * que dá dividindo os 920 sem descontar o padding, e a 3G corrigiu a seção.
+   */
+  test("as linhas de código cabem na largura da janela", () => {
+    const largas = createSeedDeck().slides.flatMap((slide, index) => {
+      const code = slide.fields.code;
+
+      return typeof code === "string"
+        ? code
+            .split("\n")
+            .filter((line) => line.length > 41)
+            .map((line) => `${String(index + 1).padStart(2, "0")}: ${line.length} — ${line}`)
+        : [];
+    });
+
+    expect(largas).toEqual([]);
+  });
+
+  /**
    * "Frase curta é o alvo" — §11.5. Duas ou três linhas ainda funcionam; acima disso o
    * template está sendo usado como capa, que é justamente o que a semente fazia antes da
    * 3C. ~19 caracteres por linha em 96px sobre 920px de largura útil, então o teto de duas

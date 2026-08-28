@@ -130,7 +130,7 @@ const SLIDES: Spec[] = [
       heading: "A linha que ninguém tinha lido",
       file: "cache.ts",
       lang: "ts",
-      code: "const ttl = 60 * 60 // uma hora\n\nexport function put(id: string, v: Data) {\n  return cache.set(`user:${id}`, v, ttl)\n}",
+      code: "const ttl = 60 * 60 // uma hora\n\nexport function put(id: Id, v: Data) {\n  return cache.set(`user:${id}`, v, ttl)\n}",
     },
   },
   {
@@ -139,8 +139,8 @@ const SLIDES: Spec[] = [
       heading: "A correção",
       file: "cache.ts",
       lang: "ts",
-      code: "const ttl = 60 * 60 * 1000 // milissegundos",
-      body: "A API espera milissegundos, e mil vezes uma hora são [[onze dias]] de validade. Escrita em 2023, revisada por duas pessoas.",
+      code: "const ttlMs = 60 * 60 * 1000",
+      body: "A API sempre esperou milissegundos, e mil vezes uma hora são [[onze dias]] de validade. A unidade passou a ir no nome.",
     },
   },
   {
