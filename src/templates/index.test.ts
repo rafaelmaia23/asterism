@@ -35,6 +35,10 @@ describe("biblioteca de templates", () => {
     expect(get("compare-2col").label).toBe("Comparação");
   });
 
+  test("o split-vertical está registrado e sai por id", () => {
+    expect(get("split-vertical").label).toBe("Texto e imagem");
+  });
+
   /**
    * A ordem de registro é a ordem em que a biblioteca se apresenta — no seletor de
    * layout, e em qualquer lista futura. É a narrativa de um carrossel, e é a da tabela da
@@ -42,7 +46,7 @@ describe("biblioteca de templates", () => {
    * impacto dá o respiro, o CTA fecha. Um template novo entra onde a narrativa o põe, não
    * no fim da lista.
    */
-  test("a 3E acrescenta os dois na posição narrativa deles", () => {
+  test("os templates de mídia entram antes do fechamento", () => {
     expect(list().map((def) => def.id)).toEqual([
       "cover-statement",
       "context",
@@ -51,6 +55,7 @@ describe("biblioteca de templates", () => {
       "code-window",
       "code-annotated",
       "compare-2col",
+      "split-vertical",
       "final-cta",
     ]);
   });
