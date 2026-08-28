@@ -829,11 +829,23 @@ o interruptor da faixa. Switch dentro de button é HTML inválido, a mesma armad
 lista lateral já documenta, e é por isso que não há um `Collapsible` do Base UI aqui — o
 `Trigger` dele envolveria o interruptor junto.
 
-O formulário desenha seis dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
-a 1D, `list` e `select` desde a 2C, `code` desde a 3D. Só `image` continua aparecendo como
-linha inerte com o rótulo — pular um tipo sem controle em silêncio faria um campo novo
-sumir do formulário sem aviso, e é por isso que a condição no componente é a **negação dos
-tipos desenhados**, e não o nome do tipo que falta.
+O formulário desenha os sete tipos de `Field`: `text`, `textarea` e `toggle` desde a 1D,
+`list` e `select` desde a 2C, `code` desde a 3D e `image` desde a 3F. A linha inerte com o
+rótulo continua no componente mesmo sem nenhum tipo caindo nela — pular um tipo sem controle
+em silêncio faria um campo novo sumir do formulário sem aviso, e é por isso que a condição é
+a **negação dos tipos desenhados** e não o nome do tipo que falta: escrita pelo positivo, o
+tipo que a Etapa 4 acrescentar sumiria sem uma linha sequer.
+
+O `image` é **upload local e nada mais** — decisão 8, e a ausência de um campo de endereço é
+a decisão, não uma pendência. Um `<input type="file">` escondido, disparado por um `<button>`
+irmão: o controle nativo traz um rótulo que ninguém consegue redigir, e envolvê-lo no botão
+seria controle dentro de controle, a mesma armadilha de HTML inválido que a lista lateral já
+documenta. Acima dele, a moldura com a **proporção do `ratio`** do descritor — 5:16 no
+`split-vertical`, 108:91 no `image-caption` —, que mostra o formato do buraco que a imagem
+vai preencher e é tudo o que o `ratio` faz na 3F; recorte de verdade não é desta etapa. A
+altura da moldura é fixa e a largura sai da proporção, e não o contrário: 5:16 em largura de
+coluna daria novecentos pixels de moldura. Sem imagem, ou com um id órfão, ela mostra "Sem
+imagem" — os dois são o mesmo estado, aqui e no slide.
 
 O `code` é uma textarea monoespaçada, e o que ele tem de próprio é o contador: onde os
 outros contam caractere contra `max`, ele conta **linha** contra `maxLines`. É em linha que
