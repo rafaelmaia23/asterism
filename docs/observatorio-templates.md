@@ -671,10 +671,18 @@ para não parecer esquecimento.
 o fundo em slide de código: a linha da grade atravessa a janela e compete com o realce. É
 conselho, como todo o resto — mas é o conselho mais fácil de comprovar olhando.
 
-**Código longo** — a 34px mono, a janela comporta cerca de 45 caracteres por linha. Linha
-mais longa que isso quebra ou vaza, e nenhuma das duas é boa num slide: reescreva a linha
-antes de aceitar a quebra. É a mesma regra de "estrutura é responsabilidade do template" da
-§7 do documento de contexto, aplicada ao código.
+**Código longo** — a 34px mono, a janela comporta **41 caracteres** por linha. Linha mais
+longa que isso vaza pela direita, por cima do padding, e é o defeito mais silencioso do
+template: `maxLines` conta linhas e o guard de transbordo mede altura, então largura não
+reprova em lugar nenhum. Reescreva a linha antes de aceitar a quebra — é a mesma regra de
+"estrutura é responsabilidade do template" da §7 do documento de contexto, aplicada ao
+código.
+
+O número é **medido, e não estimado**: a janela tem 920px, o `--slide-pad-code` da §4.2 do
+design system tira 32px de cada lado, e o avanço da JetBrains Mono a 34px é de 20,4px —
+856 ÷ 20,4 = 41,9. Até a 3G esta seção dizia 45, que é o que dá dividindo os 920px **sem
+descontar o padding**; a divergência atravessou a 3D e a 3E porque nenhum código escrito
+até então passava de 40 caracteres.
 
 **Título vazio** — a região some e a janela ocupa 80 – 1160. Continuam valendo as 14 linhas
 do teto da §10.3: a janela ganha ar em volta, não mais linhas.

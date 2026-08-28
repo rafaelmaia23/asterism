@@ -1,11 +1,11 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **Etapas 1 e 2 concluídas — a
-> ferramenta publica um carrossel real. A 3A fechou a especificação dos dez templates, a
-> 3B entregou o guard de transbordo e o alinhamento dos controles, a 3C acrescentou os dois
-> de texto, a 3D trouxe o shiki e o `code-window`, a 3E fechou os dois mais densos e a 3F
-> trouxe as imagens com os dois de mídia — **a biblioteca tem os dez**; a próxima sessão é a
-> 3G, que recompõe o carrossel de referência e fecha a Etapa 3**
+> **Status** bootstrap concluído · decisões resolvidas · **Etapas 1, 2 e 3 concluídas — a
+> ferramenta publica um carrossel real com a biblioteca inteira. A 3A fechou a especificação
+> dos dez templates, a 3B entregou o guard de transbordo e o alinhamento dos controles, a 3C
+> acrescentou os dois de texto, a 3D trouxe o shiki e o `code-window`, a 3E fechou os dois
+> mais densos, a 3F trouxe as imagens com os dois de mídia e a 3G recompôs o carrossel de
+> referência com os dez, conferido no navegador e no PDF; a próxima sessão abre a Etapa 4**
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -337,9 +337,10 @@ pela decisão 30.
 **Pronto quando** um carrossel de 8 a 12 slides é composto com os três templates,
 usando marcação, e exportado para publicação no LinkedIn sem retoque externo.
 
-**Cumprido na 2E:** o carrossel de referência tem doze slides — quatro `cover-statement`,
-sete `text-bullets` e o `final-cta` —, mora em `src/editor/seed.ts` e é o que a ferramenta
-abre na primeira execução. As quinze tarefas saíram; a 2.5 dissolveu-se na 2.8 e na 2.9, a
+**Cumprido na 2E:** o carrossel de referência nasceu ali com doze slides — quatro
+`cover-statement`, sete `text-bullets` e o `final-cta` —, em `src/editor/seed.ts`, e é o que
+a ferramenta abre na primeira execução. A composição mudou duas vezes depois: a 3C trocou
+duas capas pelo `text-impact` e a 3G o recompôs com os dez templates. As quinze tarefas saíram; a 2.5 dissolveu-se na 2.8 e na 2.9, a
 2.4a e a 2.4b nasceram de experimentos, e a 2.13 da decisão 30.
 
 A **2F** veio depois disso, e é o que compor o carrossel de verdade cobrou do que já
@@ -734,7 +735,7 @@ Resolvido na sessão:
 
 ---
 
-## Etapa 3 — Biblioteca
+## Etapa 3 — Biblioteca ✅
 
 **Objetivo.** Fechar a biblioteca de dez templates e tornar a ferramenta confiável para
 conteúdo denso. Corresponde à Fase 2 do §15.
@@ -762,6 +763,12 @@ escopo, não por etapa: a §11 do documento de contexto fecha o assunto em uploa
 **Pronto quando** um carrossel de 8 a 12 slides usa os **dez** templates — com bloco de
 código realçado e imagem —, nenhum slide transborda sem aviso, e o PDF sai sem retoque
 externo.
+
+**Cumprido na 3G:** o carrossel de referência tem doze slides com os dez templates, e mora
+onde sempre morou, em `src/editor/seed.ts`. As dezenove tarefas saíram. A conferência foi
+medida no PDF exportado pelo botão de verdade: doze páginas de 2160×2700, as duas imagens
+nas faixas que a §11.9 e a §11.10 prometem, o realce do shiki atravessando a rasterização,
+nenhum slide marcado pelo guard — e o guard marcando quando o texto passa. Ver a 3G.
 
 As dezenove tarefas são grandes demais para uma sessão só, então a etapa está dividida em
 **sete sub-etapas**, no mesmo formato das Etapas 1 e 2: dependências resolvidas, critério
@@ -1187,16 +1194,72 @@ Resolvido na sessão:
   reidratando um deck de doze slides com um `ImageId` que o banco não tem, voltam **doze de
   doze**, com o id órfão intacto no campo — a decisão 31 fazendo exatamente o que promete.
 
-### 3G — fecho da etapa
+### 3G — fecho da etapa ✅
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 3.19 | Recompor o carrossel de referência com os dez templates | O critério de pronto da etapa, conferido no navegador **e** no PDF |
 
-A biblioteca chegou aos dez na 3F, então esta sessão só compõe: nenhum template a escrever.
+A biblioteca chegou aos dez na 3F, então esta sessão só compôs: nenhum template a escrever.
 É a sessão que acha o que teste unitário não acha, como a conferência da 1E achou a grade e
-a da 2B achou a régua camuflada. Também é a primeira vez que o guard da 3B tem os dez
+a da 2B achou a régua camuflada. Também foi a primeira vez que o guard da 3B teve os dez
 templates para provar contra, e a primeira em que a semente exercita a biblioteca inteira.
+
+Decidido na sessão, antes de escrever código:
+
+| Questão | Decisão |
+|---|---|
+| Quais templates se repetem nos doze slides | **A lista e o respiro** — `text-bullets` ×2 e `text-impact` ×2. Os outros oito aparecem uma vez |
+| Os dois slides de mídia da semente | **Nascem sem imagem.** A do critério de pronto entra pelo inspector, na conferência |
+| O que a composição perde | A **segunda capa**, e com ela a conferência da âncora de base feita com dois títulos de comprimento oposto. Decisão 59 |
+
+Resolvido na sessão:
+
+- **Os testes da semente passaram a sair do descritor, e é o que fez a sessão ser curta.**
+  Havia um bloco de limites por template, com os números da §11.x copiados à mão; com dez
+  templates isso viraria dez blocos mantidos em dia contra o documento. Os descritores já
+  carregam `max`, `maxItems`, `maxPerItem`, `maxLines` e a flag `md`, e o registry os entrega
+  por `list()` — as quatro varreduras que sobraram cobrem os dez sem citar uma §11.x. O teste
+  que amarra a semente ao critério da etapa também é derivado: o conjunto de templates do
+  deck é comparado com o do `list()`, então **um template novo na biblioteca reprova a
+  semente até entrar no carrossel**.
+- **O kicker passou a ser escrito nos doze.** Os dez declaram `kicker` desde a 3A, e o
+  `build` só o preenchia na capa e no respiro: os outros dez slides herdavam o kicker do
+  *default do template* — `api/ · 04` na quinta posição. Nove nascem com o cabeçalho
+  desligado, então a divergência ficaria invisível até alguém ligar a faixa, que é
+  exatamente o momento em que ela precisa entregar o número certo.
+- **A janela de código comporta 41 caracteres, e a §11.6 dizia 45.** O número do documento
+  saía de dividir os 920px da janela pelo avanço de 20,4px da JetBrains Mono a 34px, **sem
+  descontar** os 32px de `--slide-pad-code` de cada lado: o corpo tem 856px, e 856 ÷ 20,4 =
+  41,9. A divergência atravessou a 3D e a 3E porque nenhum código escrito até então passava
+  de 40 caracteres; a semente escreveu uma linha de 43 e ela vazou por cima do padding, à
+  vista. Largura é o defeito mais silencioso do template — `maxLines` conta linhas e o guard
+  mede altura, então **nada reprova uma linha larga**. A §11.6 foi corrigida no mesmo commit
+  e a semente ganhou o teste dos 41.
+- **A conferência foi medida no arquivo, não lida na tela.** Firefox headless dirigido por
+  Marionette, as duas imagens importadas pelo caminho real do inspector e o PDF exportado
+  pelo botão de verdade. Doze páginas de 2160×2700. `split-vertical`: a imagem chega em
+  x 1281–2159 e y 0–2347, que são os 640–1080 e 0–1174 da §11.9 na escala 2, com o rodapé
+  inteiro abaixo. `image-caption`: x 0–2159 e y 0–1819, que são os 0–1080 e 0–910 da §11.10.
+  Seis cores da paleta da §10.4 chegam às páginas de código — palavra-chave, número,
+  comentário, função, tipo e base — mais o `#1e293b` da janela, o que prova o realce
+  atravessando a rasterização. Nenhum pixel `crown-400` em página nenhuma: a marca do guard
+  não vaza para o arquivo.
+- **O guard foi provado nos dois sentidos.** Quieto: os doze slides da semente passam, no
+  canvas e nas doze miniaturas. Ativo: texto além do limite no `context`, no `split-vertical`
+  e no `compare-2col` — os três mais densos — marca a borda do quadro, acende o triângulo na
+  linha da lista, e a marca **continua na miniatura com o canvas em outro slide**, que é o
+  critério da 3.5 conferido contra os templates que a 3B não tinha para provar.
+- **A redução e a persistência se conferiram de novo, agora com o deck inteiro.** Uma foto
+  de 4000×3000 entra e 2160×1620 fica guardado. O deck salvo tem 5.484 bytes, doze slides,
+  **dez templates**, nenhum `data:` nem `base64`, e só o `ImageId` — e recarregar devolve a
+  imagem e o `imageFit` escolhido. Trocar `cover` por `contain` não move a faixa: os mesmos
+  640–1080 e 0–1174.
+- **O que o headless quase fez passar por defeito.** A primeira captura, com
+  `firefox --screenshot`, mostrou a área central vazia: o `SlideCanvas` só desenha com
+  `scale > 0` e a captura acontecia antes de o layout effect medir, então o que estava na
+  imagem era a **pré-renderização estática** — lista e inspector desenhados, canvas não.
+  Sonda que não espera a hidratação mede o servidor achando que mede o navegador.
 
 ---
 

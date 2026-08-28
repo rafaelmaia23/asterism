@@ -5,149 +5,187 @@
  * Até a 2D isto era um deck de seis slides que existia só para dar o que olhar: sem
  * `addSlide` e sem troca de layout, a semente era o único lugar que decidia quais slides
  * existiam. A 2E o trocou pelo **carrossel de verdade** que o critério de pronto da Etapa
- * 2 pede — 8 a 12 slides compostos com os três templates, usando marcação. São doze, que
- * é o teto da etapa: se a ferramenta se comporta no deck mais longo que ela promete, os
- * mais curtos vêm de graça.
+ * 2 pede, e a 3G o recompôs com os **dez templates**, que é o critério da Etapa 3. São
+ * doze slides, o teto da faixa de 8 a 12: se a ferramenta se comporta no deck mais longo
+ * que ela promete, os mais curtos vêm de graça.
  *
  * Os defaults vêm do registry, e não copiados à mão: o dia em que um template ganhar um
  * campo, o deck semente o ganha junto. Por isso este módulo mora em `src/editor` e não em
  * `src/deck`, que não conhece a biblioteca de templates — a seta é `templates → deck`.
  *
- * **Duas capas e dois respiros.** Num carrossel de doze slides a narrativa pede mais de um
- * momento de frase isolada — a virada no slide 6 e o fecho do argumento no 11 —, e até a 3C
- * quem fazia esse papel era a capa: o `text-impact` não existia, e a 2E registrou isso como
- * limitação de biblioteca, não escolha de arquitetura. A tarefa 3.9 fecha a dívida, e os
- * slides 6 e 11 passaram ao template que existe para isso.
+ * **Dez templates em doze slides deixam duas repetições**, e elas são a lista e o respiro:
+ * os dois papéis que um carrossel de verdade exerce mais de uma vez. As duas listas ficam
+ * adjacentes de propósito — é assim que as duas âncoras da §11.2 ficam lado a lado na
+ * coluna, comparáveis sem trocar opção nenhuma. Os dois `text-impact` ficam nas duas
+ * dobras da narrativa: a virada, depois da correção, e o fecho do argumento antes do CTA.
  *
- * As duas capas que sobraram cobrem de uma linha a quatro, e é assim que a âncora de base
- * da §11.1 se confere: a última linha pousa na mesma altura nas duas. Ao lado delas, os
- * dois `text-impact` mostram o **mesmo corpo tipográfico com o gesto oposto** — 96px
- * centralizado nos dois eixos contra 96px ancorado à base e à esquerda. As duas leituras
- * ficam comparáveis na lista lateral sem trocar opção nenhuma.
+ * O que a composição perdeu foi a **segunda capa**. Até a 3G a semente tinha duas, de
+ * comprimentos opostos, e era assim que a âncora de base da §11.1 se conferia — a última
+ * linha pousando na mesma altura nas duas. Com dez templates não sobra slide para isso, e
+ * o contraste que fica é o de gesto oposto: 96px ancorado à base e à esquerda na capa
+ * contra 96px centralizado nos dois eixos no `text-impact`, um ao lado do outro na coluna.
  *
- * **O kicker numera a posição no deck**, não a ordem entre os slides do mesmo template. É a
- * convenção da §10.5 do design system, e vale para os dois templates de `slide-display`:
- * numerar as capas entre si faria a segunda dizer "02" por coincidência, e o respiro do
- * slide 11 não teria número nenhum.
+ * **O kicker é escrito nos doze**, e numera a posição no deck — §10.5 do design system.
+ * Desde a 3A os dez templates declaram `kicker`, e um slide sem valor escrito herdaria o
+ * do *default do template*: `api/ · 04` na quinta posição. Nove nascem com o cabeçalho
+ * desligado, então isso ficaria invisível até alguém ligar a faixa — que é justamente o
+ * momento em que ela precisa entregar o número certo.
  *
  * **A marcação aparece uma vez por bloco**, nunca duas. É a regra de um nível de ênfase
  * por bloco da §3.4 do design system, e ela vale dentro da lista também: um item marcado
- * por slide, não um por item.
+ * por slide, não um por item. O `code-window` é o único slide sem marcação nenhuma, e não
+ * por escolha da semente: é o único dos dez em que nenhum campo a aceita.
  */
 
 import { createDeck, createSlide } from "@/deck/factories";
 import type { Deck, FieldValue, OptionValue, Slide } from "@/deck/types";
 import { get } from "@/templates";
+import type { CodeAnnotatedFields } from "@/templates/code-annotated/fields";
+import type { CodeWindowFields } from "@/templates/code-window/fields";
+import type { Compare2colFields } from "@/templates/compare-2col/fields";
+import type { ContextFields } from "@/templates/context/fields";
+import type { CoverFields } from "@/templates/cover-statement/fields";
+import type { FinalCtaFields } from "@/templates/final-cta/fields";
+import type { ImageCaptionFields } from "@/templates/image-caption/fields";
+import type { SplitVerticalFields } from "@/templates/split-vertical/fields";
+import type { BulletsFields } from "@/templates/text-bullets/fields";
+import type { ImpactFields } from "@/templates/text-impact/fields";
 
-const COVER = "cover-statement";
-const BULLETS = "text-bullets";
-const IMPACT = "text-impact";
-const FINAL = "final-cta";
+/**
+ * O que a semente escreve num slide: os campos do template menos o `kicker`, que não é
+ * conteúdo a redigir e sim a posição no deck — quem o preenche é o `build`.
+ *
+ * Tipar cada variante contra o campo do próprio template é o que faz um campo novo na
+ * biblioteca **quebrar a compilação aqui** em vez de aparecer como slide meio vazio na
+ * primeira execução. É o mesmo argumento pelo qual os defaults vêm do registry.
+ */
+type Written<F> = Omit<F, "kicker">;
 
 type Spec =
-  | { template: typeof COVER; heading: string }
-  | { template: typeof BULLETS; heading: string; items: string[]; anchor: OptionValue }
-  | { template: typeof IMPACT; heading: string }
-  | { template: typeof FINAL; heading: string; lead: string; cta: string };
+  | { template: "cover-statement"; fields: Written<CoverFields> }
+  | { template: "context"; fields: Written<ContextFields> }
+  | { template: "text-bullets"; fields: Written<BulletsFields>; anchor: OptionValue }
+  | { template: "code-window"; fields: Written<CodeWindowFields> }
+  | { template: "code-annotated"; fields: Written<CodeAnnotatedFields> }
+  | { template: "text-impact"; fields: Written<ImpactFields> }
+  | { template: "split-vertical"; fields: Written<SplitVerticalFields> }
+  | { template: "image-caption"; fields: Written<ImageCaptionFields> }
+  | { template: "compare-2col"; fields: Written<Compare2colFields> }
+  | { template: "final-cta"; fields: Written<FinalCtaFields> };
 
 /**
  * A história é a mesma desde a primeira semente — um `ttl` em segundos passado para uma
- * API em milissegundos —, agora contada inteira: gancho, premissa, sintomas, investigação,
- * achado, correção, o que mudou depois e a lição.
+ * API em milissegundos —, e a 3G finalmente a conta com o código à vista: gancho, premissa,
+ * sintomas, investigação, o achado, a correção, o respiro, o painel que não via, o alarme
+ * que passou a existir, o antes e depois, a lição e o fecho.
  *
- * Os títulos de capa têm comprimentos deliberadamente diferentes, de uma linha a quatro:
- * é assim que a âncora de base da §11.1 se confere, vendo a última linha pousar sempre na
- * mesma altura. As âncoras das listas alternam entre `center` e `top` pelo mesmo motivo —
- * as duas leituras da §11.2 ficam comparáveis sem trocar opção nenhuma.
+ * Os defaults do `code-window` e do `code-annotated` contam **outra** história, a do tenant
+ * fora da chave, e continuam contando: default é com o que um slide nasce, não o que a
+ * semente mostra. O prefixo de pilar já os separa — `api/` lá, `log/` aqui.
  *
- * As duas frases de impacto são curtas, que é o alvo da §11.5: acima de três linhas o
- * template está sendo usado como capa, que é justamente o que elas eram até a 3C.
+ * Os dois slides de mídia nascem **sem imagem**, no estado que a §11.9 desenha de propósito:
+ * um default não carrega binário, e a semente não é exceção. A imagem entra pelo inspector,
+ * que é o caminho que a 3F entregou.
  */
 const SLIDES: Spec[] = [
-  { template: COVER, heading: "O cache [[mentiu]]" },
   {
-    template: COVER,
-    heading: "Todo painel dizia que estava tudo bem, e [[todo painel estava certo]]",
+    template: "cover-statement",
+    fields: { heading: "O cache [[mentiu]]" },
   },
   {
-    template: BULLETS,
-    heading: "O que os usuários viam",
-    items: [
-      "Uma resposta velha, mas só para alguns usuários",
-      "Nunca reproduzia em homologação",
-      "E [[sumia sozinho]] depois de um deploy qualquer",
-    ],
+    template: "context",
+    fields: {
+      heading: "O que estava acontecendo",
+      body: "Durante três semanas, uma fração das requisições devolvia uma resposta de horas antes. Nenhum alerta disparou, e nenhum estava errado: do ponto de vista da infraestrutura estava [[tudo saudável]].",
+    },
+  },
+  {
+    template: "text-bullets",
+    fields: {
+      heading: "O que os usuários viam",
+      items: [
+        "Uma resposta velha, mas só para alguns usuários",
+        "Nunca reproduzia em homologação",
+        "E [[sumia sozinho]] depois de um deploy qualquer",
+      ],
+    },
     anchor: "center",
   },
   {
-    template: BULLETS,
-    heading: "O que o log dizia",
-    items: [
-      "A leitura vinha do cache, e o cache [[nunca expirava]]",
-      "O teste passava porque subia com o cache vazio",
-      "Ninguém tinha olhado a métrica de acerto desde a estreia",
-    ],
+    template: "text-bullets",
+    fields: {
+      heading: "O que não era",
+      items: [
+        "Não era o banco: a query saía em 4ms, medida",
+        "Não era a rede: o traço inteiro cabia em 40ms",
+        "Não era concorrência: acontecia com [[um processo só]]",
+        "Não era o deploy: acontecia antes dele também",
+      ],
+    },
     anchor: "top",
   },
   {
-    template: BULLETS,
-    heading: "O que não era",
-    items: [
-      "Não era o banco: a query saía em 4ms, medida",
-      "Não era a rede: o traço inteiro cabia em 40ms",
-      "Não era concorrência: acontecia com [[um processo só]]",
-      "Não era o deploy: acontecia antes dele também",
-    ],
-    anchor: "center",
-  },
-  { template: IMPACT, heading: "Três semanas para uma [[linha de código]]" },
-  {
-    template: BULLETS,
-    heading: "A linha que ninguém tinha lido",
-    items: [
-      "Um `ttl` em segundos, passado para uma API em milissegundos",
-      "Mil vezes maior: onze dias de validade",
-      "Escrita em 2023, revisada por duas pessoas",
-    ],
-    anchor: "top",
+    template: "code-window",
+    fields: {
+      heading: "A linha que ninguém tinha lido",
+      file: "cache.ts",
+      lang: "ts",
+      code: "const ttl = 60 * 60 // uma hora\n\nexport function put(id: Id, v: Data) {\n  return cache.set(`user:${id}`, v, ttl)\n}",
+    },
   },
   {
-    template: BULLETS,
-    heading: "A correção, e o que ela custou",
-    items: [
-      "Uma linha: a conversão passou a acontecer na borda",
-      "Duas horas para escrever e testar",
-      "[[Três semanas]] para chegar até ela",
-    ],
-    anchor: "center",
+    template: "code-annotated",
+    fields: {
+      heading: "A correção",
+      file: "cache.ts",
+      lang: "ts",
+      code: "const ttlMs = 60 * 60 * 1000",
+      body: "A API sempre esperou milissegundos, e mil vezes uma hora são [[onze dias]] de validade. A unidade passou a ir no nome.",
+    },
   },
   {
-    template: BULLETS,
-    heading: "O que mudou no monitoramento",
-    items: [
-      "A taxa de acerto do cache virou alarme, não gráfico",
-      "Toda unidade de tempo passou a ir no nome da variável",
-      "`ttlSeconds` e `ttlMs` não se confundem numa revisão",
-      "E o teste sobe com o cache [[quente]], não vazio",
-    ],
-    anchor: "top",
+    template: "text-impact",
+    fields: { heading: "Três semanas para uma [[linha de código]]" },
   },
   {
-    template: BULLETS,
-    heading: "O que eu levei disso",
-    items: [
-      "Métrica que ninguém olha não é monitoramento, é enfeite",
-      "Bug que não reproduz espera um [[dado]], não um deploy",
-      "O tempo de procurar é o custo real, não o de corrigir",
-    ],
-    anchor: "center",
+    template: "split-vertical",
+    fields: {
+      heading: "O painel que não mostrava nada",
+      body: "Latência estável, erro em zero, memória plana. Tudo verde enquanto uma parte das respostas [[saía de um cache vencido]].",
+      image: "",
+    },
   },
-  { template: IMPACT, heading: "Saudável é o sistema que você [[vê]] quebrar" },
   {
-    template: FINAL,
-    heading: "Escrevo sobre o que [[quebra]] antes do que funciona",
-    lead: "Backend, infra e os três dias que cada bug de uma linha custa.",
-    cta: "blog.maiahub.com.br",
+    template: "image-caption",
+    fields: {
+      heading: "O alarme que faltava",
+      caption: "A idade da resposta virou métrica, e a métrica virou [[alarme]] — não mais um gráfico.",
+      image: "",
+    },
+  },
+  {
+    template: "compare-2col",
+    fields: {
+      heading: "O que mudou no monitoramento",
+      beforeLabel: "Antes",
+      before:
+        "CPU, memória e latência. Três semanas de verde, e nenhum deles olhava para o dado que voltava.",
+      afterLabel: "Depois",
+      after:
+        "Toda unidade de tempo no nome da variável, e um alarme quando a resposta é [[mais velha que o ttl]].",
+    },
+  },
+  {
+    template: "text-impact",
+    fields: { heading: "Saudável é o sistema que você [[vê]] quebrar" },
+  },
+  {
+    template: "final-cta",
+    fields: {
+      heading: "Escrevo sobre o que [[quebra]] antes do que funciona",
+      lead: "Backend, infra e os três dias que cada bug de uma linha custa.",
+      cta: "blog.maiahub.com.br",
+    },
   },
 ];
 
@@ -170,30 +208,17 @@ function kickerAt(position: number): string {
   return `log/ · ${String(position).padStart(2, "0")}`;
 }
 
+/**
+ * Um `build` para os dez, e nenhum ramo por template: o que varia entre eles é o conteúdo,
+ * que a `Spec` já carrega tipado, e a única opção que a semente desvia do default é a
+ * âncora das listas.
+ */
 function build(spec: Spec, position: number): Slide {
-  // Os dois templates de `slide-display` levam o kicker numerado. Nem todo slide o mostra —
-  // só a capa nasce com o cabeçalho ligado —, mas o valor existe de qualquer forma, e é o
-  // que faz ligar a faixa entregar o número certo em vez do default do descritor.
-  if (spec.template === COVER || spec.template === IMPACT) {
-    return withFields(spec.template, {
-      kicker: kickerAt(position),
-      heading: spec.heading,
-    });
-  }
-
-  if (spec.template === BULLETS) {
-    return withFields(
-      BULLETS,
-      { heading: spec.heading, items: spec.items },
-      { anchor: spec.anchor },
-    );
-  }
-
-  return withFields(FINAL, {
-    heading: spec.heading,
-    lead: spec.lead,
-    cta: spec.cta,
-  });
+  return withFields(
+    spec.template,
+    { kicker: kickerAt(position), ...spec.fields },
+    "anchor" in spec ? { anchor: spec.anchor } : {},
+  );
 }
 
 export function createSeedDeck(): Deck {
