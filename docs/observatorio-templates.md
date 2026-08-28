@@ -858,6 +858,10 @@ e não como duas listas soltas.
 | Régua    | `slide-hairline` sob o rótulo, na largura da coluna, gap 24px | `ink-700`   |
 | Conteúdo | `slide-caption` (32px Sora 400, altura 1.4)                  | `ink-100`   |
 
+Os 24px do gap valem também entre a régua e o conteúdo: dentro da coluna o ritmo é o da
+coluna, e não os degraus da §4.2, que são da grade do slide. É o mesmo raciocínio dos 32px
+dentro da janela de código, na §11.6.
+
 **O conteúdo desce um degrau da escala, para 32px.** Numa coluna de 428px, `slide-body`
 40px daria 21 caracteres por linha; `slide-caption` 32px dá cerca de 27, encostando na faixa
 de 28 a 42 da §3.4. É o preço honesto de duas colunas num canvas de 1080, e é a mesma
@@ -901,6 +905,14 @@ caracteres são conselho para manter os dois numa linha só.
 **Colunas de tamanhos diferentes** — não se equalizam, e não deveriam: as duas começam no
 topo e cada uma acaba onde acaba. Forçar altura igual encheria a menor de espaço em branco
 com o rótulo pendurado longe do conteúdo.
+
+**Título vazio** — a região some e as colunas sobem, como em qualquer template da §11.0:
+para 80 com o cabeçalho desligado, para 212 com ele ligado. São as mesmas quatro
+combinações do `context`, e nas quatro as colunas acabam em 1160.
+
+**O guard mede a linha das duas colunas, não cada uma.** A marca ⌐ da tabela de regiões é
+uma só de propósito: num par lado a lado, a altura que interessa é a da coluna mais alta, e
+é ela que a linha tem. Dois guards mediriam a mesma coisa por dois caminhos.
 
 **Marcação** — vale nas duas colunas, e a regra de um nível de ênfase por bloco da §3.4 vale
 para o slide inteiro, não por coluna. `` `código` `` inline é o marcador mais útil aqui, e
