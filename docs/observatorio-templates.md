@@ -957,6 +957,23 @@ acompanha o texto; no `image-caption` ela manda.
 Com o cabeçalho ligado, a região de texto começa em 212 e o bloco se recentraliza; a imagem
 não se mexe, porque o kicker fica na coluna da esquerda.
 
+**São duas faixas, e não quatro.** Título e corpo moram no **mesmo bloco** centralizado, então
+título vazio não move a faixa — ele some junto com o gap e o corpo se recentraliza sozinho,
+que é a regra de região vazia da §11.0 aplicada dentro de um bloco em vez de a uma faixa. O
+único interruptor de geometria é o cabeçalho:
+
+| Cabeçalho | Faixa de texto | Altura |
+| --------- | -------------- | ------ |
+| desligado | 80 – 1160      | 1080   |
+| ligado    | 212 – 1160     | 948    |
+
+O 212 é o mesmo número de todos os outros templates: 148 do fim do cabeçalho mais o
+`--slide-gap-block`.
+
+**Os 80px entre as duas colunas são o `--slide-pad`** — o mesmo degrau que separa o conteúdo
+da borda, o que dá à coluna de texto margem igual dos dois lados. A imagem toma os 440 que
+sobram e vai até a borda direita: 480 + 80 + 440.
+
 **A imagem para em y 1174.** Não é escolha estética: o rodapé precisa dos 920px. Descendo
 até a base, ela deixaria à faixa apenas os 480px da coluna de texto, e a identidade com a
 placa mais doze pontos de constelação passam de 500px — não cabe, e num deck maior a
@@ -992,7 +1009,14 @@ outros têm.
 
 `body` é a chave canônica, a mesma do `context` e do `code-annotated`. `image` é a mesma
 chave e o mesmo tipo do `image-caption`, e é isso que faz trocar entre os dois preservar a
-imagem escolhida — o que muda é o `ratio` que o inspector sugere no recorte.
+imagem escolhida — o que muda é o `ratio`.
+
+**Na 3F o `ratio` é moldura de preview, e nada além disso.** Ele dá a proporção da moldura
+que o inspector desenha, que mostra o formato do buraco que a imagem vai preencher; o
+enquadramento de verdade é escolhido pelo `imageFit`. Recorte com alça, travado nesta
+proporção, é dívida anotada — e é por ser o `ratio` que difere entre os dois templates de
+mídia que o descritor de `image` **não** sobe para `shared/fields.ts` como os três do bloco de
+código: o que varia acompanha a região, e a região é do template. Decisão 58.
 
 #### Opções
 
@@ -1073,6 +1097,33 @@ O 212 é o mesmo número que todos os outros templates usam quando a faixa liga 
 do cabeçalho mais o `--slide-gap-block`. O que muda é a direção: aqui a faixa **corta** a
 imagem em vez de empurrar o que está abaixo, porque o que está abaixo é o que o slide
 promete e a imagem é quem tem folga para ceder.
+
+#### As oito geometrias
+
+São três interruptores — o cabeçalho, o título vazio e a legenda vazia —, e cruzá-los com a
+regra de região vazia da §11.0 dá oito combinações. Elas ficam escritas aqui, e não deduzidas
+das duas tabelas acima na hora de implementar, porque deduzir vira oito decisões em vez de
+uma. **Só a imagem se mexe:**
+
+| Cabeçalho | Título | Legenda | Imagem     | Título   | Legenda    |
+| --------- | ------ | ------- | ---------- | -------- | ---------- |
+| off       | sim    | sim     | 0 – 910    | 974–1038 | 1070–1160  |
+| off       | sim    | não     | 0 – 910    | 974–1038 | —          |
+| off       | não    | sim     | 0 – 910    | —        | 974–1064   |
+| off       | não    | não     | 0 – 1174   | —        | —          |
+| on        | sim    | sim     | 212 – 910  | 974–1038 | 1070–1160  |
+| on        | sim    | não     | 212 – 910  | 974–1038 | —          |
+| on        | não    | sim     | 212 – 910  | —        | 974–1064   |
+| on        | não    | não     | 212 – 1174 | —        | —          |
+
+**A legenda sobe sem crescer.** Com o título vazio ela vai para 974 mantendo os **90px** —
+que são as duas linhas que esta seção promete, e é essa promessa que o guard cobra. Uma
+faixa que crescesse até 1160 aceitaria três linhas onde o desenho quer duas, e a diferença
+não apareceria até um slide passar do ponto no carrossel publicado.
+
+**A imagem só desce até 1174 com os dois campos vazios.** Um campo vazio dos dois não move
+nada: a região dele some e o que sobra continua onde estava, porque a imagem parar em 910
+com uma linha de legenda embaixo é o desenho, e não uma consequência de a região existir.
 
 #### Elementos
 

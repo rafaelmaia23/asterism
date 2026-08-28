@@ -495,6 +495,20 @@ O nó capturado é a raiz do slide, e quem o expõe é o próprio `SlideFrame`, 
 `canvasRef` opcional que o `SlideView` repassa. O quadro externo fica de fora junto com a
 sua borda de 1px — decisão 23.
 
+**As imagens têm as duas esperas, e elas cercam a montagem.** Antes de montar, o palco
+pré-carrega os `ImageId` do deck para o cache da §11: um `<img>` sem URL no primeiro quadro
+não é um `<img>` vazio, é o estado "Sem imagem" que o template desenha de propósito, e é ele
+que iria para o bitmap. Depois de montar, e ao lado do `document.fonts.ready`, ele espera o
+`decode()` de cada `<img>` — `complete` mentiria num `blob:` recém-atribuído, e capturar
+antes do bitmap pronto é a armadilha das fontes com outro nome. Uma imagem que falha em
+decodificar não derruba a exportação: o slide sai com o que houver, pelo mesmo critério da
+decisão 31.
+
+Quais campos são imagem sai dos **descritores**, e nunca de um `"image"` escrito no palco:
+ele não conhece template nenhum, e é o registry quem sabe. É também por isso que a função
+mora em `src/export/stage.tsx` e não em `src/images` — aquela pasta é folha, e importar o
+registry de lá fecharia um ciclo com o `ImageBand` dos templates.
+
 ### Alvos
 
 - **v1** — `pdf` (1080×1350 pt, uma página por slide)
@@ -526,9 +540,34 @@ mais — autosave e undo sobre um estado que ainda não sabe editar não teriam 
 guardar. A 2D acrescentou `setTemplate`, `addSlide` e `removeSlide`, que são o que faz
 compor, e o `persist` por cima deste mesmo store — tarefa 2.12: a Fase 1 do §15 promete um
 carrossel publicável e um deck que some no reload não cumpre a promessa. O **IndexedDB
-chega na 3F**, com os dois templates de mídia que o pedem: um template cujo campo principal
+chegou na 3F**, com os dois templates de mídia que o pedem: um template cujo campo principal
 não tem onde guardar valor não está entregue, e é a mesma razão pela qual a decisão 30
 antecipou o `addSlide`. O `zundo` fica para a **Etapa 4**, junto com o resto do editor.
+
+### O binário mora fora do deck, e a ponte é um cache de módulo
+
+O `idb-keyval` está em `src/images/storage.ts`, num banco próprio — `asterism`, prateleira
+`images` —, e ele não sabe o que é um deck: guarda blob por id, e quem liga uma coisa à
+outra é o campo `image` do template. São dois armazenamentos separados porque a cota é
+diferente em uma ordem de grandeza, e nada além do `ImageId` atravessa para o `localStorage`.
+
+Entre o id que o slide guarda e o `<img>` que o template desenha falta uma URL, e ler o
+banco é assíncrono enquanto o template é síncrono. A ponte é o `src/images/cache.ts`: um
+`Map<ImageId, string>` de object URLs no módulo, com `useImageUrl` para quem renderiza e
+`preloadImages` para o palco de exportação, que monta uma raiz React própria e precisa das
+URLs **antes** de renderizar — um `<img>` cujo `src` chega no quadro seguinte não está no
+bitmap. O cache fica fora do store de propósito: o store persiste o deck e só o deck, e um
+object URL não é estado a guardar, é um handle do documento vivo que morre no reload.
+Decisão 55.
+
+A URL do preview é `blob:`; a conversão para `data:` é o `modern-screenshot` que faz na
+clonagem, e é lá que ela precisa acontecer, porque dentro do `foreignObject` a origem é
+opaca. É a mesma armadilha que põe as três fontes em `next/font/local`.
+
+**A imagem é reduzida a 2160px no maior lado na importação** — o 1080 do formato vezes a
+escala 2 do alvo PDF, que é a maior resolução que o arquivo consegue aproveitar. O que passa
+disso é peso puro em quatro lugares: o banco, o DOM, o `foreignObject` da captura e o base64
+do `.json` da Etapa 4. Decisão 56.
 
 **Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
 deixa de bater com o código quando um template some ou muda de chave, e a resposta é
@@ -583,6 +622,17 @@ slide que não estava ativo não mexe no ativo.
 
 Apenas upload local. Imagem por URL externa contamina o canvas e faz a exportação
 falhar em silêncio. Não é limitação técnica — é decisão de escopo.
+
+**Blob órfão não é coletado, e é escolha.** Trocar a imagem de um slide, ou remover o slide,
+deixa o blob anterior no banco sem ninguém apontando para ele. A 3F não apaga nada: o
+`zundo` da Etapa 4 desfaz a troca e devolve o `ImageId`, e um blob apagado no caminho faria
+o desfazer trazer o slide de volta sem a imagem. A varredura é do import/export da Etapa 4,
+que é quem terá o deck inteiro à mão — e que numa tela de múltiplos decks precisa ter, senão
+apaga a imagem do deck que não está aberto. Decisão 57.
+
+O caso inverso já é estado válido e desenhado: **id no deck, blob ausente**. O schema passa,
+porque o id é uma string válida; a imagem some e o slide fica, que é a decisão 31 intacta. O
+template desenha "Sem imagem", o mesmo estado de um slide que nunca teve uma.
 
 ## 12. Formato como dado
 
@@ -793,11 +843,23 @@ o interruptor da faixa. Switch dentro de button é HTML inválido, a mesma armad
 lista lateral já documenta, e é por isso que não há um `Collapsible` do Base UI aqui — o
 `Trigger` dele envolveria o interruptor junto.
 
-O formulário desenha seis dos sete tipos de `Field`: `text`, `textarea` e `toggle` desde
-a 1D, `list` e `select` desde a 2C, `code` desde a 3D. Só `image` continua aparecendo como
-linha inerte com o rótulo — pular um tipo sem controle em silêncio faria um campo novo
-sumir do formulário sem aviso, e é por isso que a condição no componente é a **negação dos
-tipos desenhados**, e não o nome do tipo que falta.
+O formulário desenha os sete tipos de `Field`: `text`, `textarea` e `toggle` desde a 1D,
+`list` e `select` desde a 2C, `code` desde a 3D e `image` desde a 3F. A linha inerte com o
+rótulo continua no componente mesmo sem nenhum tipo caindo nela — pular um tipo sem controle
+em silêncio faria um campo novo sumir do formulário sem aviso, e é por isso que a condição é
+a **negação dos tipos desenhados** e não o nome do tipo que falta: escrita pelo positivo, o
+tipo que a Etapa 4 acrescentar sumiria sem uma linha sequer.
+
+O `image` é **upload local e nada mais** — decisão 8, e a ausência de um campo de endereço é
+a decisão, não uma pendência. Um `<input type="file">` escondido, disparado por um `<button>`
+irmão: o controle nativo traz um rótulo que ninguém consegue redigir, e envolvê-lo no botão
+seria controle dentro de controle, a mesma armadilha de HTML inválido que a lista lateral já
+documenta. Acima dele, a moldura com a **proporção do `ratio`** do descritor — 5:16 no
+`split-vertical`, 108:91 no `image-caption` —, que mostra o formato do buraco que a imagem
+vai preencher e é tudo o que o `ratio` faz na 3F; recorte de verdade não é desta etapa. A
+altura da moldura é fixa e a largura sai da proporção, e não o contrário: 5:16 em largura de
+coluna daria novecentos pixels de moldura. Sem imagem, ou com um id órfão, ela mostra "Sem
+imagem" — os dois são o mesmo estado, aqui e no slide.
 
 O `code` é uma textarea monoespaçada, e o que ele tem de próprio é o contador: onde os
 outros contam caractere contra `max`, ele conta **linha** contra `maxLines`. É em linha que
@@ -884,3 +946,7 @@ sem retoque em nenhum outro programa.
 | 52 | O tema do shiki é gerado dos tokens **e um teste é quem garante**: o `theme.test.ts` lê o `globals.css` e compara cor por cor | Escrever os dez hex da §10.4 num módulo e confiar na revisão; ou ler as variáveis CSS em tempo de execução com `getComputedStyle` | A §10.4 do design system já mandava gerar o tema dos tokens, e um módulo com os hex escritos à mão cumpre a letra da regra e não a regra: no dia em que um degrau da rampa mudar no `globals.css`, o tema fica para trás **em silêncio**, e o sintoma aparece num PDF meses depois. Ler as variáveis em tempo de execução resolveria a divergência e criaria duas piores: o tokenizador devolve cor como string e a põe em `style` inline, e uma `var()` teria de resolver contra o documento — o que dentro do `foreignObject` do palco de exportação não está garantido —, e um token que nenhuma classe referencia é podado pelo Tailwind antes de chegar ao CSS, que é a armadilha da §13. O literal com o teste contra a fonte é a única forma que é ao mesmo tempo à prova de rasterização e à prova de divergência |
 | 53 | O nome do arquivo na barra da janela de código sai em **caixa baixa**, contra a versalização da utility `slide-meta` | Deixar a utility valer, como no kicker e no handle, e o nome sair `CACHE.TS` | A §10.5 justifica a caixa alta do `slide-meta` dizendo que ela é **da escala, não do conteúdo**: `api/ · 04` é digitado assim e sai versal sem que o dado guardado mude. O nome do arquivo é a única peça `slide-meta` da biblioteca que é um **identificador literal**, e ali a justificativa se inverte — `CACHE.TS` não é o mesmo nome em outra caixa, é um arquivo que não existe no repositório, num slide cujo assunto é justamente o código daquele arquivo. A exceção é nomeada nos dois documentos, §10.3 do design system e §11.6 dos templates, para não virar divergência de implementação |
 | 54 | Os três descritores do bloco de código — `code`, `file` e `lang` — são o **mesmo objeto** nos dois templates de código, em `shared/fields.ts` | Declarar os três em cada um dos dois, com as mesmas propriedades, que é como o `code-window` nasceu na 3D; e guardar a igualdade com um teste de propriedade em cada lado | A §6 exige que a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, e não por elegância: `migrateFields` compara chave **e** forma de valor, e chave cuja forma não bate fica com o default do destino. Dois descritores copiados passam em qualquer teste de propriedade no dia em que nascem e divergem no dia em que um limite muda num só — e o sintoma é o mais caro que a ferramenta tem, porque a troca entre `code-window` e `code-annotated` é a mais provável da biblioteca: percebi que a janela precisava de uma frase. O que se perderia é o código, não a formatação. É o caminho que o `kicker` já tinha percorrido na 2F pelo mesmo argumento, e o custo é um `import`. O `heading` ficou de fora de propósito, apesar de os dois templates o declararem com os mesmos 60 caracteres: o limite acompanha a região — 70 na capa em 96px, 60 num slide de código em 56px —, e compartilhá-lo transformaria uma coincidência de dois em regra para dez |
+| 55 | O `ImageId` vira URL num **cache de módulo** em `src/images/cache.ts`, fora do store, e a pasta `src/images` é **folha** — não importa nada do sistema | Uma fatia do store zustand com as URLs, ao lado do deck; ou um contexto React com o cache, com provider no shell e outro no palco de exportação | O store persiste o deck e **só o deck**, e um object URL não é estado a guardar: é um handle do documento vivo, que morre no reload e nasce de novo. Numa fatia do store ele obrigaria o `partialize` a excluí-lo e o `reviveDeck` a ignorá-lo, para guardar uma coisa que nunca deve ser guardada. O contexto resolveria o preview e não o segundo consumidor: o palco de exportação monta uma **raiz React própria** e precisa das URLs antes de renderizar, porque um `<img>` cujo `src` chega no quadro seguinte não está no bitmap — e o que o template desenha nesse quadro é o estado "Sem imagem", que é honesto e vai para o arquivo. O cache de módulo serve os dois caminhos com uma cópia só, e a folha é o que impede o ciclo: o `ImageBand` dos templates importa `src/images`, então `src/images` não pode importar o registry. Daí o `collectImageIds` morar no palco, onde as chaves de imagem saem dos **descritores** e nunca de um `"image"` escrito à mão |
+| 56 | A imagem é **reduzida a 2160px no maior lado** na importação, com o original descartado | Guardar o arquivo como veio, que é o caminho mínimo estrito que a 3F escreveu; ou reduzir e reencodar em JPEG 0.92, que é o plano B que a §10 já reserva | 2160 é o 1080 do formato vezes a escala 2 do alvo PDF: **é a maior resolução que o arquivo consegue aproveitar**, e o que passa dela é peso puro em quatro lugares de uma vez — o IndexedDB, o DOM, o `foreignObject` da captura e o base64 do `.json` autocontido da Etapa 4. Uma foto de celular de 4000×3000 pagaria os quatro por nada. O custo é uma função pura de dimensões e um desenho em canvas, e a redução é **oportunista**: ambiente que não decodifica o blob devolve o original, porque numa ferramenta de um usuário só guardar a foto grande é melhor que recusar a foto. O PNG na saída é o que preserva a transparência do screenshot de diagrama, que é justamente o caso que o `contain` da §11.9 existe para servir — o JPEG 0.92 continua sendo escolha do alvo, e não do armazenamento |
+| 57 | **Blob órfão não é coletado na 3F.** Trocar a imagem ou remover o slide deixa o binário no banco | Apagar o blob anterior quando o campo `image` recebe outro valor, que cobre o caso comum e não custa nada hoje; ou varrer o banco na reidratação, comparando as chaves com os `ImageId` do deck | Apagar cedo cria uma armadilha para o `zundo` da Etapa 4: o undo devolve o `ImageId` e o blob não volta com ele, então desfazer a troca traria o slide de volta **sem a imagem** — a perda de trabalho que a decisão 31 existe para impedir, chegando pela porta de trás. A varredura na reidratação é pior: na tela de múltiplos decks da Etapa 4 o deck aberto não conhece as imagens dos outros, e a limpeza apagaria o que está em uso. O lugar certo é o import/export da Etapa 4, que é quem terá o deck inteiro à mão. Vazar binário num banco local de um usuário só é o lado barato da troca, e o caso inverso — id no deck, blob ausente — já é estado **desenhado**: a §11.9 dos templates o descreve, o schema o aceita porque um id órfão é uma string válida, e a faixa mostra "Sem imagem" |
+| 58 | `image` e `imageFit` são declarados nos **dois** templates de mídia, e não em `shared/` | Subi-los para `shared/fields.ts` e `shared/options.ts` como a decisão 54 fez com `code`, `file` e `lang`, com o teste de identidade de objeto | A regra da §6 é que a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, e ela está cumprida: os dois declaram `type: "image"`, e é isso que faz a troca entre os dois preservar a imagem escolhida — há teste de migração para o caso, que é o mais provável da dupla. O que difere é o `ratio`, 5:16 contra 108:91, e ele acompanha a **região**: um descritor compartilhado teria de escolher um dos dois e mentir para o outro. É exatamente o precedente do `heading`, que ficou fora do `shared/` na 3E apesar de os dois templates de código o declararem com os mesmos 60 caracteres. O `imageFit` tem o argumento que a própria §11.9 escreve: compartilhada, na §11.0, é o que os **dez** expõem, e dois de dez é opção própria declarada duas vezes com o mesmo nome — se um terceiro template de mídia aparecer, ela sobe, e não antes |

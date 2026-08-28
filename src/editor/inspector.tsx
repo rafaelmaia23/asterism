@@ -33,13 +33,14 @@
  * atravessando de um caso para o outro.
  */
 
-import { useId, useState } from "react";
-import { ArrowDown, ArrowUp, ChevronDown, Plus, X } from "lucide-react";
+import { useId, useRef, useState } from "react";
+import { ArrowDown, ArrowUp, ChevronDown, ImageUp, Plus, X } from "lucide-react";
 import type { StoreApi } from "zustand/vanilla";
 import { useStore } from "zustand";
 import type { FieldValue, OptionValue } from "@/deck/types";
 import { addItem, moveItem, removeItem, setItem } from "@/editor/list-field";
 import { editorStore, selectActiveSlide, type EditorState } from "@/editor/store";
+import { importImage, useImageUrl } from "@/images/cache";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -194,6 +195,107 @@ function ListItem({
 }
 
 /**
+ * O campo de imagem — 3.16, e o sétimo tipo de `Field` a ganhar controle.
+ *
+ * **Só arquivo local.** Não há campo de texto onde colar um endereço, e a ausência é a
+ * decisão 8: URL externa contamina o canvas e faz a exportação falhar em silêncio. O que o
+ * slide guarda é o `ImageId` que o `importImage` devolve; o binário fica no IndexedDB, e é
+ * isso que mantém o `localStorage` do `persist` longe da cota — §11 do documento de contexto.
+ *
+ * O `<input type="file">` é escondido e disparado por um `<button>` irmão. Não é enfeite: o
+ * controle nativo traz um rótulo próprio que ninguém consegue redigir, e envolvê-lo num
+ * botão seria controle dentro de controle — a mesma armadilha de HTML inválido que a lista
+ * lateral e o cabeçalho de seção já documentam. `sr-only` e não `display:none`, para que ele
+ * continue focável pelo `<label>` do campo.
+ *
+ * A moldura tem a **proporção do `ratio`** do descritor — 5:16 no `split-vertical`, 108:91 no
+ * `image-caption` —, e é só isso que o `ratio` faz na 3F: mostra o formato do buraco que a
+ * imagem vai preencher. Recorte de verdade não é desta sub-etapa. A altura é fixa e a
+ * largura sai da proporção, e não o contrário: numa coluna de inspector, 5:16 em largura
+ * cheia daria uma moldura de novecentos pixels.
+ */
+function ImageField({
+  id,
+  field,
+  value,
+  onChange,
+}: {
+  id: string;
+  field: Extract<Field, { type: "image" }>;
+  value: string;
+  onChange: (value: FieldValue) => void;
+}) {
+  const url = useImageUrl(value);
+  const input = useRef<HTMLInputElement>(null);
+
+  /** `"5:16"` vira o `aspect-ratio` do CSS. Sem `ratio`, a moldura fica quadrada. */
+  const aspect = (field.ratio ?? "1:1").replace(":", " / ");
+
+  async function escolher(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
+    onChange(await importImage(file));
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex justify-center">
+        <div
+          data-testid={`preview-${field.key}`}
+          style={{ aspectRatio: aspect }}
+          className="flex h-48 max-w-full items-center justify-center overflow-hidden rounded-md border border-border bg-muted"
+        >
+          {url === undefined ? (
+            /* O mesmo estado que o slide desenha: sem imagem, ou com um id órfão cujo blob
+               não está mais no banco — a §11.9 dos templates trata os dois como um só. */
+            <span className="px-2 text-center text-sm text-ink-600">Sem imagem</span>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              data-testid={`image-${field.key}`}
+              src={url}
+              alt=""
+              className="size-full object-cover"
+            />
+          )}
+        </div>
+      </div>
+
+      <input
+        ref={input}
+        id={id}
+        data-testid={`file-${field.key}`}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onChange={(event) => void escolher(event.target.files?.[0])}
+      />
+
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="flex-1"
+          onClick={() => input.current?.click()}
+        >
+          <ImageUp />
+          {value === "" ? "Escolher imagem" : "Trocar imagem"}
+        </Button>
+
+        {value !== "" && (
+          <Button type="button" variant="ghost" size="sm" onClick={() => onChange("")}>
+            Remover imagem
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
  * O `id` do par label/controle sai do `useId`, e **não** de `slide.id`.
  *
  * O deck é criado uma vez na pré-renderização estática, no Node, e outra no navegador; os
@@ -335,15 +437,20 @@ function FieldRow({
         </Select>
       )}
 
-      {/* Tipo ainda sem controle — só `image`, desde que a 3D deu o dela ao `code`.
-          Aparece assim mesmo: pular em silêncio faria um campo novo sumir do formulário
-          sem aviso. A condição continua sendo **a negação dos tipos desenhados**, e não
-          `=== "image"`: escrita pelo positivo, o tipo que a Etapa 4 acrescentar sumiria do
-          formulário sem uma linha sequer. */}
+      {field.type === "image" && (
+        <ImageField id={id} field={field} value={text} onChange={onChange} />
+      )}
+
+      {/* Tipo ainda sem controle. **Não há nenhum hoje** — a 3.16 fechou os sete do `Field`
+          dando o dele ao `image` —, e a linha fica: pular em silêncio faria um campo novo
+          sumir do formulário sem aviso. A condição continua sendo **a negação dos tipos
+          desenhados**, e não o nome do tipo que falta: escrita pelo positivo, o tipo que a
+          Etapa 4 acrescentar sumiria do formulário sem uma linha sequer. */}
       {field.type !== "text" &&
         field.type !== "textarea" &&
         field.type !== "select" &&
-        field.type !== "code" && (
+        field.type !== "code" &&
+        field.type !== "image" && (
           <span className="text-sm text-ink-600">Ainda não editável aqui</span>
         )}
     </div>

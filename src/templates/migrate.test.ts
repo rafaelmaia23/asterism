@@ -154,4 +154,26 @@ describe("migrateFields", () => {
     // `items` não existe no fechamento, então é descartado — a interseção de chaves.
     expect("items" in migrado).toBe(false);
   });
+
+  /**
+   * O que a regra da §6 compra nos dois templates de mídia: `image` é a mesma chave e o
+   * **mesmo tipo** nos dois, então trocar um pelo outro preserva a imagem escolhida. É o
+   * caso mais provável da dupla — percebi que a imagem merecia o slide inteiro —, e o que
+   * se perderia era justamente o que custou o upload.
+   */
+  test("entre os dois templates de mídia, a imagem atravessa", () => {
+    const migrado = migrateFields(get("split-vertical"), get("image-caption"), {
+      kicker: "log/ · 08",
+      heading: "O gráfico que não mostrava nada",
+      body: "O painel inteiro em verde.",
+      image: "um-id-de-imagem",
+    });
+
+    expect(migrado.image).toBe("um-id-de-imagem");
+    expect(migrado.kicker).toBe("log/ · 08");
+    expect(migrado.heading).toBe("O gráfico que não mostrava nada");
+    // `body` é do `split-vertical`; a legenda do destino nasce com o default dele.
+    expect("body" in migrado).toBe(false);
+    expect(migrado.caption).toBe(get("image-caption").defaults.fields.caption);
+  });
 });

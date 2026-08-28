@@ -1,9 +1,10 @@
-import { describe, expect, test } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, test } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { z } from "zod";
 import type { Deck } from "@/deck/types";
 import { Inspector } from "@/editor/inspector";
 import { createEditorStore } from "@/editor/store";
+import { stubImages, type StubbedImages } from "@/test/images";
 import { list, register } from "@/templates/registry";
 import { sharedSections } from "@/templates/shared/sections";
 import type { Field, TemplateDef } from "@/templates/types";
@@ -24,8 +25,8 @@ const fakeFields: Field[] = [
   { key: "cta", type: "text", label: "Destino" },
   // O bloco de código da 3.11: o limite é em **linhas**, e não em caracteres.
   { key: "code", type: "code", label: "Código", maxLines: 3 },
-  // Tipo que continua sem controle depois da 3D — é ele que guarda a linha inerte.
-  { key: "image", type: "image", label: "Imagem" },
+  // O campo de imagem da 3.16, com o `ratio` que a moldura do preview usa.
+  { key: "image", type: "image", label: "Imagem", ratio: "5:16" },
 ];
 
 const fakeOptions: Field[] = [
@@ -59,6 +60,28 @@ register({
   Component: () => null,
 } satisfies TemplateDef);
 
+/**
+ * Um template com um tipo de campo que o formulário não desenha. **Não existe um assim na
+ * biblioteca** — a 3.16 deu controle aos sete tipos do `Field` —, e é justamente por isso
+ * que ele é forjado com um `as`: a condição no inspector é a negação dos tipos desenhados,
+ * e o que se guarda aqui é que o tipo da Etapa 4 vai aparecer com aviso em vez de sumir.
+ */
+register({
+  id: "template-de-tipo-futuro",
+  label: "Template de tipo futuro",
+  group: "content",
+  background: "plain",
+  sections: sharedSections,
+  fields: [{ key: "futuro", type: "carousel", label: "Futuro" } as unknown as Field],
+  options: [],
+  schema: z.object({
+    fields: z.record(z.string(), z.string()),
+    options: z.record(z.string(), z.union([z.string(), z.boolean()])),
+  }),
+  defaults: { fields: {}, options: {} },
+  Component: () => null,
+} satisfies TemplateDef);
+
 /** Um template que não usa nenhuma seção além da de conteúdo, que é onde o padrão cai. */
 register({
   id: "template-sem-secoes",
@@ -77,6 +100,9 @@ register({
 } satisfies TemplateDef);
 
 const SLIDE_ID = "id-que-nao-pode-vazar";
+
+/** Os templates que só existem neste arquivo — a varredura da biblioteca os pula. */
+const FIXTURES = new Set(["fake-template", "template-sem-secoes", "template-de-tipo-futuro"]);
 
 function makeDeck(): Deck {
   return {
@@ -241,12 +267,36 @@ describe("Inspector", () => {
    * imagem — o único que sobrou depois da 3D.
    */
   test("tipo não suportado aparece como linha inerte, com o rótulo", () => {
-    renderInspector();
+    // Nenhum tipo do `Field` cai mais aqui — a 3.16 deu controle ao sétimo e último. O
+    // descritor é forjado de propósito: a condição no componente é a **negação** dos tipos
+    // desenhados, e é isso que faz o tipo que a Etapa 4 acrescentar aparecer com aviso em
+    // vez de sumir do formulário em silêncio.
+    const store = createEditorStore(makeDeck());
+    store.getState().setTemplate(SLIDE_ID, "template-de-tipo-futuro");
+    render(<Inspector store={store} />);
 
-    const linha = screen.getByTestId("field-image");
+    const linha = screen.getByTestId("field-futuro");
 
-    expect(linha.textContent).toContain("Imagem");
+    expect(linha.textContent).toContain("Futuro");
+    expect(linha.textContent).toContain("Ainda não editável aqui");
     expect(linha.querySelector("input, textarea")).toBeNull();
+  });
+
+  /**
+   * O critério de pronto da 3.16 dito por inteiro: **nenhum** template da biblioteca tem
+   * campo sem controle. Varre o registry em vez de listar os dez, para que o template que a
+   * Etapa 4 acrescentar entre nesta asserção sozinho.
+   */
+  test("nenhum template da biblioteca desenha o aviso", () => {
+    const store = createEditorStore(makeDeck());
+
+    for (const def of list().filter((template) => !FIXTURES.has(template.id))) {
+      store.getState().setTemplate(SLIDE_ID, def.id);
+      const { unmount } = render(<Inspector store={store} />);
+
+      expect(screen.queryByText("Ainda não editável aqui")).toBeNull();
+      unmount();
+    }
   });
 
   /**
@@ -288,6 +338,129 @@ describe("Inspector", () => {
 
       expect(screen.getByTestId("counter-code").textContent).toBe("0/3");
     });
+  });
+});
+
+/**
+ * O campo de imagem da 3.16 — o sétimo e último tipo de `Field` a ganhar controle.
+ *
+ * O escopo é o da §11 do documento de contexto e da decisão 8: **upload local e nada mais**.
+ * Não há campo de texto onde colar uma URL, e não é por falta de tempo — URL externa
+ * contamina o canvas e faz a exportação falhar em silêncio.
+ */
+describe("Inspector — campo image", () => {
+  let images: StubbedImages;
+
+  function renderComImagens() {
+    images = stubImages();
+    return renderInspector();
+  }
+
+  afterEach(() => {
+    images?.restore();
+  });
+
+  function escolher(nome = "foto.png") {
+    const input = screen.getByTestId("file-image") as HTMLInputElement;
+    const file = new File(["conteudo"], nome, { type: "image/png" });
+
+    fireEvent.change(input, { target: { files: [file] } });
+  }
+
+  test("sem imagem, a moldura diz que não há e o botão convida a escolher", () => {
+    renderComImagens();
+
+    expect(screen.getByTestId("preview-image").textContent).toBe("Sem imagem");
+    expect(screen.getByTestId("preview-image").querySelector("img")).toBeNull();
+    expect(screen.getByText("Escolher imagem")).toBeDefined();
+    expect(screen.queryByText("Remover imagem")).toBeNull();
+  });
+
+  test("a moldura segue o `ratio` do descritor", () => {
+    renderComImagens();
+
+    expect(screen.getByTestId("preview-image").getAttribute("style")).toContain("5 / 16");
+  });
+
+  test("escolher um arquivo guarda a imagem e escreve o id em fields", async () => {
+    const { store } = renderComImagens();
+
+    escolher();
+
+    await waitFor(() => {
+      expect(store.getState().deck.slides[0].fields.image).not.toBe("");
+    });
+
+    const id = store.getState().deck.slides[0].fields.image as string;
+
+    expect(images.blobs.has(id)).toBe(true);
+    // O que vai para o slide é o **id**, nunca o binário: é a decisão 7, e é o que mantém
+    // o `localStorage` do `persist` longe da cota.
+    expect(id).not.toContain("data:");
+  });
+
+  test("com imagem, a moldura mostra a URL do cache e o botão passa a trocar", async () => {
+    renderComImagens();
+
+    escolher();
+
+    const img = await screen.findByTestId("image-image");
+
+    expect(img.getAttribute("src")).toMatch(/^blob:/);
+    expect(screen.getByText("Trocar imagem")).toBeDefined();
+  });
+
+  test("remover devolve o campo ao vazio", async () => {
+    const { store } = renderComImagens();
+
+    escolher();
+    await screen.findByTestId("image-image");
+
+    fireEvent.click(screen.getByText("Remover imagem"));
+
+    expect(store.getState().deck.slides[0].fields.image).toBe("");
+    expect(screen.getByTestId("preview-image").textContent).toBe("Sem imagem");
+  });
+
+  test("escreve em fields, e não em options", async () => {
+    const { store } = renderComImagens();
+
+    escolher();
+    await waitFor(() => {
+      expect(store.getState().deck.slides[0].fields.image).not.toBe("");
+    });
+
+    expect(store.getState().deck.slides[0].options.image).toBeUndefined();
+  });
+
+  /** Decisão 8: só arquivo local. Não há onde digitar um endereço. */
+  test("aceita arquivo de imagem, e não há campo de URL", () => {
+    renderComImagens();
+
+    const input = screen.getByTestId("file-image") as HTMLInputElement;
+
+    expect(input.type).toBe("file");
+    expect(input.accept).toBe("image/*");
+    expect(screen.getByTestId("field-image").querySelector("input[type=text]")).toBeNull();
+  });
+
+  /**
+   * O caso da §11.9: o id está no deck e o blob não está mais no banco. O campo continua
+   * preenchido — derruba-se o que não passa, e um id órfão passa —, e a moldura mostra o
+   * mesmo estado de quem nunca teve imagem.
+   */
+  test("id órfão mostra a moldura vazia sem apagar o campo", async () => {
+    images = stubImages();
+    const store = createEditorStore(makeDeck());
+    store.getState().setField(SLIDE_ID, "image", "id-que-nao-esta-no-banco");
+    render(<Inspector store={store} />);
+
+    await waitFor(() => {
+      expect(images.reads).toContain("id-que-nao-esta-no-banco");
+    });
+
+    expect(screen.getByTestId("preview-image").textContent).toBe("Sem imagem");
+    expect(store.getState().deck.slides[0].fields.image).toBe("id-que-nao-esta-no-banco");
   });
 });
 
