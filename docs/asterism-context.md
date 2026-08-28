@@ -495,6 +495,20 @@ O nó capturado é a raiz do slide, e quem o expõe é o próprio `SlideFrame`, 
 `canvasRef` opcional que o `SlideView` repassa. O quadro externo fica de fora junto com a
 sua borda de 1px — decisão 23.
 
+**As imagens têm as duas esperas, e elas cercam a montagem.** Antes de montar, o palco
+pré-carrega os `ImageId` do deck para o cache da §11: um `<img>` sem URL no primeiro quadro
+não é um `<img>` vazio, é o estado "Sem imagem" que o template desenha de propósito, e é ele
+que iria para o bitmap. Depois de montar, e ao lado do `document.fonts.ready`, ele espera o
+`decode()` de cada `<img>` — `complete` mentiria num `blob:` recém-atribuído, e capturar
+antes do bitmap pronto é a armadilha das fontes com outro nome. Uma imagem que falha em
+decodificar não derruba a exportação: o slide sai com o que houver, pelo mesmo critério da
+decisão 31.
+
+Quais campos são imagem sai dos **descritores**, e nunca de um `"image"` escrito no palco:
+ele não conhece template nenhum, e é o registry quem sabe. É também por isso que a função
+mora em `src/export/stage.tsx` e não em `src/images` — aquela pasta é folha, e importar o
+registry de lá fecharia um ciclo com o `ImageBand` dos templates.
+
 ### Alvos
 
 - **v1** — `pdf` (1080×1350 pt, uma página por slide)
