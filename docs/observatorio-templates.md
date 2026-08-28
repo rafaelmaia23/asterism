@@ -1098,6 +1098,33 @@ do cabeçalho mais o `--slide-gap-block`. O que muda é a direção: aqui a faix
 imagem em vez de empurrar o que está abaixo, porque o que está abaixo é o que o slide
 promete e a imagem é quem tem folga para ceder.
 
+#### As oito geometrias
+
+São três interruptores — o cabeçalho, o título vazio e a legenda vazia —, e cruzá-los com a
+regra de região vazia da §11.0 dá oito combinações. Elas ficam escritas aqui, e não deduzidas
+das duas tabelas acima na hora de implementar, porque deduzir vira oito decisões em vez de
+uma. **Só a imagem se mexe:**
+
+| Cabeçalho | Título | Legenda | Imagem     | Título   | Legenda    |
+| --------- | ------ | ------- | ---------- | -------- | ---------- |
+| off       | sim    | sim     | 0 – 910    | 974–1038 | 1070–1160  |
+| off       | sim    | não     | 0 – 910    | 974–1038 | —          |
+| off       | não    | sim     | 0 – 910    | —        | 974–1064   |
+| off       | não    | não     | 0 – 1174   | —        | —          |
+| on        | sim    | sim     | 212 – 910  | 974–1038 | 1070–1160  |
+| on        | sim    | não     | 212 – 910  | 974–1038 | —          |
+| on        | não    | sim     | 212 – 910  | —        | 974–1064   |
+| on        | não    | não     | 212 – 1174 | —        | —          |
+
+**A legenda sobe sem crescer.** Com o título vazio ela vai para 974 mantendo os **90px** —
+que são as duas linhas que esta seção promete, e é essa promessa que o guard cobra. Uma
+faixa que crescesse até 1160 aceitaria três linhas onde o desenho quer duas, e a diferença
+não apareceria até um slide passar do ponto no carrossel publicado.
+
+**A imagem só desce até 1174 com os dois campos vazios.** Um campo vazio dos dois não move
+nada: a região dele some e o que sobra continua onde estava, porque a imagem parar em 910
+com uma linha de legenda embaixo é o desenho, e não uma consequência de a região existir.
+
 #### Elementos
 
 | Elemento   | Token                                                      | Cor       |
