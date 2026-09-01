@@ -177,7 +177,7 @@ function parseBlocks(src: string): Block[]
 |---|---|
 | Linha em branco | Fim de um bloco e começo de outro |
 | Linha começando com `- ` | Item de lista não ordenada; linhas seguidas formam uma lista |
-| Linha começando com `1. ` | Item de lista ordenada; a numeração desenhada é sequencial a partir de 1, e o número escrito é ignorado — ADR-0076 |
+| Linha começando com `1. ` | Item de lista ordenada; a numeração desenhada é sequencial a partir de 1, e o número escrito é ignorado — ADR-0076. **Até dois dígitos**: `2024. ` é parágrafo, senão o ano sumiria do slide |
 | Qualquer outra linha | Parágrafo |
 
 As quatro fronteiras que a tabela não diz, e que o teste fixa:

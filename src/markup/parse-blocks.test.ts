@@ -74,6 +74,16 @@ describe("parseBlocks", () => {
       expect(parseBlocks("  - um\n    - dois")).toEqual([{ t: "ul", items: ["um", "dois"] }]);
     });
 
+    test("um número de mais de dois dígitos é texto: `2024. ` não abre lista", () => {
+      expect(parseBlocks("2024. o ano em que tudo mudou")).toEqual([
+        { t: "p", v: "2024. o ano em que tudo mudou" },
+      ]);
+    });
+
+    test("dois dígitos ainda abrem lista: a trava é contra o ano, não contra o item 42", () => {
+      expect(parseBlocks("42. um")).toEqual([{ t: "ol", items: ["um"] }]);
+    });
+
     test("`-item` sem espaço é texto, não marcador", () => {
       expect(parseBlocks("-item")).toEqual([{ t: "p", v: "-item" }]);
     });

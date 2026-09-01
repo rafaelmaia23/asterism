@@ -34,8 +34,13 @@ const UNORDERED = /^-(\s+|$)/;
 /**
  * `1. item`. O número é marcador, não conteúdo, e sai fora — a numeração desenhada é
  * sequencial a partir de 1. ADR-0076.
+ *
+ * **Dois dígitos, no máximo.** Como o número escrito é descartado, `2024. o ano em que tudo
+ * mudou` viraria um item numerado `1.` e o "2024." sumiria do slide — perda silenciosa de
+ * texto. A trava é contra o ano e o valor no começo da frase; lista de até 99 itens
+ * continua abrindo, e nenhum slide tem cem.
  */
-const ORDERED = /^\d+\.(\s+|$)/;
+const ORDERED = /^\d{1,2}\.(\s+|$)/;
 
 type Line = { kind: ListKind; v: string } | { kind: "p"; v: string };
 

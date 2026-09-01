@@ -10,6 +10,13 @@ marcador desenhado é sempre nosso, em mono `azure-400`, e não o `::marker` do 
 então a numeração é escolha do renderizador de qualquer jeito: `parseBlocks` descarta o
 número da linha e o `<Blocks>` numera pela posição.
 
+## Consequências
+
+Como o número escrito é descartado, um marcador de mais de dois dígitos apagaria texto do
+autor: `2024. o ano em que tudo mudou` sairia como item `1.` sem o ano. Por isso o marcador
+de lista ordenada aceita **um ou dois dígitos** — lista de até 99 itens, que é mais do que
+um slide comporta, e ano ou valor no começo da frase continuam sendo parágrafo.
+
 ## Alternativas consideradas
 
 Guardar o `start` da lista e renumerar a partir dele; ou guardar o número por item, de modo
