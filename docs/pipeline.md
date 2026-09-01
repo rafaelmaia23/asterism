@@ -3,6 +3,9 @@
 Decide **o caminho do dado até o arquivo**: como o deck vira DOM e como o DOM vira
 PDF.
 
+O vocabulário — o que cada termo significa — está no [`CONTEXT.md`](../CONTEXT.md) da raiz.
+Aqui fica a norma: o que o sistema faz com eles.
+
 ---
 
 ## 1. Renderização

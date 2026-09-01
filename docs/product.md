@@ -7,6 +7,9 @@
 
 Decide **por que o projeto existe, o que ele não é, como se usa e para onde vai**.
 
+O vocabulário — o que cada termo significa — está no [`CONTEXT.md`](../CONTEXT.md) da raiz.
+Aqui fica a norma: o que o sistema faz com eles.
+
 ---
 
 ## 1. O problema

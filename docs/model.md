@@ -3,6 +3,9 @@
 Decide **o dado**: a forma do deck, a marcação que o texto aceita, a biblioteca de
 elementos e presets, e onde tudo isso é guardado.
 
+O vocabulário — o que cada termo significa — está no [`CONTEXT.md`](../CONTEXT.md) da raiz.
+Aqui fica a norma: o que o sistema faz com eles.
+
 ---
 
 ## 1. Modelo de dados

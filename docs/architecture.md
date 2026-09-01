@@ -3,6 +3,9 @@
 Decide **as regras que valem para todo o código, o formato do slide como dado e a
 stack**. Em conflito com o código, este documento vence.
 
+O vocabulário — o que cada termo significa — está no [`CONTEXT.md`](../CONTEXT.md) da raiz.
+Aqui fica a norma: o que o sistema faz com eles.
+
 ---
 
 ## 1. Princípios de arquitetura
