@@ -1,5 +1,5 @@
 /**
- * A redução da imagem na importação — decisão 56 da §16 do documento de contexto.
+ * A redução da imagem na importação — ADR-0056.
  *
  * Uma foto de celular tem 4000×3000. Ela iria inteira para o IndexedDB, inteira para o DOM
  * e, na exportação, inteira para dentro do `foreignObject` como data URL, uma vez por slide

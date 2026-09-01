@@ -1,5 +1,5 @@
 /**
- * Estágio 1 da §10 do documento de contexto: nó do DOM → bitmap. Único e compartilhado —
+ * Estágio 1 da §2 de `docs/pipeline.md`: nó do DOM → bitmap. Único e compartilhado —
  * todo alvo de exportação passa por aqui, e é o que impede PDF, PNG e JPG de triplicarem
  * a rasterização.
  *
@@ -36,7 +36,7 @@ const BACKGROUND = "#020617";
  *
  * O sintoma foi o `final-cta` no PDF, com o bloco de fecho 96px abaixo do lugar, por cima
  * do rodapé — mas o defeito nunca foi dele: era de todo template que desenha `<p>` ou
- * `<ul>`, e nos outros ele só não colidia com nada. Ver a §13 do documento de contexto.
+ * `<ul>`, e nos outros ele só não colidia com nada. Ver a §3 de `docs/architecture.md`.
  *
  * A folha entra com **especificidade de seletor universal**, abaixo de qualquer estilo em
  * linha: o que o clone declarou de verdade — o `padding` do bloco de código, por exemplo —

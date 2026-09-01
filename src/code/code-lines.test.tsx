@@ -2,7 +2,7 @@
  * O que este teste guarda é a **forma do nó**, não a cor — a cor já é do
  * `highlighter.test.ts`.
  *
- * Guarda porque é a forma que atravessa a rasterização. A decisão 28 da §16 do documento
+ * Guarda porque é a forma que atravessa a rasterização. A ADR-0028 da §16 do documento
  * de contexto custou uma sessão inteira para descobrir que gradiente não sobrevive à
  * captura e que cor chapada sobrevive; a 2B mediu no bitmap que `<span>` colorido passa
  * intacto. O realce é exatamente esse caso, e o jeito de não redescobrir isso é asserir
@@ -58,7 +58,7 @@ describe("os tokens", () => {
     expect(container.querySelector("span")?.style.fontStyle).toBe("italic");
   });
 
-  test("nada no bloco é gradiente — decisão 28", () => {
+  test("nada no bloco é gradiente — ADR-0028", () => {
     const { container } = render(<CodeLines code={'const a = "x" // y'} lang="ts" />);
 
     for (const node of container.querySelectorAll<HTMLElement>("[style]")) {

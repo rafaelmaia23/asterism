@@ -5,12 +5,12 @@
  * É a única peça que sabe traduzir `slide.template` em componente, e por isso é a que
  * preview e exportação compartilham — o canvas do editor cuida da escala e o palco
  * oculto da 1E cuida de montar o deck inteiro, nenhum dos dois precisa saber que
- * templates existem. Registry em vez de `switch`, §5 do documento de contexto.
+ * templates existem. Registry em vez de `switch`, §1 de `docs/architecture.md`.
  *
  * O fundo é decidido aqui e vai pronto ao `SlideFrame`; o template não desenha a própria
  * grade, e nem saberia em que escala está sendo exibido para compensá-la.
  *
- * **Quem decide a grade é o slide, não o template** — decisão 25 e §4.3 do design system.
+ * **Quem decide a grade é o slide, não o template** — ADR-0025 e §4.3 do design system.
  * O `background` do descritor é o padrão com que o slide nasce, e vale para quem não tem
  * a opção: deck antigo, ou template que não a exponha.
  *
@@ -18,7 +18,7 @@
  * é medida, e o `SlideView` junta o que os guards dizem e entrega ao `SlideFrame`. Como
  * canvas, lista lateral e palco de exportação passam todos por este componente, **cada
  * slide desenhado mede a si mesmo** — a lista sabe quais transbordam sem que o canvas
- * precise estar neles, e sem estado global para manter em dia. §9 do documento de contexto.
+ * precise estar neles, e sem estado global para manter em dia. §1 de `docs/pipeline.md`.
  */
 
 import type { Ref } from "react";

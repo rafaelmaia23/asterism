@@ -54,7 +54,7 @@ describe("SlideView", () => {
 
   /**
    * O `background` do descritor é o **padrão** do template, não a palavra final: quem
-   * decide é a opção `showGrid` do slide. Ver a §4.3 do design system e a decisão 25.
+   * decide é a opção `showGrid` do slide. Ver a §4.3 do design system e a ADR-0025.
    */
   test("sem a opção, o fundo cai no padrão do descritor", () => {
     const semOpcao: Slide = { ...slide, options: { showHeader: true, showFooter: true, showChevron: true } };

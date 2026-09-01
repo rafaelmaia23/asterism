@@ -1,8 +1,8 @@
 /**
  * Campos, opções e schema do `compare-2col`, conforme a §11.8 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto. São duas descrições da mesma coisa de propósito, e o teste é quem
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
+ * São duas descrições da mesma coisa de propósito, e o teste é quem
  * garante que não divirjam.
  *
  * ## As quatro chaves do par são **próprias**, e é decisão, não esquecimento
@@ -10,7 +10,7 @@
  * `beforeLabel`, `before`, `afterLabel` e `after` não entram no vocabulário canônico da §6:
  * nenhum segundo template tem o papel antes/depois, e vocabulário com um usuário só reserva
  * à biblioteca inteira o que um layout usa. Foi o único caso em dez templates, e a §6
- * registra as quatro numa tabela à parte, de chave própria. Decisão 45.
+ * registra as quatro numa tabela à parte, de chave própria. ADR-0045.
  *
  * A consequência é conhecida e aceita: sair deste template descarta o par, porque a
  * migração é uma interseção de chaves. `kicker` e `heading` atravessam, que são as duas que

@@ -4,7 +4,7 @@
  *
  * O template escreve `<Inline>{content.heading}</Inline>` e **nunca vê a AST**: quem
  * chama passa a string crua do campo e recebe o texto desenhado. É o segundo estágio da
- * §5 do documento de contexto — o parser não sabe que existe DOM, e este módulo é o único
+ * §1 de `docs/architecture.md` — o parser não sabe que existe DOM, e este módulo é o único
  * lugar do projeto que sabe as duas coisas.
  *
  * Cada marcador sai num elemento HTML de verdade — `<strong>`, `<em>`, `<s>`, `<u>`,
@@ -25,7 +25,7 @@ type Style = { tag: keyof JSX.IntrinsicElements; className: string };
 
 /** A tabela da §10.2, linha por linha. */
 const STYLES: Record<InlineMark, Style> = {
-  // Peso 600, mas nunca abaixo do peso do bloco em volta — decisão 34.
+  // Peso 600, mas nunca abaixo do peso do bloco em volta — ADR-0034.
   strong: { tag: "strong", className: "slide-strong" },
   em: { tag: "em", className: "italic" },
   strike: { tag: "s", className: "line-through text-ink-500" },

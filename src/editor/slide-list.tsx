@@ -4,7 +4,7 @@
  * A coluna da esquerda: os slides do deck, na ordem, e qual está ativo.
  *
  * Cada item é o número e o nome do slide numa linha, e a miniatura em largura cheia
- * abaixo. A miniatura é o mesmo `SlideView` do canvas — a §9 do documento de contexto diz
+ * abaixo. A miniatura é o mesmo `SlideView` do canvas — a §1 de `docs/pipeline.md` diz
  * que preview e exportação são o mesmo DOM, e a lista lateral entra de carona nisso: o
  * `SlideFrame` já sabe desenhar em qualquer escala, e a compensação de `--slide-scale`
  * mantém o grid visível mesmo aqui, a um quinto do tamanho.
@@ -14,11 +14,11 @@
  * traria de volta o laço da 1C. A largura é constante do módulo, e a escala sai dela com
  * `deck.format` — nunca com 1080 escrito à mão, §12.
  *
- * Clicar troca o ativo; a barra do pé acrescenta e remove — 2.13, decisão 30. Reordenação
+ * Clicar troca o ativo; a barra do pé acrescenta e remove — 2.13, ADR-0030. Reordenação
  * por arraste e duplicar são das etapas seguintes.
  *
  * **A marca de transbordo não precisou de estado global.** Cada miniatura é um `SlideView`
- * montado, e cada `SlideView` mede a si mesmo (§9 do documento de contexto), então a lista
+ * montado, e cada `SlideView` mede a si mesmo (§1 de `docs/pipeline.md`), então a lista
  * mostra o slide inválido sem que o canvas precise estar nele — o `Item` só guarda o que a
  * própria miniatura lhe contou.
  *
@@ -80,7 +80,7 @@ const Item = memo(function Item({
   active,
   onSelect,
 }: ItemProps) {
-  // O estado é local, e vem da miniatura medindo a si mesma: a §9 do documento de contexto
+  // O estado é local, e vem da miniatura medindo a si mesma: a §1 de `docs/pipeline.md`
   // não guarda transbordo no store, e `setOverflow` já é estável, então o `memo` continua
   // valendo. `useState` do React, e não `useEditor`.
   const [overflow, setOverflow] = useState(false);

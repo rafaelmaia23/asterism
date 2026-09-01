@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * O palco de exportação — decisão 20 da §16 do documento de contexto.
+ * O palco de exportação — ADR-0020.
  *
  * O exportador precisa do **deck inteiro**, e o canvas do editor tem só o slide ativo,
  * exibido numa escala qualquer. Capturar o nó do preview arrastaria a compensação de
@@ -78,7 +78,7 @@ export function collectImageIds(deck: Deck): ImageId[] {
  * `decode()` resolve quando o bitmap está pronto para pintar, que é o que a captura precisa
  * — `complete` mentiria num `blob:` recém-atribuído. Uma imagem que falha em decodificar
  * **não derruba a exportação**: o slide sai com o que houver, que é o mesmo critério da
- * decisão 31, e é bem melhor que um PDF que não sai.
+ * ADR-0031, e é bem melhor que um PDF que não sai.
  */
 async function decodeImages(container: HTMLElement): Promise<void> {
   const images = [...container.querySelectorAll("img")];

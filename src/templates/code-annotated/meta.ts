@@ -40,7 +40,7 @@ export const codeAnnotatedMeta: {
       code: "const key = `user:${id}:${tenant}`",
       body: "A chave não incluía o tenant. Dois clientes com o mesmo id de usuário liam a mesma entrada — e o cache respondia antes do banco, então nenhum log registrava a troca.",
     },
-    // O descritor dá o padrão e o slide decide daí em diante — decisão 25. Nasce assinado,
+    // O descritor dá o padrão e o slide decide daí em diante — ADR-0025. Nasce assinado,
     // que é o rodapé que a §11.0 dá ao miolo do carrossel, e sem chevron: a partir do
     // slide 2 o gesto de deslizar já foi executado.
     options: {

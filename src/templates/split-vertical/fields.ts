@@ -1,16 +1,15 @@
 /**
  * Campos, opções e schema do `split-vertical`, conforme a §11.9 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto.
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
  *
  * ## `image` é declarado aqui, e não em `shared/fields.ts`
  *
  * A §6 exige que a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, e tem:
  * este e o `image-caption` declaram `type: "image"`, então a migração entre os dois preserva
  * a imagem escolhida. O que difere é o `ratio` — 5:16 aqui, 108:91 lá —, e por isso não são
- * o mesmo objeto e a decisão 54 não se aplica. É o precedente do `heading`: o que varia
- * acompanha a **região**, e a região é do template. Decisão 58.
+ * o mesmo objeto e a ADR-0054 não se aplica. É o precedente do `heading`: o que varia
+ * acompanha a **região**, e a região é do template. ADR-0058.
  *
  * ## `imageFit` também não é compartilhada
  *
@@ -74,7 +73,7 @@ export const splitVerticalSchema = z.object({
     heading: z.string(),
     body: z.string(),
     // Qualquer string, inclusive um id órfão: o blob pode não estar mais no IndexedDB, e a
-    // §11.9 quer o slide de pé com a imagem faltando. Decisão 31 — derruba-se o que não
+    // §11.9 quer o slide de pé com a imagem faltando. ADR-0031 — derruba-se o que não
     // passa, e um id órfão passa.
     image: z.string(),
   }),

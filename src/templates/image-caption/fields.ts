@@ -1,8 +1,7 @@
 /**
  * Campos, opções e schema do `image-caption`, conforme a §11.10 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto.
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
  *
  * ## `caption` é chave canônica, e é o único template que a declara
  *
@@ -16,7 +15,7 @@
  * A §6 exige que a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, e tem
  * — é isso que faz trocar entre os dois templates de mídia preservar a imagem escolhida. O
  * que difere é o `ratio`, que acompanha a região, e a região é do template: 108:91 aqui,
- * 5:16 lá. Decisão 58. O `imageFit` idem, pelo que a §11.9 escreve: compartilhada é o que os
+ * 5:16 lá. ADR-0058. O `imageFit` idem, pelo que a §11.9 escreve: compartilhada é o que os
  * **dez** expõem, e dois de dez é opção própria declarada duas vezes.
  */
 

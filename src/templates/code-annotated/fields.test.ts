@@ -50,7 +50,7 @@ describe("code-annotated", () => {
     ]);
   });
 
-  test("o kicker é o campo compartilhado, não uma cópia — decisão 14", () => {
+  test("o kicker é o campo compartilhado, não uma cópia — ADR-0014", () => {
     expect(fields.find((field) => field.key === "kicker")).toBe(kickerField);
   });
 
@@ -73,7 +73,7 @@ describe("code-annotated", () => {
   });
 
   /**
-   * `body` é a chave canônica, e não uma `note` própria — decisão 45. O papel é o mesmo
+   * `body` é a chave canônica, e não uma `note` própria — ADR-0045. O papel é o mesmo
    * texto corrido do `context`, e a chave compartilhada faz a troca entre os dois preservar
    * o que foi escrito. O descritor **não** é o mesmo objeto: o limite acompanha a região, e
    * 180 aqui contra 320 lá é a diferença entre quatro linhas e oito.

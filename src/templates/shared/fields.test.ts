@@ -24,7 +24,7 @@ describe("campos compartilhados do slide", () => {
     });
   });
 
-  /** Decisão 14: o kicker é digitado, não derivado de `meta.pillar` com a posição. */
+  /** ADR-0014: o kicker é digitado, não derivado de `meta.pillar` com a posição. */
   test("o kicker não aceita marcação", () => {
     expect(kickerField).not.toHaveProperty("md", true);
   });
@@ -50,7 +50,7 @@ describe("campos compartilhados do slide", () => {
 /**
  * Os três descritores do bloco de código, o segundo caso do argumento do `kickerField`.
  *
- * A §6 do documento de contexto não pede só que `code`, `file` e `lang` tenham o mesmo
+ * A §1 de `docs/model.md` não pede só que `code`, `file` e `lang` tenham o mesmo
  * **papel** nos dois templates de código: pede que tenham a mesma **forma**, porque a
  * migração compara as duas coisas e uma chave cuja forma não bate fica com o default do
  * destino. E a própria §6 diz como se cumpre a promessa — "um descritor compartilhado é o

@@ -1,5 +1,5 @@
 /**
- * A AST da marcação inline — §7 do documento de contexto.
+ * A AST da marcação inline — §2 de `docs/model.md`.
  *
  * Oito variantes, todas com a mesma forma `{ t, v }`: um discriminante e o texto cru que
  * o marcador delimitou. Não há filhos, e é de propósito — marcadores não aninham, então
@@ -7,7 +7,7 @@
  * marcador externo com asteriscos literais no `v`.
  *
  * Este módulo não importa React e nunca vai importar: o parser é o primeiro estágio e não
- * sabe que existe DOM. É a §5 do documento de contexto aplicada — nenhum estágio conhece
+ * sabe que existe DOM. É a §1 de `docs/architecture.md` aplicada — nenhum estágio conhece
  * o seguinte. Quem transforma isto em elemento é o `<Inline>`, ao lado.
  */
 

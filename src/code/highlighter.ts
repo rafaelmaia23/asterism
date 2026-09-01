@@ -1,5 +1,5 @@
 /**
- * O realce, e ele é **síncrono** — decisão 51 da §16 do documento de contexto.
+ * O realce, e ele é **síncrono** — ADR-0051.
  *
  * A 3D esperava a armadilha oposta: o shiki realça de forma assíncrona, o palco de
  * exportação espera `document.fonts.ready` e mais nada, e o HTML realçado chegaria depois

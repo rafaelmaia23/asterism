@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { parseInline } from "@/markup/parse";
 
 /**
- * A matriz desta suíte é o alvo de cobertura séria da v1 — §7 do documento de contexto.
+ * A matriz desta suíte é o alvo de cobertura séria da v1 — §2 de `docs/model.md`.
  * `parseInline` é função pura, sem DOM e sem dependência: é o teste mais barato do
  * projeto e o que protege o único pedaço de lógica que todo template vai atravessar.
  */
@@ -72,7 +72,7 @@ describe("parseInline", () => {
     ]);
   });
 
-  /** A regra da decisão 33: o tokenizer não conhece limite de palavra. */
+  /** A regra da ADR-0033: o tokenizer não conhece limite de palavra. */
   test("marcador no meio de palavra vale, sem regra de limite de palavra", () => {
     expect(parseInline("micro**serviços**")).toEqual([
       { t: "text", v: "micro" },

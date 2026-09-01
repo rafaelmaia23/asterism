@@ -1,5 +1,5 @@
 /**
- * A validação do que volta do localStorage — tarefa 2.12, decisão 31 da §16.
+ * A validação do que volta do localStorage — tarefa 2.12, ADR-0031 da §16.
  *
  * **Reidratar valida, e descarta slide a slide.** O que está salvo deixa de bater com o
  * código quando um template some, muda de chave ou muda de tipo — e num projeto de um
@@ -10,7 +10,7 @@
  *
  * São duas perguntas por slide, e a segunda é de graça: o template ainda existe? e o
  * conteúdo passa no schema que **ele próprio** declara? Cada template já carrega o seu
- * desde a 1B, e é por isso que a decisão 31 custa vinte linhas em vez de uma tabela de
+ * desde a 1B, e é por isso que a ADR-0031 custa vinte linhas em vez de uma tabela de
  * migração.
  *
  * ## Chave que falta não é dado torto, é dado velho
@@ -25,7 +25,7 @@
  *   slides reprovariam de uma vez, e o editor abriria na semente.
  * - **Uma chave tem valor de outra forma** — `items` como string onde o descritor promete
  *   lista. Aí o default não salva ninguém: o valor errado sobrescreve o certo e o slide cai,
- *   que é o comportamento da decisão 31 intacto.
+ *   que é o comportamento da ADR-0031 intacto.
  *
  * E o que volta é o **resultado do parse**, não o slide cru: o zod remove chave que o
  * template não declara mais. Sem isso o dado velho ficaria pendurado para sempre — invisível

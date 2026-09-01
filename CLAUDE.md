@@ -28,11 +28,17 @@ idb-keyval.
 
 ## Documentos de referência
 
-Ficam em `docs/`, escritos em português. Cada um tem uma autoridade:
+Ficam em `docs/`, menos o glossário, que fica na raiz. Todos em português — só os
+nomes de arquivo e os termos do glossário são em inglês. Cada um tem uma autoridade:
 
 | Documento | Vence em |
 |---|---|
-| `asterism-context.md` | Arquitetura, modelo de dados, escopo, decisões registradas |
+| `CONTEXT.md`, na raiz | O vocabulário: o que cada termo significa, e qual palavra usar |
+| `docs/model.md` | O dado: deck, marcação, elementos e presets, estado e persistência |
+| `docs/pipeline.md` | O caminho do dado até o arquivo: renderização e exportação |
+| `docs/architecture.md` | Princípios, formato como dado, stack e armadilhas conhecidas |
+| `docs/product.md` | Problema, escopo, não-objetivos, interface e roadmap |
+| `docs/adr/` | As decisões registradas, uma por arquivo, endereçadas `ADR-NNNN` |
 | `observatorio-design-system.md` | Qualquer questão visual; é quem regenera o `theme.css` |
 | `observatorio-elementos.md` | Os doze elementos, a pilha vertical e os dez presets |
 | `theme.css` | Nada — é artefato derivado do design system |
@@ -44,7 +50,8 @@ Em conflito entre um documento e o código, o documento vence.
 Nenhum deles é para ser lido inteiro. O design system tem um **mapa na §0** que diz o que
 cada seção decide e quando abri-la — leia o mapa antes da seção, e a seção por faixa de
 linha. Referência `§N` sem nome de documento significa o próprio documento; referência a
-outro sempre o nomeia.
+outro sempre o nomeia — `§2 de docs/model.md`. Decisão se cita pelo endereço dela,
+`ADR-0050`, que é o nome do arquivo em `docs/adr/` e nunca muda.
 
 `docs/theme.css` e `src/app/globals.css` compartilham o mesmo bloco de tokens, entre os
 marcadores `BEGIN/END Observatório`. Mudou um, muda o outro.
@@ -124,8 +131,7 @@ Fonte de CDN não é inlinada na captura e o PDF sai em Arial.
 
 **O reset do Tailwind não atravessa a captura.** Dentro do `foreignObject` vale a folha do
 agente de usuário: `<p>`, `<h2>` e `<ul>` recuperam `1em` de margem, que a 72px são 72px de
-espaçamento inventado. O `rasterize` reinjeta o reset por `onCloneNode` — decisão 50, §13 do
-documento de contexto. Layout do PDF que não bate com o preview começa a se investigar aqui.
+espaçamento inventado. O `rasterize` reinjeta o reset por `onCloneNode` — ADR-0050, §3 de `docs/architecture.md`. Layout do PDF que não bate com o preview começa a se investigar aqui.
 
 **Sonda de medida não pode pintar o nó medido.** Dar fundo a um elemento para achá-lo no
 bitmap cria um atributo `style`, e isso muda o que a clonagem copia — o defeito some
@@ -142,7 +148,7 @@ ou `data-*` é divergência de hidratação. Identificador de formulário sai de
 **Elemento medido por `ResizeObserver` não pode ser dimensionado pelo que ele contém.**
 O que se mede fica preso a algo de fora — altura de viewport, não altura mínima — e o que
 a medida desenha fica fora do fluxo. Caso contrário a escala se realimenta e o slide
-cresce sozinho. Ver a §13 do documento de contexto.
+cresce sozinho. Ver a §3 de `docs/architecture.md`.
 
 ## Agent skills
 
@@ -163,5 +169,6 @@ O vocabulário canônico dos cinco papéis, sem renomear: `needs-triage`, `needs
 
 ### Domain docs
 
-Contexto único: um `CONTEXT.md` e um `docs/adr/` na raiz, ambos criados sob demanda pelo
-`/domain-modeling`. Ver `docs/agents/domain.md`.
+Contexto único: o `CONTEXT.md` da raiz é o glossário, e `docs/adr/` guarda as decisões,
+uma por arquivo. Os dois existem desde a reorganização da ADR-0075. Ver
+`docs/agents/domain.md`.

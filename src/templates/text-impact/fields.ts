@@ -1,8 +1,8 @@
 /**
  * Campos, opções e schema do `text-impact`, conforme a §11.5 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto. São duas descrições da mesma coisa de propósito, e o teste é
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
+ * São duas descrições da mesma coisa de propósito, e o teste é
  * quem garante que não divirjam.
  *
  * O template mais magro da biblioteca: o kicker compartilhado e a frase, e nada mais.

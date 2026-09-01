@@ -34,13 +34,13 @@ export const finalCtaMeta: {
       lead: "Backend, infra e o que aprendo quebrando os dois.",
       cta: "blog.maiahub.com.br",
     },
-    // O rodapé completo é a decisão 29: o último slide é onde o handle mais importa,
+    // O rodapé completo é a ADR-0029: o último slide é onde o handle mais importa,
     // porque quem chegou até o fim é quem vai seguir. O CTA no miolo não compete com ele
     // — 34px mono `azure-400` no conteúdo contra 28px `ink-400` no rodapé são
     // hierarquias distintas, não duas vozes no mesmo canto.
     //
     // Sem chevron: aqui não há para onde deslizar. O `Footer` suprimiria a seta de
-    // qualquer forma por posição — decisão 36 —, e nascer desligada é o padrão honesto.
+    // qualquer forma por posição — ADR-0036 —, e nascer desligada é o padrão honesto.
     //
     // E sem cabeçalho: a região 80–400 é respiro, e a §11.3 diz que ela não é elemento, é
     // a ausência de um. O kicker cabe ali sem empurrar nada — é o que faz o cabeçalho ser

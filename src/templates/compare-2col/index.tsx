@@ -10,7 +10,7 @@
  *   Colunas ⌐   294 – 1160   duas colunas, as duas ancoradas ao TOPO
  *   Rodapé     1238 – 1270   o `Footer` compartilhado, que se posiciona sozinho
  *
- * São as mesmas quatro combinações de cabeçalho e título do `context` — decisão 43 —, e
+ * São as mesmas quatro combinações de cabeçalho e título do `context` — ADR-0043 —, e
  * nas quatro as colunas acabam em 1160, no topo do rodapé.
  *
  * ## 428 + 64 + 428
@@ -70,7 +70,7 @@ const COLUMNS_BAND = {
 /**
  * Um lado da comparação. Os 24px entre as três peças são da §11.8, e não dos gaps da §4.2:
  * dentro da coluna o ritmo é o da coluna, como dentro da janela de código o ritmo é o do
- * `--slide-pad-code`. A régua é `slide-hairline` e não `h-px` — decisão 38, senão a linha
+ * `--slide-pad-code`. A régua é `slide-hairline` e não `h-px` — ADR-0038, senão a linha
  * some no preview reduzido e aparece só no PDF.
  */
 function Column({ side, label, children }: { side: string; label: string; children: string }) {

@@ -48,7 +48,7 @@ describe("reviveDeck", () => {
   });
 
   /**
-   * A decisão 31: o que está salvo deixa de bater com o código quando um template some, e
+   * A ADR-0031: o que está salvo deixa de bater com o código quando um template some, e
    * a resposta é derrubar só o slide que não passa. Tudo-ou-nada apagaria o carrossel
    * inteiro por causa de um slide.
    */

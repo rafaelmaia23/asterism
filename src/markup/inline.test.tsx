@@ -37,7 +37,7 @@ describe("Inline", () => {
 
       expect(strong?.textContent).toBe("forte");
       // `slide-strong`, e não `font-semibold`: em Oxanium 700 um 600 fixo deixaria o
-      // título mais leve. Decisão 34 da §16 do documento de contexto.
+      // título mais leve. ADR-0034.
       expect(strong?.className).toContain("slide-strong");
     });
 

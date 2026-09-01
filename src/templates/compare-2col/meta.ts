@@ -39,7 +39,7 @@ export const compare2colMeta: {
       after:
         "Um alerta por invariante de negócio: duas respostas com tenants diferentes para a mesma chave.",
     },
-    // O descritor dá o padrão e o slide decide daí em diante — decisão 25. Nasce assinado,
+    // O descritor dá o padrão e o slide decide daí em diante — ADR-0025. Nasce assinado,
     // que é o rodapé que a §11.0 dá ao miolo do carrossel, e sem chevron: a partir do
     // slide 2 o gesto de deslizar já foi executado.
     options: {

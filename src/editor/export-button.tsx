@@ -6,7 +6,7 @@
  * **Ele não sabe quais alvos existem**: pergunta ao registry e desenha um botão por
  * resposta, com o rótulo que o alvo declarou. Hoje isso dá um botão, "PDF". Um alvo PNG
  * amanhã aparece aqui sem que este arquivo seja editado — e o menu com escolha de alvo da
- * §14 do documento de contexto entra quando houver mais de um para escolher.
+ * §5 de `docs/product.md` entra quando houver mais de um para escolher.
  *
  * Enquanto a captura acontece o botão fica desabilitado: são segundos com o deck inteiro
  * sendo rasterizado, e um segundo clique montaria um segundo palco por cima do primeiro.
@@ -19,7 +19,7 @@
  *
  * `running` guarda o **id do alvo**, não um booleano, e é o que deixa o spinner aparecer só no
  * botão que está trabalhando enquanto todos ficam desabilitados. Com um alvo só isso não se
- * nota; com o PNG da §10 do documento de contexto, nota.
+ * nota; com o PNG da §2 de `docs/pipeline.md`, nota.
  *
  * Sob `prefers-reduced-motion` o ícone não gira. Ele continua sendo outro ícone, e o
  * `aria-busy` continua dizendo a mesma coisa a quem não olha para nenhum dos dois — a §7 pede

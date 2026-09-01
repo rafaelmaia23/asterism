@@ -14,11 +14,11 @@ If either doesn't exist, **proceed silently**. Don't flag their absence; don't s
 creating them upfront. The `/domain-modeling` skill creates them lazily, when terms or
 decisions actually get resolved.
 
-Note that neither exists yet. What this repo does have, and what stands in for them until
-they do, is the reference set described in `CLAUDE.md` under "Documentos de referência" —
-`docs/asterism-context.md` holds the architecture, the data model and the numbered
-decisions; `docs/observatorio-design-system.md` and `docs/observatorio-elementos.md` hold
-the visual vocabulary and the element library. Those are written in Portuguese and are not meant to
+Both exist. Alongside them is the reference set described in `CLAUDE.md` under
+"Documentos de referência" — `docs/model.md`, `docs/pipeline.md`, `docs/architecture.md`
+and `docs/product.md` hold the norm the glossary's terms obey, and
+`docs/observatorio-design-system.md` and `docs/observatorio-elementos.md` hold the visual
+vocabulary and the element library. Those are written in Portuguese and are not meant to
 be read whole; follow the reading rules in `CLAUDE.md`. In a conflict between a document
 and the code, the document wins.
 

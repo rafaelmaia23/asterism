@@ -1,5 +1,5 @@
 /**
- * O modelo de dados da §6 do documento de contexto. Este módulo não importa nada — nem
+ * O modelo de dados da §1 de `docs/model.md`. Este módulo não importa nada — nem
  * do projeto, nem de biblioteca. A seta é `templates → deck`: quem conhece a biblioteca
  * de templates é o registry, nunca o contrário.
  */

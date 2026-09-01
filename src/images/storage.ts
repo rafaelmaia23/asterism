@@ -1,13 +1,13 @@
 /**
- * As imagens no IndexedDB — §11 do documento de contexto, tarefa 3.15.
+ * As imagens no IndexedDB — §4 de `docs/model.md`, tarefa 3.15.
  *
  * O deck guarda apenas o `ImageId`; o binário mora aqui. O `persist` do store escreve o
  * deck no `localStorage`, que tem ~5 MB, e **uma única foto em base64 estoura a cota** —
- * decisão 7. Por isso os dois armazenamentos são separados e por isso este módulo não sabe
+ * ADR-0007. Por isso os dois armazenamentos são separados e por isso este módulo não sabe
  * o que é um deck: ele guarda blob por id, e quem liga uma coisa à outra é o campo do
  * template.
  *
- * ## Blob órfão não é coletado — decisão 57
+ * ## Blob órfão não é coletado — ADR-0057
  *
  * Trocar a imagem de um slide, ou remover o slide, deixa o blob anterior aqui sem ninguém
  * apontando para ele. A 3F não apaga nada, e é escolha: o `zundo` da Etapa 4 devolve um
@@ -72,7 +72,7 @@ export function setImageBackend(next: ImageBackend): () => void {
  *
  * O id é `crypto.randomUUID()`, e ao contrário do id de slide ele não corre risco de
  * divergência de hidratação: nasce de um clique, no navegador, e nunca de uma renderização
- * que acontece dos dois lados. Ver a §13 do documento de contexto.
+ * que acontece dos dois lados. Ver a §3 de `docs/architecture.md`.
  */
 export async function putImage(blob: Blob): Promise<ImageId> {
   const id = crypto.randomUUID();

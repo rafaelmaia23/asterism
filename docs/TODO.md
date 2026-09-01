@@ -4,8 +4,10 @@
 > carrossel real com a biblioteca inteira. **O primeiro uso real dela abriu a Etapa 3½**,
 > que troca o modelo de conteúdo: um slide deixa de ser `template + campos fixos` e passa a
 > ser layout mais uma lista ordenada de elementos. A **C-A está concluída** — os documentos
-> estão em dia e as decisões 60 a 74 registradas —, e a próxima sessão abre a **C-B**, que é
-> a que faz o enter funcionar.
+> estão em dia e as ADR-0060 a ADR-0074 registradas —, e a próxima sessão abre a **C-B**, que é
+> a que faz o enter funcionar. Entre as duas entrou uma **sessão de documento fora da
+> etapa**: o `asterism-context.md` foi partido em quatro documentos, um glossário e 74
+> ADRs — ADR-0075.
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3½ têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -13,7 +15,7 @@
 
 ## Mapeamento com o roadmap
 
-O roadmap da §15 do documento de contexto tem quatro fases. Este plano tem cinco etapas,
+O roadmap da §6 de `docs/product.md` tem quatro fases. Este plano tem cinco etapas,
 porque a Fase 1 é grande demais para uma etapa só e vale a pena separar a prova de que o
 caminho funciona da construção da biblioteca:
 
@@ -39,7 +41,7 @@ e `dev`; `CLAUDE.md`; este arquivo.
 
 A verificação visual pegou dois bugs, corrigidos: a escala `ink` sem cor, por
 tree-shaking de token do Tailwind, e o grid de fundo com linhas somindo, por causa do
-meio pixel. Ver decisões 15 e as armadilhas da §13 do documento de contexto.
+meio pixel. Ver ADR-0015 e as armadilhas da §3 de `docs/architecture.md`.
 
 Os componentes de logo maiahub entraram em `src/components/maiahub/`, com a estrela
 mapeada para `azure-400`. Documentação em `docs/maiahub-logo.md`.
@@ -79,7 +81,7 @@ Instalou `vitest`, `happy-dom`, `@testing-library/react`, `@testing-library/dom`
 `node_modules/next/dist/docs/01-app/02-guides/testing/vitest.md`, com duas trocas:
 `happy-dom` no lugar de jsdom e **sem `@vitejs/plugin-react`**, que conflita com o Babel
 7 fixado pelo `shadcn` e não serve para nada numa rodada de teste — o JSX sai do
-`"jsx": "react-jsx"` do `tsconfig.json`. Ver a §13 do documento de contexto. É
+`"jsx": "react-jsx"` do `tsconfig.json`. Ver a §3 de `docs/architecture.md`. É
 `vite-tsconfig-paths` que faz o alias `@/` resolver.
 
 | # | Tarefa | Critério de pronto |
@@ -98,7 +100,7 @@ Resolvido na sessão: `FieldValue` é `string | string[]` e `OptionValue` é
 `string | boolean`; `TemplateId` é `string`; `DeckMeta` é só `handle` e `pillar`;
 `createDeck` recebe um init parcial opcional e nasce com `slides: []`. A cópia dos
 defaults em `createSlide` é profunda — `structuredClone` — senão dois slides do mesmo
-template compartilhariam o array de um campo `list`. A §6 do documento de contexto foi
+template compartilhariam o array de um campo `list`. A §1 de `docs/model.md` foi
 atualizada junto.
 
 ### 1B — registry e o primeiro template ✅
@@ -107,10 +109,10 @@ Instalou `zod` 4.4.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 1.4 | Tipos `TemplateDef` e `Field` em `src/templates/types.ts` — o descritor declarativo da §8 do documento de contexto | Os sete tipos de `Field` compilam; `TemplateDef` é genérico em `F` e `O` |
+| 1.4 | Tipos `TemplateDef` e `Field` em `src/templates/types.ts` — o descritor declarativo da §3 de `docs/model.md` | Os sete tipos de `Field` compilam; `TemplateDef` é genérico em `F` e `O` |
 | 1.5 | Registry de templates — `register`, `get`, `list` | Testes antes: registrar e recuperar, `list` preserva ordem de registro, `get` de id desconhecido lança |
-| 1.5a | As oito `@utility slide-*` da escala tipográfica da §3.3 do design system — decisão 19 | `globals.css` e `docs/theme.css` recebem o mesmo bloco; cada utility carrega família, tamanho, altura, peso e tracking, e `slide-meta` inclui a caixa alta. A §3.3 do design system ganha a nota no mesmo commit |
-| 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` da §11.1 dos templates validam contra o próprio schema, verificado em teste. `kicker` é campo digitado, não derivado — decisão 14 |
+| 1.5a | As oito `@utility slide-*` da escala tipográfica da §3.3 do design system — ADR-0019 | `globals.css` e `docs/theme.css` recebem o mesmo bloco; cada utility carrega família, tamanho, altura, peso e tracking, e `slide-meta` inclui a caixa alta. A §3.3 do design system ganha a nota no mesmo commit |
+| 1.6 | `cover-statement`: `meta.ts` e `fields.ts` com descritores e schema zod | `defaults` da §11.1 dos templates validam contra o próprio schema, verificado em teste. `kicker` é campo digitado, não derivado — ADR-0014 |
 | 1.7 | `cover-statement`: `index.tsx` com as regiões da §11.1 dos templates, texto literal | Kicker em 80–148, título ancorado à **base** da região 300–1160; título de uma linha e de quatro linhas pousam na mesma altura |
 
 `src/templates/index.ts` é o único lugar que importa e registra template. A conferência
@@ -133,12 +135,12 @@ Resolvido na sessão:
   existiria para eles. **Menos em desenvolvimento**, onde registrar de novo substitui:
   ajuste da 1D, porque ali o segundo registro é o HMR reavaliando `templates/index.ts` sem
   reavaliar o registry, e lançar derrubava o `next dev` a cada edição.
-- `meta.ts` guarda os cinco campos que a §8 do documento de contexto lhe dá; o
+- `meta.ts` guarda os cinco campos que a §3 de `docs/model.md` lhe dá; o
   `TemplateDef` completo é montado no `index.tsx`, que é quem tem o `Component`.
 - O critério de pronto da 1.7 — uma linha e quatro linhas pousando na mesma altura — não
   é verificável em `happy-dom`, que não faz layout. O teste do template é smoke; a
   âncora se confere olhando, na 1C.
-- A §8 do documento de contexto ganhou os limites de `F` e `O`, que são o que torna
+- A §3 de `docs/model.md` ganhou os limites de `F` e `O`, que são o que torna
   `defaults` atribuível ao `SlideDefaults` da §6, e a nota de por que o registry guarda
   `TemplateDef<any, any>`.
 
@@ -152,7 +154,7 @@ Resolvido na sessão:
 | 1.16 | `src/app/page.tsx` deixa de ser a página de verificação do tema e vira o shell de três colunas | Centro com o canvas funcionando; laterais como espaço reservado. A página de tema já cumpriu o papel e está no histórico |
 
 O `k` vem de um `ResizeObserver` na área central, `min(w / 1080, h / 1350)`: auto-fit, sem
-seletor de zoom — decisão 22.
+seletor de zoom — ADR-0022.
 
 Resolvido na sessão:
 
@@ -188,7 +190,7 @@ Resolvido na sessão:
   `ResizeObserver` tinha altura dirigida pelo conteúdo, então o quadro esticava a área que
   o media e cada medida realimentava uma escala maior. Corrigido em dois pontos, e os dois
   ficam: o `body` passou a ter altura de viewport em vez de altura mínima, e o quadro saiu
-  do fluxo, num palco `absolute` dentro da área. A §13 do documento de contexto e o
+  do fluxo, num palco `absolute` dentro da área. A §3 de `docs/architecture.md` e o
   `CLAUDE.md` ganharam a armadilha, que volta na 1E com o palco de exportação.
 - **A medição roda em layout effect, com uma primeira leitura síncrona.** Sem isso o
   quadro aparece num tamanho e se ajusta no quadro seguinte, o que se lê como animação.
@@ -211,14 +213,14 @@ troca de slide ativo e o laço de páginas do alvo PDF ficariam sem prova até a
 **Ajuste de escopo, decidido na sessão.** A 1.11 escrevia `text` e `textarea` só. O
 `toggle` entrou junto, com `setOption` no store e o `switch` do shadcn: sem ele o
 `showChevron` do `cover-statement` nasceria sem controle e a separação `fields`/`options`
-da §6 do documento de contexto ficaria sem prova até a Etapa 2. Os tipos que sobram —
+da §1 de `docs/model.md` ficaria sem prova até a Etapa 2. Os tipos que sobram —
 `list`, `image`, `code`, `select` — não têm controle ainda, e o inspector os desenha como
 linha inerte com o rótulo, para que um campo novo nunca suma do formulário em silêncio.
 
 Resolvido na sessão:
 
 - **O store é uma factory mais um singleton**, em `src/editor/store.ts`, sem provider de
-  contexto — decisão 24. A factory é o que deixa cada teste montar um deck de fixture sem
+  contexto — ADR-0024. A factory é o que deixa cada teste montar um deck de fixture sem
   estado global atravessando de um caso para o outro, e o inspector e a lista recebem o
   store por prop com o singleton como padrão. Provider só se paga com dois decks vivos ao
   mesmo tempo, que é a tela de listagem da Etapa 4.
@@ -228,7 +230,7 @@ Resolvido na sessão:
   desconhecido. Nenhuma tela oferece um slide que o deck não tem, então é erro de
   programação e não estado de runtime a tratar.
 - **A lista distingue três capas seguidas pelo trecho do `heading`.** É o primeiro uso
-  prático do vocabulário canônico da §6 do documento de contexto fora dos templates: a
+  prático do vocabulário canônico da §1 de `docs/model.md` fora dos templates: a
   lista lê a mesma chave em qualquer template e continua sem conhecer nenhum.
 - **A auditoria do `textarea` e do `switch` contra a §9 do design system não pediu
   ajuste.** O switch ligado já é `primary` com o polegar em `primary-foreground`, que é o
@@ -246,8 +248,8 @@ A conferência visual no navegador rendeu mais cinco ajustes, e todos entraram n
 
 - **Erro de hidratação no inspector.** Os `id` dos controles saíam de `slide.id`, que vem
   de `crypto.randomUUID()`: um valor na pré-renderização estática, outro no cliente, e o
-  React não remenda atributo. Passaram a sair do `useId`. Virou armadilha na §13 do
-  documento de contexto e no `CLAUDE.md`, e a decisão 24 foi corrigida — manter id de dado
+  React não remenda atributo. Passaram a sair do `useId`. Virou armadilha na §3 de
+  `docs/architecture.md` e no `CLAUDE.md`, e a ADR-0024 foi corrigida — manter id de dado
   fora do DOM é condição que o código sustenta, não consequência do desenho.
 - **`register` derrubava o `next dev` a cada edição**, porque o HMR reavalia
   `templates/index.ts` sem reavaliar o registry. Em desenvolvimento passa a substituir.
@@ -256,7 +258,7 @@ A conferência visual no navegador rendeu mais cinco ajustes, e todos entraram n
   fixa — sem `ResizeObserver`, que num item de lista traria de volta o laço da 1C — e o
   item da lista é memoizado por referência de slide, senão cada tecla digitada
   re-renderizaria a árvore completa de todos os slides do deck.
-- **A grade de fundo virou opção do slide** — decisão 25, e a §4.3 do design system mudou
+- **A grade de fundo virou opção do slide** — ADR-0025, e a §4.3 do design system mudou
   junto. Era propriedade fixa do template; agora o `background` do descritor é só o padrão
   com que o slide nasce. O descritor de `showGrid` mora em `src/templates/shared/`, um só
   para os dez templates.
@@ -271,8 +273,8 @@ Instala `modern-screenshot` e `jspdf`.
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 1.13 | `rasterize(source, escala)` sobre `modern-screenshot`, escala 2 | Devolve um `Frame` de 2160×2700 com as fontes inlinadas — conferir que o bitmap não saiu em Arial |
-| 1.13a | Palco de exportação oculto — decisão 20 | Monta todos os slides do deck fora da tela, com layout real e `--slide-scale: 1`, espera `document.fonts.ready`, entrega os `RenderSource` e desmonta. Nunca captura o nó de dentro do wrapper escalado, senão a compensação de espessura do preview vaza para o arquivo |
-| 1.14 | Registry de alvos de exportação + alvo `pdf` com jsPDF, uma página por slide | `unit: "pt"`, `format: [1080, 1350]` — decisão 21. `ExportResult` devolve lista de arquivos mesmo com um só; o alvo não conhece nenhum template |
+| 1.13a | Palco de exportação oculto — ADR-0020 | Monta todos os slides do deck fora da tela, com layout real e `--slide-scale: 1`, espera `document.fonts.ready`, entrega os `RenderSource` e desmonta. Nunca captura o nó de dentro do wrapper escalado, senão a compensação de espessura do preview vaza para o arquivo |
+| 1.14 | Registry de alvos de exportação + alvo `pdf` com jsPDF, uma página por slide | `unit: "pt"`, `format: [1080, 1350]` — ADR-0021. `ExportResult` devolve lista de arquivos mesmo com um só; o alvo não conhece nenhum template |
 | 1.15 | Botão de exportação na barra superior | Clicar baixa o PDF; o botão não sabe quais alvos existem, só consulta o registry |
 
 Fecho da etapa: abrir o PDF fora da ferramenta e conferir as três páginas, a Oxanium e o
@@ -280,12 +282,12 @@ grid. Se o título sair em Arial, o problema é inlining de fonte, não o alvo.
 
 Resolvido na sessão:
 
-- **`Frame` carrega PNG em data URL** — decisão 26. É o que o jsPDF consome direto em
+- **`Frame` carrega PNG em data URL** — ADR-0026. É o que o jsPDF consome direto em
   `addImage` e o que um teste inspeciona sem canvas, que `happy-dom` não tem. Devolver o
   `HTMLCanvasElement` deixaria o alvo trocar de codificação sem recapturar — o plano de
-  contingência da §13 do documento de contexto, se um deck com fotos estourar o tamanho —
+  contingência da §3 de `docs/architecture.md`, se um deck com fotos estourar o tamanho —
   ao preço de o `Frame` deixar de ser dado e passar a ser objeto de DOM vivo.
-- **O registry virou genérico**, em `src/lib/registry.ts` — decisão 27. A §10 já dizia que
+- **O registry virou genérico**, em `src/lib/registry.ts` — ADR-0027. A §10 já dizia que
   o registry de alvos é idêntico ao dos templates; agora é literalmente o mesmo, e a regra
   de HMR que a 1D descobriu vale para alvo sem ser escrita duas vezes.
 - **O palco expõe o nó pelo `SlideFrame`, não por seletor no DOM.** O quadro ganhou um
@@ -313,7 +315,7 @@ Resolvido na sessão:
 A conferência do PDF aprovou tudo menos a grade, e o conserto rendeu a mudança visual da
 sub-etapa:
 
-- **A grade de fundo virou elemento** — decisão 28, e a §4.3 do design system reescrita.
+- **A grade de fundo virou elemento** — ADR-0028, e a §4.3 do design system reescrita.
   O que o arquivo mostrava era um módulo desenhado no canto e o resto da página chapado de
   `ink-800`: gradiente não sobrevive à rasterização. Virou um `<svg>` com linhas de
   verdade, desenhado por `src/render/slide-grid.tsx`.
@@ -334,10 +336,10 @@ sub-etapa:
 **Objetivo.** Os três templates da Fase 1 especificados no design system, com a marcação
 inline funcionando. Ao fim desta etapa a ferramenta publica um carrossel real.
 
-**Fora desta etapa.** Os outros sete templates, shiki, guard de transbordo — decisão 32 —,
+**Fora desta etapa.** Os outros sete templates, shiki, guard de transbordo — ADR-0032 —,
 imagens, undo/redo, múltiplos decks, e o resto do que a Etapa 4 promete para a lista
 lateral: reordenação por arraste e duplicar. Acrescentar e remover slide são a exceção,
-pela decisão 30.
+pela ADR-0030.
 
 **Pronto quando** um carrossel de 8 a 12 slides é composto com os três templates,
 usando marcação, e exportado para publicação no LinkedIn sem retoque externo.
@@ -346,7 +348,7 @@ usando marcação, e exportado para publicação no LinkedIn sem retoque externo
 `cover-statement`, sete `text-bullets` e o `final-cta` —, em `src/editor/seed.ts`, e é o que
 a ferramenta abre na primeira execução. A composição mudou duas vezes depois: a 3C trocou
 duas capas pelo `text-impact` e a 3G o recompôs com os dez templates. As quinze tarefas saíram; a 2.5 dissolveu-se na 2.8 e na 2.9, a
-2.4a e a 2.4b nasceram de experimentos, e a 2.13 da decisão 30.
+2.4a e a 2.4b nasceram de experimentos, e a 2.13 da ADR-0030.
 
 A **2F** veio depois disso, e é o que compor o carrossel de verdade cobrou do que já
 existia: quatro ajustes de uso, nenhum template novo. Ela não reabre o critério de pronto —
@@ -360,14 +362,14 @@ pode ser abandonado sem deixar meio caminho. Uma sub-etapa por sessão, uma bran
 sub-etapa.
 
 Dois ajustes de escopo que a divisão tornou visíveis, e quatro decisões que ela cobrou —
-as decisões 29 a 32 da §16 do documento de contexto:
+as ADR-0029 a ADR-0032 da `docs/adr/`:
 
 - **A tarefa 2.5 deixou de existir sozinha.** "Conferir o padrão de fundo dos dois
   templates novos" é verificar que `text-bullets/meta.ts` nasce `plain`, que
   `final-cta/meta.ts` nasce `grid` e que os dois expõem o `showGridOption` compartilhado.
   Isso é critério de pronto de quem escreve o template, não commit próprio: dissolveu-se
   na 2.8 e na 2.9, como a 1.16 se dissolveu na 1C.
-- **Nasceu a 2.13** — `addSlide` e `removeSlide`, decisão 30. O "pronto quando" desta
+- **Nasceu a 2.13** — `addSlide` e `removeSlide`, ADR-0030. O "pronto quando" desta
   etapa pede um carrossel de 8 a 12 slides e o store da 1D não tem como acrescentar um
   slide sequer: sem ela o critério da própria etapa é inalcançável.
 
@@ -382,7 +384,7 @@ componente. Quem chama é o template, que escreve `<Inline>` e nunca vê a AST.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §7 do documento de contexto, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1. Devolve AST, **nunca** HTML |
+| 2.1 | `parseInline(src): Inline[]` — os sete marcadores da §2 de `docs/model.md`, sem aninhamento | TDD pesado, é o alvo de cobertura séria da v1. Devolve AST, **nunca** HTML |
 | 2.2 | `<Inline>` — AST → spans, com os tokens da §10.2 do design system | Os sete marcadores renderizam com a cor e a forma da tabela; `==marca==` com cantos retos, `` `código` `` com raio 6px |
 | 2.3 | `cover-statement` passa a renderizar o título via `<Inline>` | `[[destaque]]` sai em `azure-400` dentro do título em 96px |
 
@@ -404,11 +406,11 @@ Resolvido na sessão:
   em cima, `#60a5fa` no destaque e `#64748b` no riscado. O que matou a grade na 1E era o
   **gradiente**, não o fundo — cor chapada atravessa a rasterização inteira. Fica como
   medida, não como suposição.
-- **O parser não conhece limite de palavra** — decisão 33. `micro**serviços**` marca. Três
+- **O parser não conhece limite de palavra** — ADR-0033. `micro**serviços**` marca. Três
   regras de resolução caíram de graça do desenho de uma varredura só, e todas dão no mesmo
   lugar: marcador não fechado, conteúdo vazio (`****`) e marcador dentro de marcador viram
-  **texto literal**. A §7 do documento de contexto ganhou a tabela.
-- **O peso de `**forte**` virou piso, não valor** — decisão 34, e a §10.2 do design system
+  **texto literal**. A §2 de `docs/model.md` ganhou a tabela.
+- **O peso de `**forte**` virou piso, não valor** — ADR-0034, e a §10.2 do design system
   corrigida junto. Os documentos se contradiziam: 600 fixo sobre a Oxanium 700 do título
   deixaria o trecho marcado mais **leve** que a frase, e a §11.1 dos templates promete que
   ele "não tem efeito visível" ali. Cada `@utility slide-*` passou a publicar o próprio
@@ -442,9 +444,9 @@ Quatro tarefas nasceram na própria sessão, da conferência olhando e do PDF:
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 2.4c | Semente com dois `text-bullets`, um por `anchor` | Sem `addSlide` (2.13) e sem troca de layout (2.11), a semente é o único lugar que decide o que existe na tela, e o select de `anchor` só fica editável na 2C. Sem isto o critério da 2.8 não é conferível |
-| 2.4d | As seis partes do rodapé viram opção do slide — decisões 35 e 36 | Grade, régua, logo, fundo da logo, handle e chevron ligáveis em qualquer template; o descritor dá o padrão. Chevron suprimido no último slide por posição |
+| 2.4d | As seis partes do rodapé viram opção do slide — ADR-0035 e ADR-0036 | Grade, régua, logo, fundo da logo, handle e chevron ligáveis em qualquer template; o descritor dá o padrão. Chevron suprimido no último slide por posição |
 | 2.4e | Experimento 5 — a peça de logo e a faixa do rodapé | Ver abaixo. Decidido, a §10.5 e o `maiahub-logo.md` são atualizados junto |
-| 2.4f | A régua fora do módulo da grade, e a compensação de hairline — decisão 38 | y 1174 em `ink-600`, e `slide-hairline` valendo para qualquer linha fina do canvas. Medido no PDF, não suposto |
+| 2.4f | A régua fora do módulo da grade, e a compensação de hairline — ADR-0038 | y 1174 em `ink-600`, e `slide-hairline` valendo para qualquer linha fina do canvas. Medido no PDF, não suposto |
 
 O `Footer` finalmente tem consumidor: foi por não ter que ele ficou de fora da 1B, quando
 a capa era o único template e é justamente o que não o tem. A 2.4a vem logo atrás porque
@@ -462,19 +464,19 @@ Resolvido na sessão:
 
 - **O rodapé virou uma peça só, e a capa deixou de ser exceção por regra.** A §10.5 dizia
   "presente em todos os slides exceto a capa" e "chevron somente na capa"; as duas frases
-  viraram o **padrão** de cada descritor, na forma da decisão 25. São seis opções —
-  decisões 35 e 36 —, e a capa continua nascendo sem identidade porque a §11.1 tem razão,
+  viraram o **padrão** de cada descritor, na forma da ADR-0025. São seis opções —
+  ADR-0035 e ADR-0036 —, e a capa continua nascendo sem identidade porque a §11.1 tem razão,
   não porque o código a impeça. O `Footer` passou a posicionar a si mesmo, e a capa perdeu
   a linha de rodapé própria: a faixa dela era 1240–1270 e virou 1238–1270, igual à de todos.
 - **A glyph estava apagada, e a medida disse quanto.** Traço de **1,6px** contra 3,75px do
   chevron ao lado e 2px da linha da grade, e a 55% de opacidade — tinta resultante
   ≈`#858993`, mais escura que o `ink-400` do handle. A linha mais fina e mais apagada do
-  slide inteiro. Passou a 2.25 em opacidade cheia com estrela 4.0, decisão 37.
+  slide inteiro. Passou a 2.25 em opacidade cheia com estrela 4.0, ADR-0037.
 - **A régua não sumia do PDF: estava camuflada.** Rasterizado a 72 dpi, o arquivo mostrou
   `#1e293b` nas linhas 1189–1190 com a grade ligada e só em 1190 sem ela. A grade desenha
   horizontais em `54k + 1` com traço de 2px — em k = 22, exatamente 1189–1190 — e a régua
   estava em 1190, no mesmo token. Exportação e rasterização estavam corretas o tempo todo.
-  Decisão 38: y 1174 e `ink-600`. **Conferido depois da correção**, no mesmo PDF e com a
+  ADR-0038: y 1174 e `ink-600`. **Conferido depois da correção**, no mesmo PDF e com a
   mesma sonda: régua em 1174 `#475569`, grade em 1189–1190 `#1e293b`, quinze linhas entre
   as duas. E um sinal a mais, que não estava previsto: a régua tem os **920px** da largura
   útil e a linha da grade atravessa os **1080px** inteiros, então as duas se distinguem
@@ -483,7 +485,7 @@ Resolvido na sessão:
   PDF: preenchimento `#1e293b`, glyph `#e2e8f0` dentro, e a borda `ink-700` antialiasada
   pelo raio de 12px nos cantos. É a segunda medida na mesma direção, depois do fundo de
   `==marca==` na 2A: o que matou a grade na 1E era o **gradiente**, não o fundo.
-- **A compensação de escala da decisão 15 não era um detalhe da grade.** `height: 1px` a
+- **A compensação de escala da ADR-0015 não era um detalhe da grade.** `height: 1px` a
   k = 0,28 dá 0,28 pixel de dispositivo e o navegador não pinta, então a régua aparecia no
   PDF e faltava no preview — o inverso do sintoma que se procura. Virou a utility
   `slide-hairline`, e a §4.3 passou a dizer que a regra vale para qualquer linha fina do
@@ -499,7 +501,7 @@ Resolvido na sessão:
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa; rodapé completo, decisão 29. Nasce `grid` e expõe `showGrid` — o que era a 2.5 |
+| 2.9 | `final-cta` completo — conteúdo ancorado à base, bloco de CTA, opção `showArrow` | Lead vazio faz o bloco desaparecer junto com o gap; constelação inteira acesa; rodapé completo, ADR-0029. Nasce `grid` e expõe `showGrid` — o que era a 2.5 |
 | 2.6 | Inspector: tipo de campo `list`, com `maxItems` e `maxPerItem` | Adicionar, remover e reordenar itens dentro do limite do descritor, com contador por item |
 | 2.7 | Inspector: tipo `select`, na seção de opções | O `anchor` do `text-bullets` passa a ser trocável |
 
@@ -518,26 +520,26 @@ Uma tarefa nasceu na própria sessão, da contradição que a 2.6 expôs:
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 2.6a | O teto de `maxItems` volta a ser conselho | O botão de acrescentar não desabilita; o contador de itens fica âmbar acima do teto. Nenhuma correção de documento — é a §8 do documento de contexto sendo cumprida |
+| 2.6a | O teto de `maxItems` volta a ser conselho | O botão de acrescentar não desabilita; o contador de itens fica âmbar acima do teto. Nenhuma correção de documento — é a §3 de `docs/model.md` sendo cumprida |
 
 Resolvido na sessão:
 
-- **O CTA em 36px contradizia a escala, e a escala venceu** — decisão 39. A §11.3 dos
+- **O CTA em 36px contradizia a escala, e a escala venceu** — ADR-0039. A §11.3 dos
   templates dava "36px JetBrains Mono" ao texto do CTA e a §3.3 do design system não tem
-  esse degrau: o mono dela é `slide-code`, a 34px. Vence a §3.3, porque a decisão 19 diz
+  esse degrau: o mono dela é `slide-code`, a 34px. Vence a §3.3, porque a ADR-0019 diz
   que o template escreve o token e nunca recompõe a escala, e porque um nono degrau para
   um uso só seria invenção onde a §1 pede restrição. A §11.3 passou a nomear o token.
 - **A constelação inteira acesa sai de graça, por posição.** A §11.3 prometia "sempre
   inteira acesa, independentemente da contagem", o que exigiria o template mentir sobre a
   própria posição — `index = total - 1` no `Footer`. Não foi preciso: como o fechamento é
-  o último slide, a peça compartilhada já acende tudo. É a decisão 36 aplicada à peça
+  o último slide, a peça compartilhada já acende tudo. É a ADR-0036 aplicada à peça
   vizinha do chevron, e o rodapé nunca discorda da lista lateral.
 - **O gap do lead mora no lead**, não no contêiner. Os dois espaços do miolo são
   diferentes — 48px do título ao lead, 64px do lead ao CTA — e um `gap` de flex publica
   um valor só. Como `margin-top` do próprio bloco, apagar o lead leva o gap junto e o CTA
   sobe para 64px do título, que é o que a §11.3 promete.
 - **`maxItems` era trava e virou conselho** — a 2.6a. A primeira versão desabilitava o
-  botão de acrescentar no quarto tópico, e a §8 do documento de contexto lista `maxItems`
+  botão de acrescentar no quarto tópico, e a §3 de `docs/model.md` lista `maxItems`
   entre os limites que são **conselho**. Não houve documento a corrigir: cinco itens
   curtos podem caber onde três longos não cabem, e quem sabe disso é o guard de
   transbordo, medindo altura. O `list-field.ts` deixou de conhecer o teto; quem o conhece
@@ -556,12 +558,12 @@ Resolvido na sessão:
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §6 do documento de contexto torna a migração uma interseção de chaves, sem tabela de equivalência |
+| 2.10 | `migrateFields(from, to, fields)` — migração de conteúdo na troca de template | TDD: chave compartilhada migra, chave sem correspondência é descartada, `options` sempre resetam para os defaults do template novo. O vocabulário único da §1 de `docs/model.md` torna a migração uma interseção de chaves, sem tabela de equivalência |
 | 2.11 | Ligar o seletor de layout ao `migrateFields` — o controle em si veio na 1D, desabilitado | Trocar o layout preserva o que já foi digitado e reseta as opções. Sai a legenda "Trocar de layout chega na Etapa 2" |
-| 2.13 | `addSlide` e `removeSlide` no store, com controles na lista lateral — decisão 30 | Acrescentar põe um slide no fim e o torna ativo; remover escolhe o vizinho como ativo. O deck nunca fica sem slides: com um slide só, o controle de remover fica desabilitado |
-| 2.12 | `persist` do zustand em localStorage, com validação na reidratação — decisão 31 | Recarregar a página não perde o deck; deck salvo com template desconhecido perde só aquele slide, não o carrossel |
+| 2.13 | `addSlide` e `removeSlide` no store, com controles na lista lateral — ADR-0030 | Acrescentar põe um slide no fim e o torna ativo; remover escolhe o vizinho como ativo. O deck nunca fica sem slides: com um slide só, o controle de remover fica desabilitado |
+| 2.12 | `persist` do zustand em localStorage, com validação na reidratação — ADR-0031 | Recarregar a página não perde o deck; deck salvo com template desconhecido perde só aquele slide, não o carrossel |
 
-A 2.10 é a tarefa que cobra a decisão 13: é o vocabulário canônico que a torna uma
+A 2.10 é a tarefa que cobra a ADR-0013: é o vocabulário canônico que a torna uma
 interseção de chaves. A 2.13 fica ao lado da 2.11 porque é o par que faz a composição
 funcionar — o slide nasce `text-bullets`, o mais usado do carrossel, e o seletor de
 layout está a um clique de trocá-lo.
@@ -574,7 +576,7 @@ invalidaria de qualquer jeito.
 store, e a página é pré-renderizada estaticamente: o servidor desenha o deck semente e o
 cliente desenha o deck salvo. É divergência de hidratação, da mesma família do
 `crypto.randomUUID()` que a 1D pegou, e o caminho é `skipHydration` com a reidratação
-disparada em efeito. Se a sessão confirmar, a §13 do documento de contexto ganha a
+disparada em efeito. Se a sessão confirmar, a §3 de `docs/architecture.md` ganha a
 armadilha no mesmo commit.
 
 Três decisões de produto foram fechadas antes de escrever a primeira linha, e as três
@@ -583,7 +585,7 @@ couberam no que os documentos já diziam — nenhuma virou decisão da §16:
 | Pergunta | Resposta |
 |---|---|
 | Chave que só o template novo declara, na troca de layout | Nasce com o **default do descritor**, que é o mesmo que um slide recém-criado recebe |
-| As seis opções compartilhadas resetam junto com as outras? | **Resetam**, como a §6 e a decisão 5 escrevem |
+| As seis opções compartilhadas resetam junto com as outras? | **Resetam**, como a §6 e a ADR-0005 escrevem |
 | Onde ficam acrescentar e remover | Numa **barra no pé da lista lateral**, agindo sobre o ativo |
 
 Resolvido na sessão:
@@ -605,14 +607,14 @@ Resolvido na sessão:
 - **Fixture pela metade reprova na reidratação e em nenhum outro lugar.** Os slides de
   `store.test.ts` carregavam só a opção que cada caso olhava, e passavam — até o
   `reviveDeck` validá-los contra o schema do template, que pede as seis. O fixture passou
-  a sair do descritor. É a decisão 31 cobrando de volta o preço que ela promete: o que
+  a sair do descritor. É a ADR-0031 cobrando de volta o preço que ela promete: o que
   está salvo tem de ser um slide de verdade, e o teste também.
 - **`removeSlide` recusa em silêncio, `id` desconhecido lança.** São dois erros de
   natureza diferente: id fora do deck é erro de programação, como o template desconhecido
   do registry; remover o último slide é uma tela que insiste, e o controle já está
   desabilitado antes do clique. Lançar ali derrubaria o editor por um clique legítimo.
 - **A armadilha da 2.12 não chegou a acontecer** porque o store nasceu com
-  `skipHydration`. A §13 do documento de contexto ganhou a armadilha assim mesmo, na forma
+  `skipHydration`. A §3 de `docs/architecture.md` ganhou a armadilha assim mesmo, na forma
   geral: estado que vem do navegador não pode chegar no primeiro render — vale para
   `localStorage` hoje e para o IndexedDB da 3F.
 - **Conferido no navegador.** Os quatro critérios de pronto passaram olhando: a troca de
@@ -641,7 +643,7 @@ Resolvido na sessão:
   do recorte foram montadas com um deck de 12 slides e nenhuma sobreviveu à comparação com
   o **controle** — o comportamento sem recorte, que só entrou na rota porque sem ele a
   pergunta não era respondível. A §10.5 passou a dizer "um ponto por slide, em qualquer
-  contagem", e o `Constellation` não mudou uma linha. Decisão 40.
+  contagem", e o `Constellation` não mudou uma linha. ADR-0040.
 - **A regra revogada resolvia um problema que nunca foi medido.** A faixa comporta 26
   pontos antes de a constelação encostar no handle — 920px de largura útil menos o grupo
   da esquerda, o chevron e os gaps —, e o teto da Etapa 2 é 12. A medida entrou na §10.5
@@ -693,27 +695,27 @@ Resolvido na sessão:
   escrita à mão para um estado que dura três segundos. A §8 foi corrigida junto.
 - **O `running` já guardava o id do alvo**, não um booleano, então o spinner aparece só no
   botão que trabalha enquanto todos desabilitam. Com um alvo só não se nota; com o PNG da
-  §10 do contexto, nota.
+  §2 de `docs/pipeline.md`, nota.
 - **A lista já tornava o slide novo o ativo desde a 2.13** — o que faltava era ir junto.
   Num deck de doze o item nascia abaixo da dobra, e a coluna que existe para mostrar onde se
   está mostrava outro lugar. Os refs moram num `Map` no `<li>` e não dentro do `Item`, que é
   `memo` e recebe `onSelect` por id justamente para não receber prop nova por quadro.
 - **Reidratar precisou de um degrau antes de a faixa existir.** Acrescentar `showHeader` como
-  chave obrigatória faria **todo deck salvo ser descartado** pela decisão 31 — os doze slides
+  chave obrigatória faria **todo deck salvo ser descartado** pela ADR-0031 — os doze slides
   reprovariam de uma vez e o editor abriria na semente. Chave que falta é dado velho, não
   dado torto: o slide passou a ser lido por cima dos defaults do template antes de validar, e
-  valor de forma errada continua derrubando o slide. Decisão 41, e ela vale para todo campo
+  valor de forma errada continua derrubando o slide. ADR-0041, e ela vale para todo campo
   futuro, não só para estes.
 - **O topo do slide era a assimetria óbvia da arquitetura.** O rodapé virou peça
   compartilhada com seis opções na 2B; o cabeçalho continuou um `<div>` escrito à mão dentro
   da capa, o único template que tinha um. Compartilhá-lo trouxe dois retornos além do óbvio:
   a migração passou a **preservar o kicker de graça**, pela interseção de chaves da decisão
-  13, e a segunda peça que a faixa ganhar chega num lugar em vez de dez. Decisão 42.
+  13, e a segunda peça que a faixa ganhar chega num lugar em vez de dez. ADR-0042.
 - **Ligar o cabeçalho empurra o `text-bullets`, em vez de a faixa ser reservada sempre.**
   Reservar custaria 132px do topo do template mais usado, permanentemente, por uma faixa que
   ali nasce desligada; empurrar custa um ternário do mesmo formato que o `anchor` já usa no
   mesmo componente. É a única quebra da regra "ligar uma peça não move as outras", e ela vale
-  porque o rodapé nunca disputou espaço com nada. Decisão 43.
+  porque o rodapé nunca disputou espaço com nada. ADR-0043.
 - **`showFooter` é a faixa, não uma sétima peça.** Desligado, não sobra nada — nem a
   constelação. Ela continua sem opção própria, e a frase da §10.5 é a mesma de sempre: quem a
   tira é quem tira o rodapé todo, e um slide sem rodapé não é um rodapé mais enxuto.
@@ -721,7 +723,7 @@ Resolvido na sessão:
   faixa com um texto e um interruptor, e separá-los em duas seções distantes faria ligar a
   coisa numa e escrever nela na outra. `fields` e `options` continuam separados no dado, a §6
   continua inteira, e o que a seção diz é onde o controle aparece. Conteúdo e Apresentação
-  viraram seções como as outras para que a **ordem** também fosse declarativa. Decisão 44.
+  viraram seções como as outras para que a **ordem** também fosse declarativa. ADR-0044.
 - **O interruptor de uma seção vaza para outra se o filtro for só o da própria.** O
   `showHeader` não declara `section`, então caía em "Apresentação" como linha solta ao lado
   do mesmo interruptor que já estava no cabeçalho da seção. O filtro passou a excluir **toda**
@@ -756,14 +758,14 @@ falha número um deste tipo de ferramenta.
 **Mais uma tarefa nesta etapa:** alinhar as variantes do shadcn à §2.4 do design system.
 O preset `nova` desenha o botão destrutivo como fundo tingido a 10%, e o padrão do
 sistema é tom 400 de preenchimento com tom 950 de texto. A decisão já está tomada — o
-Observatório vence, decisão 17 — e ficou para cá porque com três componentes instalados
+Observatório vence, ADR-0017 — e ficou para cá porque com três componentes instalados
 seria ajustar no escuro; hoje são seis. Auditar todas as variantes na mesma passada, que é
 a tarefa 3.6.
 
 **Fora desta etapa.** Múltiplos decks com tela de listagem, undo/redo, reordenação por
 arraste, duplicar slide, import/export `.json`, atalhos de teclado, estados vazios e
 deploy — tudo isso continua nas Etapas 4 e 5. Imagem por URL externa está fora por
-escopo, não por etapa: a §11 do documento de contexto fecha o assunto em upload local.
+escopo, não por etapa: a §4 de `docs/model.md` fecha o assunto em upload local.
 
 **Pronto quando** um carrossel de 8 a 12 slides usa os **dez** templates — com bloco de
 código realçado e imagem —, nenhum slide transborda sem aviso, e o PDF sai sem retoque
@@ -797,7 +799,7 @@ Três coisas que a divisão tornou visíveis, e que ela teve de resolver antes d
   que fazem o `migrateFields` da 2.10 funcionar entre os dez, pela interseção da §6.
 - **O caminho mínimo de imagem foi antecipado da Etapa 4.** A entrega desta etapa lista
   `split-vertical` e `image-caption`; o upload local, o `idb-keyval` e o `ImageId` eram
-  entrega da Etapa 4. É a mesma contradição que a decisão 30 resolveu na Etapa 2 com o
+  entrega da Etapa 4. É a mesma contradição que a ADR-0030 resolveu na Etapa 2 com o
   `addSlide`, e a resposta é a mesma: sem eles o critério de pronto **desta** etapa é
   inalcançável, e um template cujo campo principal não tem controle não está entregue. Sobe
   o mínimo — guardar, escolher e rasterizar uma imagem local. O `.json` com as imagens em
@@ -815,7 +817,7 @@ produto da etapa.
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | 3.1 | §11.4–§11.10 dos sete templates restantes | Cada um com regiões, elementos, campos, opções, comportamento e o bloco `defaults`, no formato da §11.2 |
-| 3.2 | O vocabulário canônico da §6 do documento de contexto recebe as chaves novas | Toda chave dos sete ou está na §6 ou está justificada como própria do template |
+| 3.2 | O vocabulário canônico da §1 de `docs/model.md` recebe as chaves novas | Toda chave dos sete ou está na §6 ou está justificada como própria do template |
 | 3.3 | A tabela de status da §11 e as tabelas compartilhadas da §11.0 dos templates | Nenhuma linha diz "a especificar". Se o conjunto pedir opção compartilhada nova, ela entra na §11.0 aqui e em `shared/options.ts` na sub-etapa que a usar |
 
 Pontos que só aparecem olhando os sete juntos, e que a 3A tem de fechar: quais nascem com
@@ -847,7 +849,7 @@ Resolvido na sessão:
   de um papel que um layout tem e a biblioteca não. Ele ficou próprio e a §6 ganhou uma
   tabela à parte para chave própria, em vez de promovê-lo. Vocabulário com um usuário só
   reserva à biblioteca inteira o que um template usa.
-- **`kicker` e `heading` passaram a ser declarados pelos dez.** É a decisão 42 aplicada ao
+- **`kicker` e `heading` passaram a ser declarados pelos dez.** É a ADR-0042 aplicada ao
   campo mais digitado do sistema: as duas chaves atravessam qualquer troca de layout, e o
   preço é uma região que some quando o valor está vazio — o que o `lead` do `final-cta` já
   fazia desde a 2C. O descritor de `heading` **não** virou compartilhado, porque o limite
@@ -890,7 +892,7 @@ conferência ser a mesma passada.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 3.4 | O bloco de conteúdo medido por `ResizeObserver`, comparando `scrollHeight` com `clientHeight` — §9 do documento de contexto | Um `text-bullets` com cinco itens longos marca; três itens não. O elemento medido **não** é dimensionado pelo que contém — a armadilha da §13 que a 1C documentou |
+| 3.4 | O bloco de conteúdo medido por `ResizeObserver`, comparando `scrollHeight` com `clientHeight` — §1 de `docs/pipeline.md` | Um `text-bullets` com cinco itens longos marca; três itens não. O elemento medido **não** é dimensionado pelo que contém — a armadilha da §13 que a 1C documentou |
 | 3.5 | A marca de transbordo no canvas e na lista lateral | Borda `crown-400`, como a §8 do design system pede para o inválido. A lista mostra o slide inválido sem que o canvas precise estar nele |
 | 3.6 | Experimento 3 — foco e raio dos controles de formulário | Os componentes de uma vez: `button`, `card`, `input`, `select`, `switch` e `textarea`. Decidido, ou os componentes cedem ou a §5 e a §8 do design system são corrigidas junto |
 
@@ -906,7 +908,7 @@ Resolvido na sessão:
   contexto escrevia — e ele não pega conteúdo ancorado à **base**, porque o que estoura sobe
   acima da borda de cima e não entra no `scrollHeight` do pai. A capa alinha o título à base
   desde a 1.7; o `final-cta` faz o mesmo com o bloco de fecho. O guard passou a medir dois
-  nós: a faixa, que tem altura de spec, e o bloco de conteúdo dentro dela. Decisão 47.
+  nós: a faixa, que tem altura de spec, e o bloco de conteúdo dentro dela. ADR-0047.
 - **O guard não precisou de estado no store.** `scrollHeight` e `clientHeight` são medidas de
   layout e não enxergam o `transform: scale()`, então a mesma leitura vale a 1:1 na
   exportação, a k ≈ 0,28 no canvas e a k = 0,2 na miniatura. Como a lista lateral desenha
@@ -915,7 +917,7 @@ Resolvido na sessão:
 - **A marca mora fora do nó capturado**, na borda do quadro externo — senão o PDF sairia com
   borda vermelha. E há um segundo motivo, que é do guard: aquela borda já existe em 1px nos
   dois estados, então marcar não muda medida nenhuma. Marca que altera o layout medido faz
-  medir mudar o que se mede. Decisão 48.
+  medir mudar o que se mede. ADR-0048.
 - **O `final-cta` ganhou um bloco de conteúdo.** Era o único dos três em que título, lead e
   CTA eram filhos diretos da faixa, e sem um nó que cresça não há o que comparar.
 - **`describeGuardedRegion` é uma linha por template.** O teste não pergunta se existe uma
@@ -994,14 +996,14 @@ A sub-etapa de maior risco técnico da etapa.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 3.10 | Instalar shiki e derivar o tema dos tokens da §10.4 do design system | O tema é **gerado** dos tokens, não importado pronto — §13 do documento de contexto. Bundle fino: só as linguagens que o carrossel usa |
-| 3.11 | Inspector: tipo de campo `code`, com `maxLines` | Hoje é linha inerte com o rótulo — §14 do contexto. O contador de linhas fica âmbar acima do `maxLines` e não trava: limite é conselho, como na §11.0 dos templates |
+| 3.10 | Instalar shiki e derivar o tema dos tokens da §10.4 do design system | O tema é **gerado** dos tokens, não importado pronto — §3 de `docs/architecture.md`. Bundle fino: só as linguagens que o carrossel usa |
+| 3.11 | Inspector: tipo de campo `code`, com `maxLines` | Hoje é linha inerte com o rótulo — §5 de `docs/product.md`. O contador de linhas fica âmbar acima do `maxLines` e não trava: limite é conselho, como na §11.0 dos templates |
 | 3.12 | `code-window` completo — §11.6 dos templates, com o bloco da §10.3 | Superfície `--slide-raised`, raio 12px, sem borda, barra com os três pontos `ink-700` e o nome do arquivo, padding interno 32px |
 
 **Armadilha esperada.** O realce do shiki é assíncrono. O palco de exportação da 1.13a
 espera `document.fonts.ready` e mais nada; se o HTML realçado chegar depois da captura, o
 PDF sai com o código cru. É a mesma família de problema que as fontes, e o palco ganha uma
-segunda espera. Se a sessão confirmar, a §13 do documento de contexto e a §10 ganham a nota
+segunda espera. Se a sessão confirmar, a §3 de `docs/architecture.md` e a §10 ganham a nota
 no mesmo commit.
 
 Fecha conferindo **no PDF**, medindo cor no bitmap como a 2A e a 2B fizeram: o realce sai
@@ -1014,7 +1016,7 @@ Resolvido na sessão:
   síncrono — `createHighlighterCoreSync` com o motor de regex em JavaScript e as gramáticas
   importadas estaticamente —, e com ele não existe realce que chegue depois de nada. O
   palco continua esperando só as fontes, o guard mede uma vez, nenhum teste de template
-  precisa de `await` e não há um quadro em que o código apareça sem cor. Decisão 51. O que
+  precisa de `await` e não há um quadro em que o código apareça sem cor. ADR-0051. O que
   a escolha custa é bundle, e ele foi medido nos dois lados: **1.881KB antes, 2.766KB
   depois** — 864KB crus, 133KB comprimidos. Numa ferramenta local de um usuário só, é o
   lado barato da troca.
@@ -1030,7 +1032,7 @@ Resolvido na sessão:
   lê o CSS e compara cor por cor, e é ele que faz a §10.4 e o código serem a mesma coisa.
   Ler `var()` em tempo de execução não serve — a cor vai para `style` inline e teria de
   resolver dentro do `foreignObject` do palco, e um token sem classe é podado pelo Tailwind
-  antes de existir. Decisão 52.
+  antes de existir. ADR-0052.
 - **Duas correções que o teste pegou e a revisão não pegaria.** O shiki devolve o token em
   `content`, não em `text`, e devolve hex em **caixa alta** — `#60A5FA` contra o `#60a5fa`
   do sistema. A primeira o `tsc` acharia; a segunda não acharia ninguém, e o sintoma seria
@@ -1038,7 +1040,7 @@ Resolvido na sessão:
 - **O nome do arquivo é o único `slide-meta` em caixa baixa.** A utility versaliza, e a
   §10.5 justifica: a caixa alta é da escala, não do conteúdo. Nome de arquivo inverte a
   justificativa — `CACHE.TS` não é o mesmo nome em outra caixa, é um arquivo que não existe
-  no repositório, num slide cujo assunto é o código daquele arquivo. Decisão 53, escrita na
+  no repositório, num slide cujo assunto é o código daquele arquivo. ADR-0053, escrita na
   §10.3 e na §11.6 no mesmo commit.
 - **A janela é a forma mais fácil de errar a armadilha da §13.** A tentação é dar
   `h-[866px]` à janela e deixá-la ocupar a região: isso desenharia um painel vazio de 866px
@@ -1086,12 +1088,12 @@ Resolvido na sessão:
 
 - **"Reusa o bloco de código da 3D" não era só a janela.** A peça de `shared/code-window.tsx`
   já estava em `shared/` esperando o segundo template, mas os **descritores** de `file`,
-  `lang` e `code` moravam dentro do `code-window` — e a §6 do documento de contexto exige que
+  `lang` e `code` moravam dentro do `code-window` — e a §1 de `docs/model.md` exige que
   a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, porque a migração
   compara chave e forma. Copiados, os dois passariam em qualquer teste de propriedade e
   divergiriam no dia em que um limite mudasse num só, com o sintoma mais caro que a
   ferramenta tem: trocar o layout de um slide de código e perder o código. Subiram para
-  `shared/fields.ts`, ao lado do kicker, e o teste é de **identidade de objeto**. Decisão 54.
+  `shared/fields.ts`, ao lado do kicker, e o teste é de **identidade de objeto**. ADR-0054.
   `heading` **não** subiu junto, apesar de os dois o declararem com os mesmos 60: o limite
   acompanha a região, e a região é do template.
 - **O `code-annotated` tem oito faixas, não quatro.** A §11.7 dava duas tabelas — cabeçalho
@@ -1120,9 +1122,9 @@ Resolvido na sessão:
   —, e as quatro linhas da explicação em 904, 964, 1024 e 1084, todas dentro da faixa
   890–1160. No `compare-2col`: as duas réguas em y 692, com segmentos de 856px em x 160–1015
   e 1144–1999, que são **428 + 64 + 428** dentro dos 920 úteis. Os números do preview e os da
-  exportação batem linha a linha, que é o que o reset reinjetado da decisão 50 promete.
+  exportação batem linha a linha, que é o que o reset reinjetado da ADR-0050 promete.
 - **A régua da coluna saiu com 1px de spec no arquivo.** Dois pixels no bitmap de escala 2,
-  que é a `slide-hairline` da decisão 38 se comportando dos dois lados: compensa no preview
+  que é a `slide-hairline` da ADR-0038 se comportando dos dois lados: compensa no preview
   reduzido, onde 1px fixo não pintaria, e não engorda a k = 1, onde a compensação não entra.
 
 ### 3F — imagens: `split-vertical` e `image-caption` ✅
@@ -1132,8 +1134,8 @@ rasterizar uma imagem local.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| 3.15 | `idb-keyval` com o deck guardando apenas `ImageId` — §11 do documento de contexto | O `localStorage` continua guardando só o deck; a imagem nunca entra nele. O `ImageId` já existe nos tipos desde a 1.2 |
-| 3.16 | Inspector: tipo de campo `image`, com upload local | Hoje é linha inerte — §14 do contexto. Sem campo de URL, e não por falta de tempo: a §11 fecha o escopo em upload local |
+| 3.15 | `idb-keyval` com o deck guardando apenas `ImageId` — §4 de `docs/model.md` | O `localStorage` continua guardando só o deck; a imagem nunca entra nele. O `ImageId` já existe nos tipos desde a 1.2 |
+| 3.16 | Inspector: tipo de campo `image`, com upload local | Hoje é linha inerte — §5 de `docs/product.md`. Sem campo de URL, e não por falta de tempo: a §11 fecha o escopo em upload local |
 | 3.17 | `split-vertical` completo — §11.9 dos templates | Texto e imagem dividindo o slide conforme a especificação da 3A |
 | 3.18 | `image-caption` completo — §11.10 dos templates | Imagem dominante com legenda |
 
@@ -1142,7 +1144,7 @@ outra origem — é justamente por isso que as fontes são `next/font/local`. A 
 chegar ao DOM como `blob:` ou `data:` da própria origem, e o palco de exportação tem de
 esperar o `decode()` antes de capturar, como já espera as fontes.
 
-**E um caso que a decisão 31 não cobre.** Reidratar um deck cujo `ImageId` não está mais no
+**E um caso que a ADR-0031 não cobre.** Reidratar um deck cujo `ImageId` não está mais no
 IndexedDB não é slide torto: o schema passa, porque o id é uma string válida. A imagem some
 e o slide fica — a regra continua sendo derrubar só o que não passa, e um id órfão passa.
 
@@ -1169,11 +1171,11 @@ Resolvido na sessão:
   é **folha**: o `ImageBand` dos templates importa `src/images`, então `src/images` importar o
   registry fecharia um ciclo. O efeito colateral é o certo — o campo de imagem do template
   que a Etapa 4 acrescentar entra na lista sozinho, sem uma linha aqui.
-- **O `image` não subiu para `shared/fields.ts`, e a decisão 54 não se aplica.** A §6 exige
+- **O `image` não subiu para `shared/fields.ts`, e a ADR-0054 não se aplica.** A §6 exige
   mesma chave com o mesmo **tipo de campo**, e está cumprida — há teste de migração provando
   que trocar entre os dois preserva a imagem. O que difere é o `ratio`, e ele acompanha a
   região: um descritor compartilhado teria de escolher um dos dois e mentir para o outro. É
-  o precedente do `heading` da 3E. Decisão 58.
+  o precedente do `heading` da 3E. ADR-0058.
 - **A §11.10 tinha o mesmo defeito que a §11.7 tinha antes da 3E**: duas tabelas para cruzar
   na hora de implementar, o que vira oito decisões em vez de uma. As oito geometrias entraram
   na seção. E uma delas o documento não decidia — com o título vazio, a legenda **sobe sem
@@ -1194,11 +1196,11 @@ Resolvido na sessão:
   o teto da §11.0 e nem um pixel além. A legenda saiu com máximo 184 no canal, que é o
   `ink-400` `#94a3b8` no arquivo, e o título com 249, que é o `ink-100`.
 - **A redução foi medida, e não conferida por leitura.** 4000×3000 entrou e 2160×1620 ficou
-  guardado — o `fitWithin` na única resolução que o PDF aproveita. Decisão 56.
+  guardado — o `fitWithin` na única resolução que o PDF aproveita. ADR-0056.
 - **Os dois critérios da 3.15 se conferem no navegador, e passam.** O deck salvo tem 5.550
   bytes, **não contém `data:` nem `base64`** e contém o `ImageId`. E o caso do id órfão:
   reidratando um deck de doze slides com um `ImageId` que o banco não tem, voltam **doze de
-  doze**, com o id órfão intacto no campo — a decisão 31 fazendo exatamente o que promete.
+  doze**, com o id órfão intacto no campo — a ADR-0031 fazendo exatamente o que promete.
 
 ### 3G — fecho da etapa ✅
 
@@ -1217,7 +1219,7 @@ Decidido na sessão, antes de escrever código:
 |---|---|
 | Quais templates se repetem nos doze slides | **A lista e o respiro** — `text-bullets` ×2 e `text-impact` ×2. Os outros oito aparecem uma vez |
 | Os dois slides de mídia da semente | **Nascem sem imagem.** A do critério de pronto entra pelo inspector, na conferência |
-| O que a composição perde | A **segunda capa**, e com ela a conferência da âncora de base feita com dois títulos de comprimento oposto. Decisão 59 |
+| O que a composição perde | A **segunda capa**, e com ela a conferência da âncora de base feita com dois títulos de comprimento oposto. ADR-0059 |
 
 Resolvido na sessão:
 
@@ -1273,7 +1275,7 @@ Resolvido na sessão:
 
 **Objetivo.** Trocar o modelo de conteúdo: um slide deixa de ser `template + campos fixos` e
 passa a ser **uma configuração de layout mais uma lista ordenada de elementos**. Corresponde
-à Fase 2½ do §15 do documento de contexto — uma fase que não estava no roadmap, e que o
+à Fase 2½ do §6 de `docs/product.md` — uma fase que não estava no roadmap, e que o
 primeiro uso real impôs.
 
 **Por que ela existe.** O produto foi usado para montar um post e a experiência foi ruim, em
@@ -1284,7 +1286,7 @@ especificação errou em dois pontos:
 
 - **A marcação não tinha onde guardar um parágrafo.** `parseInline` devolve uma lista plana,
   e não existia camada nenhuma acima dela; um `\n` dentro de um `<p>` é espaço em branco por
-  regra do HTML. A §11.0 dos templates proibiu quebra manual de linha e a §7 do contexto
+  regra do HTML. A §11.0 dos templates proibiu quebra manual de linha e a §2 de `docs/model.md`
   restringiu a marcação a inline, e as duas trataram quebra **tipográfica** e quebra **de
   conteúdo** como a mesma coisa.
 - **Cada template aceitava exatamente um formato.** As oito opções de
@@ -1355,18 +1357,18 @@ decisões de produto da etapa.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| C.1 | Reescrever a §11 como biblioteca de elementos e presets; atualizar as §6, §7, §8, §9, §11, §13, §14, §15 e §16 do contexto; corrigir o design system | `observatorio-elementos.md` no lugar de `observatorio-templates.md`, com a numeração preservada; decisões 60 a 74 registradas e as superadas marcadas com o motivo |
+| C.1 | Reescrever a §11 como biblioteca de elementos e presets; atualizar as §6, §7, §8, §9, §11, §13, §14, §15 e `docs/adr/`; corrigir o design system | `observatorio-elementos.md` no lugar de `observatorio-templates.md`, com a numeração preservada; ADR-0060 a ADR-0074 registradas e as superadas marcadas com o motivo |
 
 Decidido na sessão, antes de escrever qualquer coisa:
 
 | Questão | Decisão |
 |---|---|
 | A lista final de tipos de elemento | **Doze**: `statement`, `heading`, `lead`, `text`, `caption`, `label`, `quote`, `code`, `image`, `cta`, `divider`, `columns`. Os dois últimos papéis — citação e régua — nenhum dos dez templates tinha, e saem de graça do modelo novo |
-| O `kicker` | **Continua cromo do layout.** Decisão 66 |
-| Elemento de espaçamento explícito | **Não existe.** A âncora vertical resolve o caso legítimo. Decisão 67 |
-| Decks salvos em `localStorage` | **Descartados**, com `deck.version` indo a 2. Decisão 68 |
-| Presets editáveis | **Os dez de seed são fixos**; preset do autor é renomeável, substituível e apagável. Decisão 69 |
-| Sangramento de imagem | **Opção fechada do elemento `image`** — `none`, `top`, `edge`. Decisão 71 |
+| O `kicker` | **Continua cromo do layout.** ADR-0066 |
+| Elemento de espaçamento explícito | **Não existe.** A âncora vertical resolve o caso legítimo. ADR-0067 |
+| Decks salvos em `localStorage` | **Descartados**, com `deck.version` indo a 2. ADR-0068 |
+| Presets editáveis | **Os dez de seed são fixos**; preset do autor é renomeável, substituível e apagável. ADR-0069 |
+| Sangramento de imagem | **Opção fechada do elemento `image`** — `none`, `top`, `edge`. ADR-0071 |
 | Onde a biblioteca é documentada | **Reescrever no lugar**, com a numeração `§11.x` preservada |
 
 Resolvido na sessão:
@@ -1383,7 +1385,7 @@ Resolvido na sessão:
   template `text-impact` e passou a pertencer ao elemento `statement` com âncora ao centro.
 - **`split-vertical` não vira "colunas com imagem de um lado" sem mais.** A imagem dele
   sangra pelo topo e pela direita, e sangramento não cabe num fluxo com padding de 80px.
-  Daí a decisão 71 — e daí a regra da §11.22 de que o gap entre colunas sobe de 64 para 80px
+  Daí a ADR-0071 — e daí a regra da §11.22 de que o gap entre colunas sobe de 64 para 80px
   quando uma delas sangra. A geometria muda um pouco no caminho: 480 + 80 + 440 vira
   504 + 80 + 336 com a imagem estendida a 416, e a conta que importava — 31 caracteres por
   linha, dentro da faixa de 28 a 42 da §3.4 — continua de pé.
@@ -1397,8 +1399,18 @@ Resolvido na sessão:
   de `- ` dentro de um `text`, e com eles somem os três botões por item que o inspector
   desenhava — formulário onde devia haver digitação.
 - **O par próprio do `compare-2col` se dissolve.** `beforeLabel`/`before` e
-  `afterLabel`/`after` eram a única exceção que a decisão 45 previa ao vocabulário canônico:
+  `afterLabel`/`after` eram a única exceção que a ADR-0045 previa ao vocabulário canônico:
   agora rótulo é `label`, régua é `divider` e conteúdo é `text`, os dois lados iguais.
+
+### Reorganização dos documentos ✅ · fora da etapa
+
+Sessão de documento, sem uma linha de código, entre a C-A e a C-B. O `asterism-context.md`
+virou `docs/product.md`, `docs/architecture.md`, `docs/model.md` e `docs/pipeline.md`, cada
+um renumerado a partir de `§1`; o vocabulário saiu para o `CONTEXT.md` da raiz, no formato
+da skill de domain modeling; a §16 virou `docs/adr/`, uma decisão por arquivo, com o número
+preservado no nome. As 124 referências foram reescritas filtrando pela frase "documento de
+contexto", nunca pelo número — `§11.0` e `§10.2` em `src/` apontam para outros documentos.
+Registrado na ADR-0075.
 
 ### C-B — blocos de texto
 
@@ -1407,14 +1419,14 @@ qualquer refatoração grande. Nada do modelo de elementos entra aqui.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| C.2 | `parseBlocks` em `src/markup/blocks.ts`, teste primeiro — §7 do documento de contexto | Linha em branco separa bloco, `- ` abre item não ordenado, `1. ` abre ordenado, linhas seguidas de marcador viram uma lista só, quebra simples dentro de parágrafo é espaço. Sem títulos e sem cercas |
+| C.2 | `parseBlocks` em `src/markup/blocks.ts`, teste primeiro — §2 de `docs/model.md` | Linha em branco separa bloco, `- ` abre item não ordenado, `1. ` abre ordenado, linhas seguidas de marcador viram uma lista só, quebra simples dentro de parágrafo é espaço. Sem títulos e sem cercas |
 | C.3 | `<Blocks>` em `src/markup/blocks.tsx`, com `<p>`, `<ul>` e `<ol>` e os gaps da §4.2 | Cada bloco chega ao `<Inline>` cru; `parseInline` não é tocado. Marcador em travessão mono `azure-400`, gap 32px, gap entre itens e entre parágrafos de 48px |
 | C.4 | Trocar `<Inline>` por `<Blocks>` nos campos `md` de textarea dos quatro templates que os têm | `context`, `code-annotated`, `split-vertical` e `compare-2col` aceitam parágrafo e bullets. O `text-bullets` continua com o campo `list`, que só morre na C-F |
 
 **A armadilha esperada é o reset do `preflight`.** Até agora `<ul>` e `<p>` mal existiam no
 canvas; a partir da C.3 um campo sozinho desenha três parágrafos e uma lista, e cada um é um
 nó que o clone da captura deixa sem reset — `1em` de margem medido a 40px são 40px de espaço
-que ninguém pediu. A folha injetada pelo `onCloneNode` da decisão 50 deve cobrir o caso; **o
+que ninguém pediu. A folha injetada pelo `onCloneNode` da ADR-0050 deve cobrir o caso; **o
 critério de pronto da sub-etapa é conferir no PDF**, não no preview, porque é no arquivo que
 o defeito aparece.
 
@@ -1422,9 +1434,9 @@ o defeito aparece.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| C.5 | Tipos e factories: `Element`, `Leaf`, `SlideLayout`, `Slide`, `deck.version: 2` — §6 do contexto | `Leaf` recusa `columns` dentro de `columns` em tempo de compilação; a tupla de dois recusa uma terceira coluna |
+| C.5 | Tipos e factories: `Element`, `Leaf`, `SlideLayout`, `Slide`, `deck.version: 2` — §1 de `docs/model.md` | `Leaf` recusa `columns` dentro de `columns` em tempo de compilação; a tupla de dois recusa uma terceira coluna |
 | C.6 | Registry de elementos e os doze `ElementDef`, sobre o `createRegistry` que já existe | Um elemento novo aparece no seletor, no renderizador e no inspector sem que nenhum dos três seja editado — o mesmo critério que a 1.11 cobrava dos templates |
-| C.7 | Store com operações por id: `addElement`, `removeElement`, `moveElement`, `setElementField` | Toda operação recebe `ElementId` e caminha a árvore; nenhuma assinatura carrega caminho. Decisão 64 |
+| C.7 | Store com operações por id: `addElement`, `removeElement`, `moveElement`, `setElementField` | Toda operação recebe `ElementId` e caminha a árvore; nenhuma assinatura carrega caminho. ADR-0064 |
 | C.8 | Renderizador genérico de pilha em `src/render/stack.tsx` | Topo em 80 ou 212, fim em 1160, gaps da §11.0; elemento vazio não desenha e não consome gap; a imagem toma a sobra com piso de 200px; a âncora do layout posiciona a pilha |
 
 **Nenhum dos dez templates é apagado aqui.** Eles continuam funcionando pelo caminho antigo
@@ -1437,7 +1449,7 @@ A parte mais chata da virada, e a que mais merece teste escrito antes.
 | # | Tarefa | Critério de pronto |
 |---|---|---|
 | C.9 | O elemento `columns` — §11.22 do documento de elementos | Tupla de dois; três proporções fechadas; dois alinhamentos; gap 64, ou 80 quando uma coluna sangra; coluna vazia endereçável no editor e invisível no arquivo |
-| C.10 | Guard recursivo, com o elemento nomeado — §9 do contexto | Cada coluna é candidata independente; a altura de `columns` é o máximo das duas; qualquer container estourando reprova o slide; o aviso diz **qual elemento** — o primeiro cujo `offsetTop + offsetHeight` passa do `clientHeight` do container. O id vai para o escopo em JavaScript, nunca para um atributo |
+| C.10 | Guard recursivo, com o elemento nomeado — §1 de `docs/pipeline.md` | Cada coluna é candidata independente; a altura de `columns` é o máximo das duas; qualquer container estourando reprova o slide; o aviso diz **qual elemento** — o primeiro cujo `offsetTop + offsetHeight` passa do `clientHeight` do container. O id vai para o escopo em JavaScript, nunca para um atributo |
 
 ### C-E — o inspector por cartões
 
@@ -1452,8 +1464,8 @@ A parte mais chata da virada, e a que mais merece teste escrito antes.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| C.15 | Os dez presets de seed, escritos como a função de conversão dos dez templates | Uma função só, e a §11.1–§11.10 do documento de elementos é o gabarito conferível. Decisão 73 |
-| C.16 | Aplicar preset casando conteúdo por tipo, na ordem; slide novo herda a composição do anterior | Aplicar um preset a um slide com texto não apaga o texto que tem par; slide novo nasce com os mesmos tipos e o conteúdo limpo. Decisões 69 e 70 |
+| C.15 | Os dez presets de seed, escritos como a função de conversão dos dez templates | Uma função só, e a §11.1–§11.10 do documento de elementos é o gabarito conferível. ADR-0073 |
+| C.16 | Aplicar preset casando conteúdo por tipo, na ordem; slide novo herda a composição do anterior | Aplicar um preset a um slide com texto não apaga o texto que tem par; slide novo nasce com os mesmos tipos e o conteúdo limpo. ADR-0069 e ADR-0070 |
 | C.17 | Salvar a composição atual como preset, com a caixa "incluir o texto" | Marcada, é snapshot; desmarcada, é preset. Presets do autor em chave própria do `localStorage`, transversais aos decks; os dez de seed recusam edição |
 | C.18 | Apagar `src/templates/` inteiro e o que ficou órfão | Trinta e poucos arquivos saem. `npm test`, `npx tsc --noEmit` e `npm run lint` passam sem nenhuma referência a `TemplateDef`, `migrateFields` ou `slide.template` |
 
@@ -1485,7 +1497,7 @@ imagens embutidas em base64.
 critério de pronto da Etapa 3 é inalcançável. O que fica aqui é o `.json` autocontido, que
 é assunto de import/export e não de armazenamento.
 
-**E fica a coleta de blob órfão**, que a 3F deixou de propósito — decisão 57. Trocar a
+**E fica a coleta de blob órfão**, que a 3F deixou de propósito — ADR-0057. Trocar a
 imagem de um slide ou remover o slide deixa o binário no banco sem ninguém apontando para
 ele. Apagar cedo quebraria o undo desta mesma etapa: o `zundo` devolve o `ImageId` e o blob
 não voltaria com ele. O lugar é o import/export, que é quem terá o deck inteiro à mão — e
@@ -1513,7 +1525,7 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 ## A resolver por experimento
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
-contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
+contexto, ADR-0013 a ADR-0018; a divisão da Etapa 2 rendeu as ADR-0029 a ADR-0032, a 2A as
 33 e 34, a 2B as 35 a 38, a 2C a 39, a 2E a 40, a 2F as 41 a 44, a 3A as 45 e 46, a 3B as
 47 a 49 e a C-A as 60 a 74. Os experimentos 1 a 5 estão todos resolvidos — o 3, que era o
 último, saiu na 3B —, e a Etapa 3½ abriu **um novo**.
@@ -1527,7 +1539,7 @@ lado a lado e comparando o resultado — de preferência medido, como nos experi
 atravessa a captura com o mesmo desenho que tem no preview?
 
 É onde duas coisas conhecidas se encontram pela primeira vez. A margem de `1em` que o
-agente de usuário devolve dentro do `foreignObject` — decisão 50 — quase não tinha nós para
+agente de usuário devolve dentro do `foreignObject` — ADR-0050 — quase não tinha nós para
 morder até agora: `<ul>` era coisa de um template e `<p>` era um por slide. Com a camada de
 blocos e a pilha livre, um slide pode ter dez desses nós, cada um herdando o corpo
 tipográfico da região onde caiu. E o guard recursivo mede containers aninhados cuja altura
@@ -1546,7 +1558,7 @@ dá a ela, e o desvio é consciente — a correção ótica dela é justamente o
 legível sobre `ink-950`, enquanto a `MaiahubMark`, apesar de estar dentro da própria
 faixa, some ali.
 
-Registrado na §11.0 dos templates e na §10.5 do design system, na decisão 18 da §16 do documento de
+Registrado na §11.0 dos templates e na §10.5 do design system, na ADR-0018 da §16 do documento de
 contexto, e em `maiahub-logo.md`. A remoção das quatro peças perdedoras virou a tarefa
 2.4a.
 
@@ -1576,7 +1588,7 @@ O que a comparação expôs é que o recorte resolvia um problema de espaço que
 medido**: a faixa comporta 26 pontos antes de a constelação encostar no handle, e o teto
 da Etapa 2 é 12. A §10.5 foi reescrita, e o `Constellation` não mudou uma linha — o
 experimento serviu para **apagar** uma regra, que é um resultado tão legítimo quanto
-escolher entre candidatas. Registrado na decisão 40 do documento de contexto e na §10.5
+escolher entre candidatas. Registrado na ADR-0040 e na §10.5
 do design system.
 
 ### ~~Experimento 4 — como desenhar a grade que sobrevive à exportação~~ · resolvido
@@ -1598,7 +1610,7 @@ umas linhas caem em pixel inteiro e outras não — daí o efeito irregular.
 
 Uma segunda rodada comparou quatro tratamentos de borda sobre o `<path>` vencedor, e a
 escolha foi a moldura fechada nos quatro lados com módulo de 54px, sem nenhum quadrado
-cortado. Registrado na decisão 28 do documento de contexto, na §4.3 do design system e na
+cortado. Registrado na ADR-0028, na §4.3 do design system e na
 armadilha da §13.
 
 ### ~~Experimento 5 — a peça de logo e a faixa do rodapé~~ · resolvido
@@ -1626,7 +1638,7 @@ rodada com nove candidatas em `ink`, `azure` e `sun`, comparadas em recorte 1:1 
 grade e em slide reduzido: ficou `ink-600`. As três candidatas `sun` foram descartadas pela
 §2.5 — âmbar é pontuação, e uma linha de 920px não é pontuação.
 
-Registrado nas decisões 35 a 38 do documento de contexto, na §10.5 e na §4.3 do design
+Registrado nas ADR-0035 a ADR-0038, na §10.5 e na §4.3 do design
 system, na §11.0 e na §11.1 dos templates, e em `maiahub-logo.md`.
 
 ### ~~Experimento 3 — foco e raio dos controles de formulário~~ · resolvido
@@ -1674,4 +1686,4 @@ O cartão era **12px e não 10px**: `--radius-xl` não é declarado neste tema, 
 `rounded-xl` caía no default do Tailwind em vez de sair do `--radius`. A conta acima estava
 errada porque a variável que ela supunha existir não existe.
 
-Registrado na decisão 49 do documento de contexto, na §8 e na §9 do design system.
+Registrado na ADR-0049, na §8 e na §9 do design system.

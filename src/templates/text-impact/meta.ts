@@ -31,7 +31,7 @@ export const textImpactMeta: {
       kicker: "log/ · 06",
       heading: "Três semanas para um [[bug de uma linha]]",
     },
-    // O descritor dá o padrão e o slide decide daí em diante — decisão 25. Nasce assinado
+    // O descritor dá o padrão e o slide decide daí em diante — ADR-0025. Nasce assinado
     // como o resto do miolo, e sem chevron: a partir do slide 2 o gesto de deslizar já foi
     // executado. O cabeçalho nasce desligado — a capa continua sendo o único que não.
     options: {

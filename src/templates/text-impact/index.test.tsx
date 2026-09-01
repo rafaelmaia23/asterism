@@ -111,6 +111,6 @@ describe("text-impact", () => {
 
   // A região é a da frase — a §11.5 a marca com ⌐. Como a capa, é conteúdo que não está
   // ancorado ao topo: centralizado, o que não cabe estoura para os dois lados, e só a
-  // medida de dois nós da decisão 47 o pega.
+  // medida de dois nós da ADR-0047 o pega.
   describeGuardedRegion(textImpact);
 });

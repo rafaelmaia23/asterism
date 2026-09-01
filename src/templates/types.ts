@@ -1,5 +1,5 @@
 /**
- * O descritor declarativo da §8 do documento de contexto.
+ * O descritor declarativo da §3 de `docs/model.md`.
  *
  * A seta é `templates → deck`: aqui se importa `src/deck`, nunca o contrário. Quem
  * conhece a biblioteca de templates é o registry.
@@ -10,8 +10,8 @@ import type { ZodType } from "zod";
 import type { DeckMeta, FieldValue, OptionValue, TemplateId } from "@/deck/types";
 
 /**
- * O descritor de um campo. **O zod valida, o descritor desenha** — decisão 4 da §16 do
- * documento de contexto. Gerar o formulário a partir do schema custa mais do que rende:
+ * O descritor de um campo. **O zod valida, o descritor desenha** — ADR-0004.
+ * Gerar o formulário a partir do schema custa mais do que rende:
  * unions, arrays, defaults e refinements viram caso especial até o gerador ficar maior
  * que os formulários que geraria.
  *
@@ -38,7 +38,7 @@ export type Field = (
  * completa e plana das chaves de cada saco, e o slide continua guardando os dois separados.
  * O que a seção diz é onde o controle aparece, não onde o valor mora — é o que deixa o
  * kicker, que é conteúdo, desenhar junto do interruptor do cabeçalho, que é apresentação,
- * sem que a §6 do documento de contexto deixe de valer.
+ * sem que a §1 de `docs/model.md` deixe de valer.
  *
  * Ausente, o campo cai em `content` e a opção em `style` — as duas seções sem interruptor.
  * É por isso que nenhum descritor de template precisou ser editado quando as seções

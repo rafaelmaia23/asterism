@@ -72,7 +72,7 @@ describe("context", () => {
   /**
    * A mesma geometria do `text-bullets`, de propósito: os dois são o miolo do carrossel, e
    * um empurrar 132px enquanto o outro reserva a faixa seria uma diferença sem motivo entre
-   * slides vizinhos — decisão 43, §11.4.
+   * slides vizinhos — ADR-0043, §11.4.
    *
    * Título vazio faz a região sumir e o corpo subir para o topo da faixa livre: 80 sem o
    * cabeçalho, 212 com ele. É o comportamento que o `lead` do `final-cta` já tinha, e nos

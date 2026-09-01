@@ -83,7 +83,7 @@ describe("final-cta", () => {
     expect(screen.getByTestId("cta-block").textContent).toBe("blog.maiahub.com.br");
   });
 
-  /** Decisão 29: o fechamento leva o rodapé completo, ao contrário da capa. */
+  /** ADR-0029: o fechamento leva o rodapé completo, ao contrário da capa. */
   test("nasce com glyph, handle e a constelação inteira acesa", () => {
     renderFinal();
 
@@ -97,7 +97,7 @@ describe("final-cta", () => {
   });
 
   /**
-   * A constelação é acesa por **posição**, não pelo template — decisão 36 aplicada à peça
+   * A constelação é acesa por **posição**, não pelo template — ADR-0036 aplicada à peça
    * vizinha. Um fechamento parado no meio do deck mostra o progresso real, e o rodapé
    * nunca discorda da lista lateral.
    */

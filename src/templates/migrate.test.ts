@@ -123,7 +123,7 @@ describe("migrateFields", () => {
   });
 
   /**
-   * O caso que a 2.11 aciona de verdade. É a decisão 13 sendo cobrada: `heading` é o
+   * O caso que a 2.11 aciona de verdade. É a ADR-0013 sendo cobrada: `heading` é o
    * título em qualquer template, e é só por isso que a troca não apaga trabalho.
    *
    * O kicker atravessa junto desde a 2F, e **sem uma linha de código aqui**: ele passou a

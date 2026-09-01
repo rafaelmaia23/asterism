@@ -3,7 +3,7 @@
  *
  * O ambiente de teste não faz layout: `scrollHeight` e `clientHeight` devolvem 0 em
  * qualquer elemento, sempre. Quem precisa medir altura de verdade — o guard de transbordo
- * da §9 do documento de contexto — não tem o que asserir sem isto.
+ * da §1 de `docs/pipeline.md` — não tem o que asserir sem isto.
  *
  * O stub é por **atributo**, e não por prototype cru: cada elemento declara quanto mede
  * com `data-h`, e as duas propriedades passam a ler dali. Assim um caso pode montar uma

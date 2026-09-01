@@ -43,7 +43,7 @@ describe("Constellation", () => {
   /**
    * O recorte acima de 10 slides que a §10.5 pedia — "5 pontos mais um contador" — foi
    * **revogado** pelo experimento 2: nenhuma das três leituras possíveis sobreviveu à
-   * comparação com o comportamento sem recorte. Decisão 40 da §16 do documento de
+   * comparação com o comportamento sem recorte. ADR-0040 da §16 do documento de
    * contexto.
    *
    * Os dois testes abaixo são o que impede a regra de voltar por engano. O primeiro

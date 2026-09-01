@@ -2,7 +2,7 @@
  * Campos, opções e schema do `cover-statement`, conforme a §11.1 dos templates.
  *
  * O descritor desenha o formulário, o zod valida o conteúdo. São duas descrições da
- * mesma coisa de propósito — decisão 4 da §16 do documento de contexto —, e o teste é
+ * mesma coisa de propósito — ADR-0004 —, e o teste é
  * quem garante que não divirjam.
  */
 

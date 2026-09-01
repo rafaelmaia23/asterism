@@ -2,7 +2,7 @@
  * As quatro operações de um campo `list` — a lógica que o controle do inspector aciona.
  *
  * Funções puras sobre `string[]`, sem React e sem store: o campo `items` é um valor do
- * modelo (§6 do documento de contexto), e o controle só troca o array inteiro por
+ * modelo (§1 de `docs/model.md`), e o controle só troca o array inteiro por
  * `setField`. Separar assim é o que deixa a regra ser testada primeiro — reordenação e
  * teto são lógica, e o CLAUDE.md manda TDD em lógica.
  *
@@ -12,7 +12,7 @@
  * ao React, que não veria mudança nenhuma.
  *
  * **Nenhuma delas conhece `maxItems`.** O teto do descritor é conselho, como todo limite
- * da §8 do documento de contexto e da §11.0 dos templates: o contador do inspector avisa,
+ * da §3 de `docs/model.md` e da §11.0 dos templates: o contador do inspector avisa,
  * o guard de transbordo da Etapa 3 reprova medindo altura real, e o sistema informa sem
  * impedir. Cinco itens curtos podem caber onde três longos não cabem, e só a altura sabe
  * a diferença — uma trava aqui decidiria isso no escuro.

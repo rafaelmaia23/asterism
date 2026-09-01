@@ -1,11 +1,11 @@
 /**
  * O alvo `pdf`: uma página por slide, na medida do slide.
  *
- * Estágio 2 da §10 do documento de contexto — não conhece template nenhum, e nem
+ * Estágio 2 da §2 de `docs/pipeline.md` — não conhece template nenhum, e nem
  * poderia: o que chega são nós e slides, e o que sai é arquivo. Acrescentar `png` ou
  * `jpg` amanhã é um módulo ao lado deste, sem tocar aqui e sem repetir a rasterização.
  *
- * `unit: "pt"` e `format: [w, h]` — decisão 21. O bitmap é 2160×2700 de qualquer forma; a
+ * `unit: "pt"` e `format: [w, h]` — ADR-0021. O bitmap é 2160×2700 de qualquer forma; a
  * unidade só muda o número que o visualizador mostra, e a `px` do jsPDF depende de uma
  * conversão de 96 dpi que não vale a pena carregar.
  *

@@ -115,7 +115,7 @@ describe("store do editor", () => {
   });
 
   /**
-   * `addSlide` e `removeSlide` — decisão 30 da §16, antecipados da Etapa 4. Sem eles o
+   * `addSlide` e `removeSlide` — ADR-0030 da §16, antecipados da Etapa 4. Sem eles o
    * "pronto quando" da Etapa 2 é inalcançável: o store da 1D não tinha como acrescentar
    * um slide sequer, e o critério pede um carrossel de 8 a 12.
    */
@@ -206,7 +206,7 @@ describe("store do editor", () => {
   /**
    * A troca de layout — 2.11. O que ela preserva é `fields`, pela interseção de chaves
    * que o vocabulário único da §6 garante; o que ela reseta é `options`, sempre, pelos
-   * defaults do template novo (decisão 5).
+   * defaults do template novo (ADR-0005).
    */
   describe("setTemplate", () => {
     test("troca o template e migra o conteúdo pelas chaves compartilhadas", () => {
@@ -335,7 +335,7 @@ describe("store do editor", () => {
     });
 
     /**
-     * A decisão 31 pela porta da frente: o slide que não passa cai e o carrossel continua.
+     * A ADR-0031 pela porta da frente: o slide que não passa cai e o carrossel continua.
      * Quem decide é o `reviveDeck`, que tem teste próprio; aqui se prova que o `merge` o
      * consulta em vez de confiar no que estava salvo.
      */

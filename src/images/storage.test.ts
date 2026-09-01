@@ -37,7 +37,7 @@ describe("o armazenamento de imagens", () => {
 
   /**
    * O caso da §11.9 dos templates: um deck reidratado cujo `ImageId` não está mais no
-   * banco. Não é erro — a imagem some e o slide fica, que é a decisão 31 intacta.
+   * banco. Não é erro — a imagem some e o slide fica, que é a ADR-0031 intacta.
    */
   test("id que não está no banco devolve undefined, e não lança", async () => {
     const store = stubImages();

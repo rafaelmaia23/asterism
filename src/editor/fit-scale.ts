@@ -1,5 +1,5 @@
 /**
- * A escala do canvas — decisão 22 da §16 do documento de contexto.
+ * A escala do canvas — ADR-0022.
  *
  * Auto-fit puro: o slide ocupa o maior tamanho que couber inteiro na área central, sem
  * seletor de zoom. Um seletor entra quando houver barra onde colocá-lo.

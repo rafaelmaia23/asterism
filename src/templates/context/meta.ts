@@ -33,7 +33,7 @@ export const contextMeta: {
       heading: "O que estava acontecendo",
       body: "Durante três semanas, uma fração pequena das requisições devolvia dados de outra pessoa. Nenhum alerta disparou, porque do ponto de vista da infraestrutura estava tudo saudável.",
     },
-    // O descritor dá o padrão e o slide decide daí em diante — decisão 25. Nasce assinado,
+    // O descritor dá o padrão e o slide decide daí em diante — ADR-0025. Nasce assinado,
     // que é o rodapé que a §11.0 dá ao miolo do carrossel, e sem chevron: a partir do
     // slide 2 o gesto de deslizar já foi executado.
     options: {
