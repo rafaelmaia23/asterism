@@ -20,7 +20,7 @@
  *   Título     212 – 362    a mesma altura de 150px, 132px abaixo
  *   Itens      426 – 1160   o mesmo fim, 734px em vez de 866
  *
- * **Empurrar só quando ligado**, em vez de reservar a faixa sempre, é a decisão 43. As duas
+ * **Empurrar só quando ligado**, em vez de reservar a faixa sempre, é a ADR-0043. As duas
  * variantes custam um ternário; reservar sempre custaria 132px do topo do template mais
  * usado do sistema, permanentemente, para uma faixa que nasce desligada aqui. É a única
  * quebra da regra "ligar uma peça não move as outras" que o rodapé estabeleceu na 2B, e ela

@@ -1,14 +1,14 @@
 /**
  * Campos, opções e schema do `code-annotated`, conforme a §11.7 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto. São duas descrições da mesma coisa de propósito, e o teste é quem
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
+ * São duas descrições da mesma coisa de propósito, e o teste é quem
  * garante que não divirjam.
  *
  * **Nenhuma chave é nova.** As três do bloco de código são os mesmos objetos do
  * `code-window`, vindos de `shared/fields.ts`, e `body` é a chave canônica da §6 — a mesma
  * do `context` e do `split-vertical`, e não uma `note` própria: o papel é o mesmo texto
- * corrido, e chave própria daria ao par a incompatibilidade de graça. Decisão 45.
+ * corrido, e chave própria daria ao par a incompatibilidade de graça. ADR-0045.
  *
  * O que **não** é compartilhado é o descritor de `body`, e a diferença é o limite: 180 aqui
  * contra 320 no `context`. O limite acompanha a região — quatro linhas de 270px contra oito
@@ -51,7 +51,7 @@ export const options: Field[] = [...sharedOptions];
 /**
  * `lang` é `string`, e não um enum das nove — o mesmo motivo do `code-window`: a validação
  * derruba dado torto, não dado velho, e uma linguagem que saiu do bundle faria o slide
- * perder a cor, não o conteúdo. Decisão 41.
+ * perder a cor, não o conteúdo. ADR-0041.
  */
 export const codeAnnotatedSchema = z.object({
   fields: z.object({

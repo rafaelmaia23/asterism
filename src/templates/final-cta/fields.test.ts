@@ -42,7 +42,7 @@ describe("final-cta", () => {
   });
 
   /**
-   * As três chaves são as do vocabulário canônico da §6 do documento de contexto —
+   * As três chaves são as do vocabulário canônico da §1 de `docs/model.md` —
    * `heading` é o título de qualquer template, e é o que fará o `migrateFields` da 2.10
    * ser uma interseção de chaves.
    */
@@ -76,7 +76,7 @@ describe("final-cta", () => {
     expect(options).toHaveLength(9);
   });
 
-  test("nasce grid, no grupo final, e com o rodapé completo da decisão 29", () => {
+  test("nasce grid, no grupo final, e com o rodapé completo da ADR-0029", () => {
     expect(finalCtaMeta.background).toBe("grid");
     expect(finalCtaMeta.group).toBe("final");
     expect(finalCtaMeta.defaults.options.showGrid).toBe(true);

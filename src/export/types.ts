@@ -1,5 +1,5 @@
 /**
- * Os tipos da §10 do documento de contexto — a exportação em dois estágios.
+ * Os tipos da §2 de `docs/pipeline.md` — a exportação em dois estágios.
  *
  * PDF, PNG e JPG não são três exportadores: compartilham o caminho DOM → bitmap e
  * divergem só na codificação e no empacotamento. O estágio 1 é único (`rasterize`); o
@@ -19,7 +19,7 @@ import type { Field } from "@/templates/types";
  *
  * O `node` é a raiz do slide em pixels reais, a que carrega `.slide-canvas`. Nunca o
  * quadro externo do `SlideFrame`, que tem a borda do editor, e nunca um nó vindo do
- * preview, que traz a compensação de `--slide-scale` junto — ver a decisão 20.
+ * preview, que traz a compensação de `--slide-scale` junto — ver a ADR-0020.
  */
 export type RenderSource = { slide: Slide; node: HTMLElement };
 

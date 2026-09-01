@@ -11,7 +11,7 @@
  * regra em vez de completá-la: as três leituras do recorte foram montadas com um deck de
  * 12 slides e nenhuma sobreviveu à comparação com o comportamento sem recorte — os cinco
  * primeiros congelam no slide 5, a janela deslizante fica sete slides sem se mexer, e a
- * amostragem avança em quatro degraus irregulares. Decisão 40 da §16 do documento de
+ * amostragem avança em quatro degraus irregulares. ADR-0040 da §16 do documento de
  * contexto.
  *
  * O recorte existia para resolver um problema de espaço que ninguém tinha medido: a faixa

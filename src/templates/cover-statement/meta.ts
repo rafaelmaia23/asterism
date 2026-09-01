@@ -29,7 +29,7 @@ export const coverStatementMeta: {
       kicker: "log/ · 01",
       heading: "Um título que declara algo em vez de prometer",
     },
-    // O descritor dá o padrão e o slide decide daí em diante — decisão 25, agora valendo
+    // O descritor dá o padrão e o slide decide daí em diante — ADR-0025, agora valendo
     // para as oito. A capa nasce **sem identidade**: a §11.1 diz que nada compete com o
     // título, e isso continua verdadeiro como recomendação, não mais como regra. Nasce
     // com o chevron porque é onde o gesto de deslizar ainda não foi executado.

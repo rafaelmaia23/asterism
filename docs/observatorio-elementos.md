@@ -67,7 +67,7 @@ sobre **o que dizer**.
 O que muda é o modelo de conteúdo, que é uma camada fina. O que fica de pé: a grade do
 slide, a escala tipográfica, o cromo das duas faixas, o padrão de registry, o guard de
 transbordo, o formulário derivado de descritor e o caminho de exportação. Ver as decisões
-60 a 74 da §16 do documento de contexto.
+60 a 74 da `docs/adr/`.
 
 **A restrição mudou de lugar, não desapareceu.** Antes era impossível fazer um slide feio
 porque só havia dez formas. Agora é possível, e duas regras seguram quase tudo: elemento não
@@ -91,11 +91,11 @@ Todo slide ocupa 1080×1350 com padding de 80px em todos os lados, o que dá uma
 e no rodapé isso inclui a constelação. As cinco opções do rodapé — `showRule`, `showLogo`,
 `showLogoPlate`, `showHandle`, `showChevron` — escolhem o que ele mostra.
 
-**O kicker é a única peça de conteúdo que mora no layout.** É texto digitado, e pela §6 do
-documento de contexto conteúdo mora no conteúdo; ele fica aqui porque é o que a faixa **é**,
+**O kicker é a única peça de conteúdo que mora no layout.** É texto digitado, e pela §1 de
+`docs/model.md` conteúdo mora no conteúdo; ele fica aqui porque é o que a faixa **é**,
 do mesmo jeito que a constelação é o que o rodapé é. Promovê-lo a elemento traria de volta
 uma cardinalidade a mais, um caminho de migração a mais e uma faixa 80–148 que deixaria de
-ser fixa, tudo para permitir uma etiqueta no meio do slide que ninguém pediu. Decisão 66,
+ser fixa, tudo para permitir uma etiqueta no meio do slide que ninguém pediu. ADR-0066,
 que confirma a 42.
 
 #### A região de conteúdo é uma pilha vertical
@@ -127,7 +127,7 @@ Espaçamento, todo ele da §4.2 do design system:
 **Não existe elemento de espaçamento.** Espaçador explícito é estilo livre pela porta dos
 fundos — o autor passa a ajustar altura em vez de escrever, e o guard não sabe julgar um
 vazio de 200px. O que existe é a **âncora vertical** do layout, que é o antigo `anchor` do
-`text-bullets` generalizado. Decisão 67.
+`text-bullets` generalizado. ADR-0067.
 
 | Âncora | Efeito | Quem usava |
 | --- | --- | --- |
@@ -157,10 +157,10 @@ enter no inspector não chegava ao slide.
 | Quebra **tipográfica** | Partir um título num ponto específico para ficar bonito | **Não.** Congela o layout e some com a razão de os presets existirem |
 | Quebra **de conteúdo** | Parágrafo, item de lista | **Sim.** É estrutura do pensamento, não ajuste visual |
 
-O elemento `text` da §11.14 é quem materializa isso, sobre a camada de blocos da §7 do
-documento de contexto: linha em branco separa parágrafo, `- ` abre item não ordenado e
+O elemento `text` da §11.14 é quem materializa isso, sobre a camada de blocos da §2 de
+`docs/model.md`: linha em branco separa parágrafo, `- ` abre item não ordenado e
 `1. ` abre item ordenado. Sem títulos e sem cercas de código nessa camada — título é
-elemento próprio e código é elemento próprio. Decisão 60.
+elemento próprio e código é elemento próprio. ADR-0060.
 
 Nos elementos de uma linha — `heading`, `label`, `cta` — a quebra continua natural, e o
 enter ali não faz nada. É onde a proibição original continua tendo razão.
@@ -169,7 +169,7 @@ enter ali não faz nada. É onde a proibição original continua tendo razão.
 
 Um título tem **um tamanho só**, o que a §3.3 do design system dá a ele. O autor escolhe
 *que* elemento usar, nunca *como* ele se parece: não há seletor de tamanho, de cor nem de
-peso em lugar nenhum desta biblioteca. Decisão 62.
+peso em lugar nenhum desta biblioteca. ADR-0062.
 
 As poucas escolhas de aparência que existem são **geometria fechada**, e cada uma está
 justificada na seção do elemento: o ajuste e o sangramento da imagem, a proporção e o
@@ -197,7 +197,7 @@ central de validação. É a única coisa impedindo o autor de empilhar oito ele
 
 #### O guard de transbordo é recursivo
 
-O guard da §9 do documento de contexto compara a altura do conteúdo com a altura da região
+O guard da §1 de `docs/pipeline.md` compara a altura do conteúdo com a altura da região
 que o contém. Com aninhamento isso passa a valer em cada nível:
 
 - a região de conteúdo do slide é um container;
@@ -207,7 +207,7 @@ que o contém. Com aninhamento isso passa a valer em cada nível:
 - o aviso **nomeia o elemento** que estourou — o primeiro cuja base passa da borda inferior
   do container —, senão o autor caça num slide de seis.
 
-Continua valendo a armadilha da §13 do contexto: **o container medido tem altura de faixa,
+Continua valendo a armadilha da §3 de `docs/architecture.md`: **o container medido tem altura de faixa,
 não altura de conteúdo**. O que se mede não pode ser dimensionado pelo que contém, senão a
 escala se realimenta.
 
@@ -216,9 +216,9 @@ o que escolher: todo container de conteúdo é medido.
 
 #### Imagem pode sangrar; conteúdo, não
 
-O padding de 80px vale para conteúdo. **A imagem pode sangrar** — e só ela. É a decisão 46,
+O padding de 80px vale para conteúdo. **A imagem pode sangrar** — e só ela. É a ADR-0046,
 que sobrevive à virada porque é geometria e não estilo, e que na §11.19 vira uma opção
-fechada do elemento em vez de uma propriedade de dois templates. Decisão 71.
+fechada do elemento em vez de uma propriedade de dois templates. ADR-0071.
 
 O sangramento tem um limite, e ele é geométrico: **nenhuma imagem entra na faixa do rodapé**.
 O rodapé precisa dos 920px inteiros — a placa da logo mais o handle somam cerca de 217px e
@@ -227,11 +227,11 @@ Daí a imagem parar em **y 1174**, que é a linha da régua da §10.5 do design 
 
 #### O vocabulário de chaves continua
 
-As chaves de campo são as mesmas da §6 do documento de contexto, agora dentro do elemento:
+As chaves de campo são as mesmas da §1 de `docs/model.md`, agora dentro do elemento:
 `heading`, `lead`, `body`, `caption`, `image`, `code`/`file`/`lang`, `cta`. O que some é o
 único par que era próprio de um template — `beforeLabel`/`before` e `afterLabel`/`after` do
 `compare-2col` —, porque um rótulo dentro de uma coluna é o elemento `label` e o conteúdo é o
-elemento `text`. A exceção que a decisão 45 previa deixou de existir sozinha.
+elemento `text`. A exceção que a ADR-0045 previa deixou de existir sozinha.
 
 ---
 
@@ -248,13 +248,13 @@ escolhe entre os dois na hora de salvar.
 **Aplicar um preset a um slide que já tem conteúdo casa por tipo, na ordem.** O primeiro
 `text` do preset recebe o texto do primeiro `text` do slide, e assim por diante; elemento sem
 par no destino é descartado, elemento sem par na origem nasce vazio. É a regra de interseção
-da decisão 13 levantada de chaves para tipos de elemento, e é o que impede a troca de
+da ADR-0013 levantada de chaves para tipos de elemento, e é o que impede a troca de
 composição de apagar trabalho — o pior momento possível de uso da ferramenta.
 
 Os dez são **fixos**: não se editam, não se apagam e não se renomeiam. São o vínculo entre
 esta seção e o código, e a função que converte os dez templates da v1 em listas de elementos
 **é** a definição deles — escrever as duas coisas em separado é garantir que divirjam.
-Decisão 73. Preset salvo pelo autor é outra coisa, e a §11.23 trata dele.
+ADR-0073. Preset salvo pelo autor é outra coisa, e a §11.23 trata dele.
 
 ---
 
@@ -552,7 +552,7 @@ linha, dentro da faixa de 28 a 42 da §3.4 — e era essa conta, não os 480px, 
 protegendo.
 
 A alternativa era uma quarta proporção só para este caso, e proporção existente para um
-usuário só é a mesma armadilha que o vocabulário de chaves da §6 evita.
+usuário só é a mesma armadilha que o vocabulário de chaves da §1 de `docs/model.md` evita.
 
 **O bloco de texto se centraliza verticalmente**, que é o `align: "center"` da coluna. Ao
 lado de uma imagem de altura quase cheia, texto ancorado ao topo deixa um buraco entre a
@@ -601,7 +601,7 @@ separa o elemento `caption` do elemento `text`, e é por isso que os dois existe
 
 ## Os doze elementos
 
-Cada seção abaixo é um `ElementDef` do registry da §8 do documento de contexto: papel,
+Cada seção abaixo é um `ElementDef` do registry da §3 de `docs/model.md`: papel,
 degrau da escala, campos, cardinalidade e comportamento. O que não está aqui é escolha de
 quem edita — e o que não está em lugar nenhum não existe, que é o ponto da regra "elemento
 não carrega estilo" da §11.0.
@@ -645,7 +645,7 @@ Fora de coluna porque 96px numa coluna de 428px dá quatro caracteres por linha.
 | --------- | ---------- | -------- | --------------- |
 | `heading` | `textarea` | 60       | Título do slide |
 
-O título é **sempre** `heading`, em qualquer composição — a §6 do documento de contexto, que
+O título é **sempre** `heading`, em qualquer composição — a §1 de `docs/model.md`, que
 continua valendo dentro do elemento. Duas linhas é o alvo, e o conselho de 60 é o que cabe
 nelas.
 
@@ -685,7 +685,7 @@ Fora de coluna: 44px em 428px dá 19 caracteres por linha.
 
 O elemento que a virada existe para criar. O valor é **uma string**, editada num textarea —
 o autor quer digitar, não preencher formulário nem montar blocos com o mouse —, e a camada de
-blocos da §7 do documento de contexto a transforma em parágrafos e listas:
+blocos da §2 de `docs/model.md` a transforma em parágrafos e listas:
 
 | Escrita | Vira |
 | --- | --- |
@@ -796,7 +796,7 @@ Atribuição vazia some junto com o gap, como todo elemento vazio.
 A janela da §10.3 do design system: superfície `slide-raised`, raio 12px, sem borda; três
 pontos de 10px com gap 16px na barra; padding interno de 32px, o `--slide-pad-code` da §4.2.
 O nome do arquivo sai em `slide-meta` **caixa baixa** `ink-400` — a única peça `slide-meta`
-que é um identificador e não uma etiqueta, decisão 53.
+que é um identificador e não uma etiqueta, ADR-0053.
 
 Valores de `lang`, que são as gramáticas do bundle do shiki:
 `ts` · `tsx` · `js` · `json` · `bash` · `sql` · `css` · `python` · `text`.
@@ -804,7 +804,7 @@ Valores de `lang`, que são as gramáticas do bundle do shiki:
 metade do que um carrossel de backend mostra.
 
 **A janela tem a altura do código, não a da região.** Ela cresce com as linhas; quatro linhas
-não desenham um painel vazio. É a armadilha da §13 do documento de contexto — o que se mede
+não desenham um painel vazio. É a armadilha da §3 de `docs/architecture.md` — o que se mede
 não pode ser dimensionado pelo que contém —, e é o container da pilha que tem altura fixa.
 
 **A 34px mono, a janela comporta 41 caracteres por linha.** Linha mais longa vaza pela
@@ -875,7 +875,7 @@ na largura útil inteira. É a forma do callout da §10.5, e não um botão: num
 clicável, e desenhar algo com aparência de botão promete uma interação que não existe.
 
 O texto usa `slide-code` a 34px, e não os 36px que a v1 chegou a escrever — a escala da §3.3
-não tem esse degrau, e a decisão 39 escolheu o token em vez de inventar o nono.
+não tem esse degrau, e a ADR-0039 escolheu o token em vez de inventar o nono.
 
 Um por slide, e fora de coluna pelo mesmo motivo do `code`: 34px mono numa coluna de 428px
 não cabem.
@@ -887,7 +887,7 @@ não cabem.
 **Papel** régua · **Sem campo** · **Sem limite de quantidade** · **Dentro de coluna: sim**
 
 Uma linha de 1px `ink-600` na largura do container, desenhada com a utility `slide-hairline`
-e a compensação de `--slide-scale` da decisão 38 — sem ela a linha some no preview reduzido.
+e a compensação de `--slide-scale` da ADR-0038 — sem ela a linha some no preview reduzido.
 
 Separa dois blocos quando o gap de 64px não basta para dizer que eles são coisas diferentes.
 O uso que a biblioteca já tinha é logo abaixo de um `label`, com 24px entre os dois, que é o
@@ -985,7 +985,7 @@ cada vez, e isso cansa mais rápido que preencher formulário.
 **Slide novo nasce com a composição do slide anterior e o conteúdo limpo** — mesmos tipos,
 mesma ordem, mesmo layout, texto vazio. Um carrossel costuma ter três ou quatro slides de
 miolo com a mesma forma, então o padrão acerta na maioria das vezes, e limpar fica a um
-clique. Decisão 70.
+clique. ADR-0070.
 
 #### Preset e snapshot
 

@@ -60,9 +60,9 @@ e quem impede que ele divirja da fonte é um teste: o `theme.test.ts` lê o `glo
 exige que cada cor da paleta seja a que o token declara.
 
 **O shiki entra pelo caminho síncrono** — `createHighlighterCoreSync` com o motor de regex
-em JavaScript e as gramáticas importadas estaticamente, decisão 51. É o que faz o realce
-não ser uma espera: não há um quadro com o código sem cor, o palco da §10 continua
-esperando só as fontes, e o guard de transbordo da §9 mede uma vez só. Se alguém for
+em JavaScript e as gramáticas importadas estaticamente, ADR-0051. É o que faz o realce
+não ser uma espera: não há um quadro com o código sem cor, o palco da §2 de `docs/pipeline.md` continua
+esperando só as fontes, e o guard de transbordo da §1 de `docs/pipeline.md` mede uma vez só. Se alguém for
 trocar isto por import dinâmico, é este parágrafo que está sendo revogado, e o preço é a
 espera nova no palco.
 
@@ -92,7 +92,7 @@ inteiro troca de cor. `repeating-linear-gradient` falha igual, e `<pattern>` de 
 com metade da espessura, porque o traço na borda do ladrilho é recortado. O que a
 exportação precisa ver tem de ser **elemento**: um `<svg>` com linhas de verdade atravessa
 intacto, e a constelação e o chevron já provavam isso no mesmo PDF que reprovou o fundo.
-Medido na 1E, com quatro implementações comparadas no arquivo. Ver a decisão 28.
+Medido na 1E, com quatro implementações comparadas no arquivo. Ver a ADR-0028.
 
 **O reset do Tailwind não atravessa a clonagem.** A captura copia estilo computado para
 dentro de um `foreignObject`, e ali dentro vale a folha do **agente de usuário** outra vez.
@@ -115,7 +115,7 @@ bloco declara de verdade continua valendo, e some só o que ninguém declarou. V
 
 **A Etapa 3½ agravou essa armadilha em vez de resolvê-la.** Até ela, `<ul>` e `<p>` mal
 existiam no canvas: os tópicos do `text-bullets` eram a única lista da biblioteca e os
-parágrafos eram um por slide. Com a camada de blocos da §7, um `text` sozinho pode desenhar
+parágrafos eram um por slide. Com a camada de blocos da §2 de `docs/model.md`, um `text` sozinho pode desenhar
 três parágrafos e uma lista, e cada um deles é um nó que o clone deixa sem reset. O reset
 injetado pelo `onCloneNode` não é mais uma correção pontual: é o que segura o formato de
 todo texto do sistema, e **é a primeira coisa a conferir no PDF** quando o arquivo não bate
@@ -147,7 +147,7 @@ São duas condições, e vale manter as duas. **O que se mede fica preso a algo 
 o shell tem altura de viewport, não altura mínima. **O que o resultado desenha fica fora
 do fluxo** — o quadro mora num palco `absolute` dentro da área, e conteúdo posicionado em
 absoluto não contribui para o tamanho do pai. A segunda sozinha já fecha a porta, e é a
-que vai valer também para o palco de exportação da §10, que monta o deck inteiro fora da
+que vai valer também para o palco de exportação da §2 de `docs/pipeline.md`, que monta o deck inteiro fora da
 tela.
 
 **Id de dado não vira atributo do DOM.** O deck é criado duas vezes — uma na

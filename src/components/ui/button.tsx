@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils"
  *
  * O hover da §8 é "superfície sobe um degrau, cor não muda", o que num botão de
  * preenchimento cheio é o tom 300 sobre o 400 — daí `azure-300` e `crown-300` nomeados. O
- * destrutivo perdeu o fundo tingido a 10% e virou o par 400/950 da §2.4, que é a decisão 17.
+ * destrutivo perdeu o fundo tingido a 10% e virou o par 400/950 da §2.4, que é a ADR-0017.
  *
  * As duplicatas `dark:` das variantes que mudaram foram colapsadas: a classe `dark` está
  * sempre no `<html>` (não há tema claro), então elas eram só o valor que de fato vale, com

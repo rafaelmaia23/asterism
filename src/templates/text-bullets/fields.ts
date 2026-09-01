@@ -1,8 +1,8 @@
 /**
  * Campos, opções e schema do `text-bullets`, conforme a §11.2 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto. São duas descrições da mesma coisa de propósito, e o teste é
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
+ * São duas descrições da mesma coisa de propósito, e o teste é
  * quem garante que não divirjam.
  *
  * As chaves são as do vocabulário canônico da §6: `heading` é o título de qualquer

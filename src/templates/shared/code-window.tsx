@@ -22,7 +22,7 @@
  *
  * Ela **não** ocupa a região: quatro linhas desenham um painel de quatro linhas, não um
  * painel vazio de 866px. Quem tem altura fixa é a faixa, e é a faixa que o guard mede —
- * a armadilha da §13 do documento de contexto, que proíbe dimensionar pelo conteúdo
+ * a armadilha da §3 de `docs/architecture.md`, que proíbe dimensionar pelo conteúdo
  * justamente o que se mede. Aqui as duas coisas convivem porque são dois nós: a faixa é o
  * `region` do guard, esta janela é o `content`.
  *
@@ -32,7 +32,7 @@
  * escala, não do conteúdo — `api/ · 04` é digitado assim e sai versal sem que o dado mude.
  * Nome de arquivo é a exceção, e é a única peça `slide-meta` que é um **identificador
  * literal**: `CACHE.TS` desmente o nome que está no repositório, e o slide passa a mostrar
- * um arquivo que não existe. A exceção está escrita na §10.3 e na §11.6 — decisão 53.
+ * um arquivo que não existe. A exceção está escrita na §10.3 e na §11.6 — ADR-0053.
  */
 
 import { CodeLines } from "@/code/code-lines";

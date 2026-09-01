@@ -102,7 +102,7 @@ describe("createSeedDeck", () => {
 
   /**
    * O fechamento é o último por definição, e é a posição que faz a constelação sair
-   * inteira acesa e o chevron ser suprimido — decisão 36. Sem ele no fim, os dois
+   * inteira acesa e o chevron ser suprimido — ADR-0036. Sem ele no fim, os dois
    * comportamentos da 2.9 não teriam onde ser conferidos olhando.
    */
   test("o fechamento é o último slide do deck", () => {

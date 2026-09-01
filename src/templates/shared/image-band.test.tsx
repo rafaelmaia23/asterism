@@ -29,7 +29,7 @@ describe("ImageBand", () => {
 
   /**
    * A §11.9: id órfão é o **mesmo estado** de campo vazio. O schema passa, porque o id é
-   * uma string válida; a imagem some e o slide fica — decisão 31 intacta.
+   * uma string válida; a imagem some e o slide fica — ADR-0031 intacta.
    */
   test("id órfão desenha o mesmo estado de campo vazio", async () => {
     images = stubImages();

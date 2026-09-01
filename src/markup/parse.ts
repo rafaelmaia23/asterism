@@ -1,5 +1,5 @@
 /**
- * O parser da marcação inline — §7 do documento de contexto.
+ * O parser da marcação inline — §2 de `docs/model.md`.
  *
  * Subset fechado da sintaxe do Obsidian: sete marcadores, **nenhuma construção de bloco**
  * e nenhum aninhamento. Devolve AST, nunca HTML — devolver HTML acoplaria o conteúdo ao
@@ -43,7 +43,7 @@ type Opened = { node: Inline; next: number };
 
 /**
  * O marcador que abre em `i`, se algum abrir e fechar ali. Não há regra de limite de
- * palavra: `micro**serviços**` marca, e é decisão 33 da §16 do documento de contexto.
+ * palavra: `micro**serviços**` marca, e é ADR-0033.
  */
 function openAt(src: string, i: number): Opened | null {
   for (const marker of MARKERS) {

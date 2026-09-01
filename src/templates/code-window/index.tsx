@@ -14,7 +14,7 @@
  *
  * ## Com o cabeçalho ligado, tudo desce uma faixa
  *
- * A mesma geometria do `context` e do `text-bullets` — decisão 43. São as mesmas quatro
+ * A mesma geometria do `context` e do `text-bullets` — ADR-0043. São as mesmas quatro
  * combinações de cabeçalho e título, e nas quatro o bloco acaba em 1160, no topo do
  * rodapé. Título vazio: a região some e a janela ocupa a faixa inteira, com o teto de 14
  * linhas continuando de pé. A janela ganha ar em volta, não mais linhas.
@@ -24,7 +24,7 @@
  *
  * ## A faixa é que tem altura; a janela é que cresce
  *
- * É a marca **⌐** da §11.6, e é a armadilha da §13 do documento de contexto na sua forma
+ * É a marca **⌐** da §11.6, e é a armadilha da §3 de `docs/architecture.md` na sua forma
  * mais fácil de errar: a tentação é dar `h-[866px]` à janela e deixá-la ocupar a região.
  * Isso desenharia um painel vazio de 866px para quatro linhas de código, e — pior — faria
  * o que o guard mede ser dimensionado pelo que ele contém. A faixa tem altura de spec, a

@@ -8,7 +8,7 @@
  * ## Ela sangra, e é a única coisa do slide que sangra
  *
  * O padding de 80px da §11.0 vale para **conteúdo**; imagem pode ir até a borda do canvas —
- * decisão 46. Contida, com raio de 12px, ela viraria figura ilustrando um slide de texto, e
+ * ADR-0046. Contida, com raio de 12px, ela viraria figura ilustrando um slide de texto, e
  * os dois templates de mídia perderiam a razão de existir separados do `context`. Daí não
  * haver raio aqui: quem posiciona a faixa é quem a usa, e as duas geometrias encostam na
  * borda.
@@ -22,7 +22,7 @@
  * A faixa desenha `slide-surface` com o rótulo centralizado nos dois casos: o slide que
  * nasceu sem imagem e o deck reidratado cujo `ImageId` não está mais no IndexedDB. A §11.9
  * é explícita em que o segundo não derruba o slide — o schema passa, porque o id é uma
- * string válida, e a decisão 31 continua sendo derrubar só o que não passa.
+ * string válida, e a ADR-0031 continua sendo derrubar só o que não passa.
  *
  * O fundo é `slide-surface` sempre, e não só no estado vazio: com `contain` a imagem cabe
  * inteira e o que sobra é ele, que é o que a §11.9 pede.

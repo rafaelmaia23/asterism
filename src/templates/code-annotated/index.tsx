@@ -52,7 +52,7 @@ import type { TemplateComponentProps, TemplateDef } from "@/templates/types";
 /**
  * A faixa do bloco, nas oito combinações de cabeçalho, título e explicação.
  *
- * O **topo** é o mesmo do `code-window` e do `context` — decisão 43, a faixa do cabeçalho
+ * O **topo** é o mesmo do `code-window` e do `context` — ADR-0043, a faixa do cabeçalho
  * empurrando o que está abaixo dela. O **fim** é o que este template acrescenta: 826 com a
  * explicação embaixo, 1160 sem ela. As duas coisas se compõem, e oito entradas literais
  * dizem isso melhor que três ternários numa string de classe.

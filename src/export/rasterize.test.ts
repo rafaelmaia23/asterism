@@ -65,7 +65,7 @@ describe("rasterize", () => {
    * O reset que o `preflight` do Tailwind faz na página não atravessa a clonagem: dentro do
    * `foreignObject` vale a folha do agente de usuário outra vez, e `<p>`, `<h2>` e `<ul>`
    * voltam a ter margem de `1em`. Medido em quatro dos cinco templates, e visível no
-   * `final-cta`, cujo bloco de fecho descia 96px por cima do rodapé. Decisão 50.
+   * `final-cta`, cujo bloco de fecho descia 96px por cima do rodapé. ADR-0050.
    *
    * O teste não prova o pixel — `happy-dom` não faz layout —, prova que a folha é
    * injetada no clone e o que ela diz. O pixel se confere no PDF.

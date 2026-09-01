@@ -26,7 +26,7 @@ type Deck = {
   version: 2
   id: string
   title: string
-  format: { w: number; h: number }  // dado, não constante — ver §12
+  format: { w: number; h: number }  // dado, não constante — ver architecture.md §2
   meta: DeckMeta
   slides: Slide[]
   assets: Record<ImageId, string>  // base64, apenas no arquivo exportado
@@ -40,7 +40,7 @@ type Slide = {
 ```
 
 Um slide é **uma configuração de layout mais uma lista ordenada de elementos**. Foi
-`template + campos fixos` até a Etapa 3½, e a decisão 61 diz por que deixou de ser.
+`template + campos fixos` até a Etapa 3½, e a ADR-0061 diz por que deixou de ser.
 
 ```ts
 type SlideLayout = {
@@ -66,7 +66,7 @@ de qualquer slide.
 cabeçalho **é**, do mesmo jeito que a constelação é o que o rodapé é; promovê-lo a elemento
 traria uma cardinalidade a mais, um caminho de migração a mais e uma faixa 80–148 que
 deixaria de ser fixa, para permitir uma etiqueta no meio do slide que ninguém pediu.
-Decisão 66, que confirma a 42.
+ADR-0066, que confirma a 42.
 
 ```ts
 type Element =
@@ -99,7 +99,7 @@ Três coisas que a forma do tipo compra de graça:
   caracteres por linha, e a impossibilidade vive no tipo em vez de numa validação.
 - **Um nível de profundidade**, pelo `Leaf`: coluna dentro de coluna não compila.
 - **Campos de conteúdo e de forma convivem no mesmo objeto.** `fit`, `bleed`, `ratio`,
-  `align` e `arrow` ficam ao lado de `body` e `heading`, e é isso que a decisão 61 troca
+  `align` e `arrow` ficam ao lado de `body` e `heading`, e é isso que a ADR-0061 troca
   pela divisão `fields`/`options` da v1 — ver abaixo.
 
 ### Por que `layout` e `elements` são separados, e por que `fields` e `options` não são mais
@@ -112,7 +112,7 @@ por elemento para separar `fit` de `image`, que ninguém nunca vai querer separa
 
 A divisão que restou é outra e vale a pena: **o layout é do slide, os elementos são o
 slide**. Aplicar um preset troca a lista e escreve o layout inteiro; acrescentar um
-elemento não encosta no layout. Decisão 61, que supera a 5 e a 44.
+elemento não encosta no layout. ADR-0061, que supera a 5 e a 44.
 
 ### Toda operação é por id de elemento
 
@@ -123,10 +123,10 @@ remover, alterar campo, adicionar ao lado — recebe o **`ElementId`**, e o stor
 
 Numa árvore de dez nós isso é gratuito, e evita carregar caminhos do tipo
 `["el_3", "left", 1]` por todo lado — que é o tipo de coisa que fica errada num canto e
-some num outro. Decisão 64.
+some num outro. ADR-0064.
 
 O `ElementId` vem de `crypto.randomUUID()` como o `SlideId`, e vale para ele a mesma
-armadilha da §13: **id de dado não vira atributo do DOM**.
+armadilha da §3 de `docs/architecture.md`: **id de dado não vira atributo do DOM**.
 
 ### Vocabulário canônico de campos
 
@@ -147,10 +147,10 @@ Elementos diferentes usam as **mesmas chaves** para papéis equivalentes:
 A tabela é menor do que era, e é a mesma promessa. O que saiu:
 
 - **`items` sumiu.** Lista de tópicos deixou de ser um campo `list` e passou a ser texto
-  com linhas de `- ` dentro de um `text` — §7. Some com ela o tipo de campo `list` do
+  com linhas de `- ` dentro de um `text` — §2. Some com ela o tipo de campo `list` do
   descritor, e os três botões por item que o inspector desenhava.
 - **O par próprio do `compare-2col` sumiu.** `beforeLabel`/`before` e `afterLabel`/`after`
-  eram a única exceção que a decisão 45 previa: um rótulo dentro de uma coluna agora é o
+  eram a única exceção que a ADR-0045 previa: um rótulo dentro de uma coluna agora é o
   elemento `label` e o conteúdo é o elemento `text`, os dois lados iguais.
 
 A promessa continua sendo **de papel e de forma**: a mesma chave tem o mesmo tipo em toda
@@ -160,7 +160,7 @@ equivalência. As chaves são em inglês, como todo identificador do projeto.
 ## 2. Marcação
 
 Sintaxe do Obsidian, subset fechado, em **duas camadas**: blocos por cima, inline por
-baixo. A camada de blocos é da Etapa 3½ e a decisão 60 diz por que ela precisou existir.
+baixo. A camada de blocos é da Etapa 3½ e a ADR-0060 diz por que ela precisou existir.
 
 ### Blocos
 
@@ -256,7 +256,7 @@ Nada de erro, nada de nó vazio: o que não fecha é o que a pessoa digitou. Num
 que o canvas mostra o resultado a cada tecla, o texto literal já é o aviso — enquanto se
 digita `**forte**`, o estado intermediário `**forte` existe em toda edição.
 
-**Não existe regra de limite de palavra** — decisão 33. `micro**serviços**` marca, e
+**Não existe regra de limite de palavra** — ADR-0033. `micro**serviços**` marca, e
 `2*3*4` vira `2`, `3` em ênfase e `4`. O tokenizer não olha o caractere anterior.
 
 Nós de texto vizinhos são colapsados em um só: uma sequência de rejeições devolve um nó,
@@ -303,7 +303,7 @@ os alvos de exportação já usavam — **passa a registrar elementos em vez de 
 nada mais muda. Elemento desconhecido é erro de runtime, lançado pelo registry.
 
 O `Field` é o descritor declarativo da v1, sem o `section`: as seções do inspector morreram
-com o cartão por elemento, e a decisão 44 está superada.
+com o cartão por elemento, e a ADR-0044 está superada.
 
 ```ts
 type Field =
@@ -321,7 +321,7 @@ desenhava, que eram formulário onde devia haver digitação.
 
 **O zod valida, o descritor desenha.** Continua valendo, e pelo mesmo motivo: gerar
 formulário a partir do schema é um poço sem fundo de unions, arrays, defaults e
-refinements. Decisão 4.
+refinements. ADR-0004.
 
 A flag `md` marca quais campos aceitam marcação. Na prática **todos aceitam menos os três
 do `code`** — a divisão campo a campo da v1 nunca teve regra, e a §11 do documento de
@@ -344,17 +344,17 @@ type Preset = {
 Os dez presets de seed são as dez composições que a v1 tinha como template, e estão
 escritos na §11.1–§11.10 do documento de elementos. **A função que converte os dez
 templates em listas de elementos é a definição deles** — escrever as duas coisas em
-separado é garantir que divirjam. Decisão 73.
+separado é garantir que divirjam. ADR-0073.
 
 Aplicar um preset a um slide com conteúdo **casa por tipo, na ordem**: o primeiro `text` do
-preset recebe o texto do primeiro `text` do slide. É a regra de interseção da decisão 13
+preset recebe o texto do primeiro `text` do slide. É a regra de interseção da ADR-0013
 levantada de chaves para tipos, e é o que impede a troca de composição de apagar trabalho.
 
 Preset guarda o esqueleto; **snapshot** guarda também o texto, e uma caixa de seleção no
 momento de salvar separa os dois sem inventar dois conceitos na interface. Os dez de seed
-são fixos; preset salvo pelo autor é renomeável, substituível e apagável. Decisão 69.
+são fixos; preset salvo pelo autor é renomeável, substituível e apagável. ADR-0069.
 
-Presets são **transversais aos decks** e por isso não moram dentro do `Deck` da §6: ficam
+Presets são **transversais aos decks** e por isso não moram dentro do `Deck` da §1: ficam
 em chave própria do `localStorage`.
 
 ## 4. Estado e persistência
@@ -371,10 +371,10 @@ em chave própria do `localStorage`.
 O store nasce na 1D com zustand cru: deck, slide ativo, `setField` e `setOption`, e nada
 mais — autosave e undo sobre um estado que ainda não sabe editar não teriam o que
 guardar. A 2D acrescentou `setTemplate`, `addSlide` e `removeSlide`, que são o que faz
-compor, e o `persist` por cima deste mesmo store — tarefa 2.12: a Fase 1 do §15 promete um
+compor, e o `persist` por cima deste mesmo store — tarefa 2.12: a Fase 1 da §6 de `docs/product.md` promete um
 carrossel publicável e um deck que some no reload não cumpre a promessa. O **IndexedDB
 chegou na 3F**, com os dois templates de mídia que o pedem: um template cujo campo principal
-não tem onde guardar valor não está entregue, e é a mesma razão pela qual a decisão 30
+não tem onde guardar valor não está entregue, e é a mesma razão pela qual a ADR-0030
 antecipou o `addSlide`. O `zundo` fica para a **Etapa 4**, junto com o resto do editor.
 
 ### O binário mora fora do deck, e a ponte é um cache de módulo
@@ -391,7 +391,7 @@ banco é assíncrono enquanto o template é síncrono. A ponte é o `src/images/
 URLs **antes** de renderizar — um `<img>` cujo `src` chega no quadro seguinte não está no
 bitmap. O cache fica fora do store de propósito: o store persiste o deck e só o deck, e um
 object URL não é estado a guardar, é um handle do documento vivo que morre no reload.
-Decisão 55.
+ADR-0055.
 
 A URL do preview é `blob:`; a conversão para `data:` é o `modern-screenshot` que faz na
 clonagem, e é lá que ela precisa acontecer, porque dentro do `foreignObject` a origem é
@@ -400,17 +400,17 @@ opaca. É a mesma armadilha que põe as três fontes em `next/font/local`.
 **A imagem é reduzida a 2160px no maior lado na importação** — o 1080 do formato vezes a
 escala 2 do alvo PDF, que é a maior resolução que o arquivo consegue aproveitar. O que passa
 disso é peso puro em quatro lugares: o banco, o DOM, o `foreignObject` da captura e o base64
-do `.json` da Etapa 4. Decisão 56.
+do `.json` da Etapa 4. ADR-0056.
 
 **Deck da v1 não reidrata.** A virada da Etapa 3½ mudou a forma de `Slide` — de
 `template + fields + options` para `layout + elements` —, e `deck.version` foi a **2** para
 que isso seja explícito em vez de detectável por acaso. O que está salvo em v1 não é
 convertido: o editor abre no carrossel de referência. É deck de um usuário só, num
 aplicativo que ainda não tem import/export, e escrever um conversor de produção para uma
-forma que nunca mais vai existir custa mais do que rende. Decisão 68 — e é a única exceção
-à decisão 31, que continua valendo para tudo o mais.
+forma que nunca mais vai existir custa mais do que rende. ADR-0068 — e é a única exceção
+à ADR-0031, que continua valendo para tudo o mais.
 
-**Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
+**Reidratar valida, e descarta slide a slide** — ADR-0031. O que está no localStorage
 deixa de bater com o código quando um elemento some ou muda de chave, e a resposta é
 derrubar só os slides que não passam, nunca o deck inteiro e nunca nada. Confiar sem
 validar deixaria o `get()` do registry lançar dentro do render e abriria a ferramenta em
@@ -434,10 +434,10 @@ separa os dois motivos de ele não bater com o código. Falta uma chave? O commi
 acrescentou um campo ao descritor e o que está salvo é de antes dele — nasce com o default,
 e o slide fica. Uma chave tem valor de outra forma, `items` como string onde o descritor
 promete lista? O default não salva ninguém, o valor errado sobrescreve o certo e o
-elemento cai, que é a decisão 31 intacta. Sem o degrau, acrescentar uma opção compartilhada apagaria
+elemento cai, que é a ADR-0031 intacta. Sem o degrau, acrescentar uma opção compartilhada apagaria
 o carrossel de quem já tinha um salvo: os dez slides reprovariam de uma vez e o editor
-abriria na semente — exatamente a perda de trabalho que a decisão 31 existe para impedir,
-chegando pela porta de trás. Decisão 41.
+abriria na semente — exatamente a perda de trabalho que a ADR-0031 existe para impedir,
+chegando pela porta de trás. ADR-0041.
 
 O que volta é o **resultado do parse**, não o slide cru: o zod remove a chave que o elemento
 não declara mais. Sem isso o dado velho ficaria pendurado para sempre, invisível no
@@ -445,18 +445,18 @@ formulário e presente no JSON que a Etapa 4 vai exportar.
 
 Ele mora em `src/editor/store.ts`, como uma factory mais um singleton. A factory é o que
 deixa o teste montar um store isolado a partir de um deck de fixture, sem React e sem
-reset global; a aplicação usa o singleton. Ver decisão 24.
+reset global; a aplicação usa o singleton. Ver ADR-0024.
 
 O slide ativo é guardado por **id**, não por índice: acrescentar e remover existem desde a
 2D e a reordenação chega na Etapa 4, e um índice guardado passaria a apontar para outro
 slide sem que nada avisasse. `addSlide` e `removeSlide` foram antecipados da Etapa 4 pela
-decisão 30 — sem eles a Etapa 2 não tem como compor os 8 a 12 slides que o próprio
+ADR-0030 — sem eles a Etapa 2 não tem como compor os 8 a 12 slides que o próprio
 critério dela exige. O deck nunca fica sem slides: remover o último é recusado, porque
 deck vazio pediria um estado vazio, que é da Etapa 5.
 
 Acrescentar põe o slide **no fim** e o torna ativo — é onde a pessoa vai escrever em
 seguida —, e ele nasce `text-bullets`, que é o `n` da estrutura `capa → contexto →
-desenvolvimento (n) → payoff → cta` da §8; trocar o layout está a um clique. Remover passa
+desenvolvimento (n) → payoff → cta` da §3; trocar o layout está a um clique. Remover passa
 o ativo ao vizinho seguinte, ou ao anterior quando o removido era o último; remover um
 slide que não estava ativo não mexe no ativo.
 
@@ -470,9 +470,9 @@ deixa o blob anterior no banco sem ninguém apontando para ele. A 3F não apaga 
 `zundo` da Etapa 4 desfaz a troca e devolve o `ImageId`, e um blob apagado no caminho faria
 o desfazer trazer o slide de volta sem a imagem. A varredura é do import/export da Etapa 4,
 que é quem terá o deck inteiro à mão — e que numa tela de múltiplos decks precisa ter, senão
-apaga a imagem do deck que não está aberto. Decisão 57.
+apaga a imagem do deck que não está aberto. ADR-0057.
 
 O caso inverso já é estado válido e desenhado: **id no deck, blob ausente**. O schema passa,
-porque o id é uma string válida; a imagem some e o slide fica, que é a decisão 31 intacta. O
+porque o id é uma string válida; a imagem some e o slide fica, que é a ADR-0031 intacta. O
 template desenha "Sem imagem", o mesmo estado de um slide que nunca teve uma.
 

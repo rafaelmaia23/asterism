@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * O shell do editor — as três colunas da §14 do documento de contexto.
+ * O shell do editor — as três colunas da §5 de `docs/product.md`.
  *
  * As três colunas estão vivas desde a 1D, e a barra superior ganhou a exportação na 1E.
  * Faltam a ela as ações de deck da §14 — novo, importar, exportar JSON —, que são da

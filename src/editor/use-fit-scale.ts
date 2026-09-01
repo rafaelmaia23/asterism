@@ -12,8 +12,8 @@
  * esperar o observador: o quadro nasce no tamanho final em vez de aparecer e se ajustar.
  *
  * Quem chama tem de garantir que o elemento observado não seja dimensionado pelo que o
- * resultado desta medida desenha — senão cada medida realimenta a próxima. Ver a §13 do
- * documento de contexto e o `SlideCanvas`, que separa a área medida do palco.
+ * resultado desta medida desenha — senão cada medida realimenta a próxima. Ver a §3 de
+ * `docs/architecture.md` e o `SlideCanvas`, que separa a área medida do palco.
  *
  * Enquanto não houver medida, devolve 0 — ver `fit-scale.ts`.
  */

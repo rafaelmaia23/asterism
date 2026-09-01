@@ -82,3 +82,4 @@ Antes eram a §16 do `asterism-context.md`, numa tabela só.
 | 72 | [Os doze elementos incluem `quote` e `divider`, dois papéis que nenhum dos dez templates tinha](./0072-quote-and-divider-elements.md) | accepted |
 | 73 | [A função que converte os dez templates da v1 é a definição dos dez presets de seed](./0073-conversion-function-defines-presets.md) | accepted |
 | 74 | [A etapa nova usa numeração intermediária — Etapa 3½, tarefas `C.n`](./0074-half-step-stage-numbering.md) | accepted |
+| 75 | [O documento de contexto vira quatro documentos, um glossário na raiz e 74 ADRs](./0075-context-document-split.md) | accepted |

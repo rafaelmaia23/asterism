@@ -34,7 +34,7 @@
  *
  * A região da frase é a que o guard de transbordo mede — o **⌐** da §11.5. Como a capa, é
  * conteúdo que não está ancorado ao topo: centralizado, o que não cabe estoura para os dois
- * lados, e só a medida de dois nós da decisão 47 o pega. A faixa é quem tem altura; o `<p>`
+ * lados, e só a medida de dois nós da ADR-0047 o pega. A faixa é quem tem altura; o `<p>`
  * é quem cresce.
  */
 

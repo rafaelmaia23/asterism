@@ -139,7 +139,7 @@ dos dois e some. É exceção de uma linha e vale **só no chrome do editor**.
 
 Ela não chega ao arquivo exportado, e não por cuidado: a borda mora no quadro externo, do
 lado de fora do `transform` de escala, e a exportação captura a raiz do slide, que está
-dentro. Ver a §9 e a decisão 23 do documento de contexto.
+dentro. Ver a §1 de `docs/pipeline.md` e a ADR-0023.
 
 ### 2.3 Texto
 
@@ -233,7 +233,7 @@ Valores absolutos, sem relação com a escala web. **Nada abaixo de 28px.**
 
 Cada linha desta tabela é uma `@utility` de mesmo nome em `globals.css`, carregando as
 cinco propriedades. O template escreve `slide-display` e nunca recompõe família, altura,
-peso e tracking — decisão 19 da §16 do documento de contexto. Só o tamanho vira token
+peso e tracking — ADR-0019. Só o tamanho vira token
 automático (`--text-slide-*`), e é justamente por isso que a utility existe: as outras
 quatro propriedades não têm onde morar senão repetidas em cada template.
 
@@ -310,7 +310,7 @@ A v2.0 deste documento especificava dois `linear-gradient` ladrilhados por
 `background-size`. Funcionava no preview e **se perdia na exportação**: o rasterizador
 desenha o ladrilho uma vez e chapa o resto da página com a primeira parada do gradiente.
 Medido no PDF, com quatro implementações comparadas — ver o experimento 4 do `TODO.md` e a
-decisão 28 do documento de contexto. Gradiente repetente falha igual; `<pattern>` de SVG
+ADR-0028. Gradiente repetente falha igual; `<pattern>` de SVG
 sai com metade da espessura, porque o traço na borda do ladrilho é recortado.
 
 A grade é um `<svg>` com linhas de verdade, dentro da raiz do slide:
@@ -612,7 +612,7 @@ Os sete marcadores do subset de marcação, e como cada um renderiza:
 
 `==marca==` é o único lugar do carrossel onde o âmbar aparece em texto. Um por slide.
 
-**O peso 600 do forte é piso, não valor** — decisão 34. Sobre a Sora 400 do corpo de
+**O peso 600 do forte é piso, não valor** — ADR-0034. Sobre a Sora 400 do corpo de
 texto ele sobe para 600 e funciona; sobre a Oxanium 700 de um título, um 600 fixo deixaria
 o trecho marcado mais **leve** que a frase em volta, que é o oposto do que o marcador
 significa — e contradiria a §11.1 dos templates, que diz que `**forte**` não tem efeito
@@ -634,7 +634,7 @@ Superfície `--slide-raised`, raio 12px, sem borda. Barra superior com três pon
 `api/ · 04` é digitado assim e sai versal sem que o dado mude. Nome de arquivo é a exceção
 porque é a única peça `slide-meta` que é um **identificador literal**: `CACHE.TS` desmente o
 nome que está no repositório, e o slide passa a mostrar um arquivo que não existe. Em código
-é `normal-case` sobre a utility. Decisão 53 da §16 do documento de contexto.
+é `normal-case` sobre a utility. ADR-0053.
 
 Realce de linha: fundo `sun-950`, `border-left: 4px solid sun-400`, raio 0.
 
@@ -669,7 +669,7 @@ Dois nomes aqui são apelido da rampa inteira — `azure-400` é `azure-radiance
 **Tudo nesta seção é cromo do layout, nunca elemento da pilha.** Cabeçalho, rodapé e as
 peças dos dois são propriedades do slide, e não entram na lista ordenada de elementos da
 §11 — quem os liga é um interruptor, não o seletor de adicionar. O kicker é a única peça de
-conteúdo que mora aqui, e a §6 do documento de contexto diz por quê.
+conteúdo que mora aqui, e a §1 de `docs/model.md` diz por quê.
 
 **Cabeçalho** — a faixa do topo, 80–148, dentro do padding. Simétrica ao rodapé, e opção do
 slide pela chave `showHeader`.
@@ -688,7 +688,7 @@ conteúdo colado no topo, e nenhum tem conteúdo colado no fim. Ver a §11.2 dos
 
 Cada template declara com o que o slide **nasce**. Só a capa nasce com o cabeçalho ligado —
 esta seção prendia o kicker à capa, e o que era regra virou padrão, pela mesma forma da
-decisão 25. Decisão 42.
+ADR-0025. ADR-0042.
 
 **Kicker** — canto superior esquerdo do cabeçalho, `slide-meta`, `azure-400`.
 Formato `pilar/ · índice`, por exemplo `api/ · 04`.
@@ -718,7 +718,7 @@ Não existe prenúncio do próximo. Um significado por cor.
 contador. Esta seção pedia, acima de 10 slides, "5 pontos mais um contador `03 / 12` em
 mono", e o experimento 2 derrubou a regra: as três leituras possíveis do recorte foram
 montadas com um deck de 12 slides e nenhuma sobreviveu à comparação com o comportamento
-sem recorte. Ver a decisão 40 da §16 do documento de contexto.
+sem recorte. Ver a ADR-0040.
 
 O limite existe, mas é largo: a faixa comporta **26 pontos** antes de a constelação
 encostar no handle — 920px de largura útil menos o grupo da esquerda, o chevron e os gaps
@@ -756,7 +756,7 @@ acrescentou foi poder desligar a faixa inteira, e um slide sem rodapé não cont
 porque não é um rodapé.
 
 Cada template declara com o que o slide **nasce** e quem edita decide daí em diante — a
-forma da decisão 25, a mesma que a grade de fundo tem desde a 1E. Esta seção dizia
+forma da ADR-0025, a mesma que a grade de fundo tem desde a 1E. Esta seção dizia
 "presente em todos os slides exceto a capa"; o que era regra virou padrão.
 
 **Ligar uma peça não move as outras.** É o que separa seis interruptores de bagunça, e
@@ -777,7 +777,7 @@ A placa é o único elemento do slide que entra na faixa de padding — o fundo 
 dos templates, e é o preço de a glyph ficar oticamente alinhada com o handle: encostá-la
 nos 80px desalinharia os dois em 12px.
 
-O `final-cta` **nasce com o rodapé completo**, com a constelação toda acesa — decisão 29.
+O `final-cta` **nasce com o rodapé completo**, com a constelação toda acesa — ADR-0029.
 Esta seção dizia "exceto capa e final" e contradizia a tabela de regiões da §11.3 dos
 templates, que sempre deu ao final as três peças. O último slide é onde o handle mais
 importa: quem chegou até o fim é quem vai seguir. O bloco de CTA no miolo não compete com

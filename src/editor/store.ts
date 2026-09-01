@@ -1,7 +1,7 @@
 /**
  * O estado do editor: o deck e qual slide está ativo.
  *
- * Zustand cru, sem middleware — a §11 do documento de contexto promete `persist`, `zundo`
+ * Zustand cru, sem middleware — a §4 de `docs/model.md` promete `persist`, `zundo`
  * e IndexedDB, e nenhum dos três é desta etapa. Autosave e undo entram na Etapa 3, sobre
  * este mesmo store.
  *
@@ -113,7 +113,7 @@ function editorState(deck: Deck): StateCreator<EditorState> {
      * A troca de layout — 2.11. O conteúdo migra pela interseção de chaves que o
      * vocabulário único da §6 garante, e as opções **sempre** resetam para os defaults do
      * template novo: são dois objetos separados no modelo justamente para que esta regra
-     * seja possível (decisão 5).
+     * seja possível (ADR-0005).
      *
      * Escolher o template que o slide já tem não é troca: devolve o mesmo slide, com a
      * mesma referência, para não custar as opções que a pessoa ajustou.
@@ -209,9 +209,9 @@ const STORAGE_KEY = "asterism.deck";
  * forma síncrona na criação do store, e a página é pré-renderizada estaticamente: o
  * servidor desenharia o deck semente e o cliente o deck salvo, que é divergência de
  * hidratação — a mesma família do `crypto.randomUUID()` que a 1D pegou. Quem chama
- * `rehydrate()` é o `EditorShell`, depois da montagem. Ver a §13 do documento de contexto.
+ * `rehydrate()` é o `EditorShell`, depois da montagem. Ver a §3 de `docs/architecture.md`.
  *
- * O `merge` é onde a decisão 31 entra: o que volta do storage passa pelo `reviveDeck`
+ * O `merge` é onde a ADR-0031 entra: o que volta do storage passa pelo `reviveDeck`
  * antes de virar estado. Ele recompõe o estado inteiro porque o `persist` **substitui** o
  * que existe em vez de mesclar — sem espalhar o `current`, as ações se perderiam.
  */

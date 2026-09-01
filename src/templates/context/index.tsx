@@ -16,7 +16,7 @@
  *
  * A mesma geometria do `text-bullets`, e de propósito: os dois são o miolo do carrossel, e
  * um deles empurrar 132px enquanto o outro reserva a faixa seria uma diferença sem motivo
- * entre slides vizinhos. É a decisão 43 valendo para o segundo template com conteúdo colado
+ * entre slides vizinhos. É a ADR-0043 valendo para o segundo template com conteúdo colado
  * no topo.
  *
  *   Kicker      80 – 148    o `Header` compartilhado

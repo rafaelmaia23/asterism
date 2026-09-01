@@ -9,21 +9,21 @@
  * duas consequências que só apareceram com o deck de doze slides da 2E: nenhum slide de
  * miolo podia ter etiqueta superior, e sair da capa **descartava** o kicker digitado — a
  * migração da 2.10 é uma interseção de chaves, e uma chave que só um lado declara não
- * atravessa. Compartilhado, ele migra de graça, que é exatamente o que a decisão 13 comprou.
+ * atravessa. Compartilhado, ele migra de graça, que é exatamente o que a ADR-0013 comprou.
  *
- * É a mesma forma da decisão 25 aplicada ao topo do slide: o descritor do template diz com
+ * É a mesma forma da ADR-0025 aplicada ao topo do slide: o descritor do template diz com
  * o que o slide **nasce** — e só a capa nasce com o cabeçalho ligado —, e a opção manda daí
  * em diante. O que era regra ("kicker é coisa de capa") virou padrão.
  *
  * O `section` é metadado de desenho: põe o campo na seção "Cabeçalho" do inspector, junto
  * do interruptor que o liga. O valor continua morando em `fields`, que é conteúdo — ver a
- * §6 do documento de contexto e o `Grouped` de `types.ts`.
+ * §1 de `docs/model.md` e o `Grouped` de `types.ts`.
  */
 
 import { LANG_IDS } from "@/code/langs";
 import type { Field } from "@/templates/types";
 
-/** Decisão 14: texto digitado e literal, nunca derivado de `meta.pillar` com a posição. */
+/** ADR-0014: texto digitado e literal, nunca derivado de `meta.pillar` com a posição. */
 export const kickerField: Field = {
   key: "kicker",
   type: "text",
@@ -39,7 +39,7 @@ export const sharedFields: Field[] = [kickerField];
 /**
  * Os três do bloco de código — `code-window` da §11.6 e `code-annotated` da §11.7.
  *
- * Sobem para cá pelo argumento que a §6 do documento de contexto escreve para as chaves
+ * Sobem para cá pelo argumento que a §1 de `docs/model.md` escreve para as chaves
  * seguintes do vocabulário: a promessa é de papel **e de forma**, porque `migrateFields`
  * compara as duas, e "um descritor compartilhado é o que faz a promessa ser verdadeira em
  * vez de disciplina". Declarados à mão nos dois templates, os três passariam num teste de

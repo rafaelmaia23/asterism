@@ -23,7 +23,7 @@
  * deixaria à faixa apenas os 480px da coluna de texto, e a placa da logo mais o handle mais
  * doze pontos de constelação passam de 500px — não cabe, e num deck maior a constelação
  * cresce. A linha de corte é a mesma da régua da §10.5 do design system, então quando as
- * duas aparecem juntas elas se alinham. Decisão 46.
+ * duas aparecem juntas elas se alinham. ADR-0046.
  *
  * ## Duas faixas, e não quatro
  *

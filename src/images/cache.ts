@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * O cache de object URLs — decisão 55 da §16 do documento de contexto.
+ * O cache de object URLs — ADR-0055.
  *
  * Entre o `ImageId` que o slide guarda e o `<img>` que o template desenha falta uma coisa:
  * uma URL. O `storage.ts` devolve um `Blob`, e ler o banco é assíncrono; o template é

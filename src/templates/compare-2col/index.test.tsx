@@ -72,7 +72,7 @@ describe("compare-2col", () => {
   });
 
   /**
-   * A régua usa a utility com a compensação de `--slide-scale` da decisão 38: 1px fixo a
+   * A régua usa a utility com a compensação de `--slide-scale` da ADR-0038: 1px fixo a
    * k = 0,28 dá 0,28 pixel de dispositivo e o navegador não pinta, então a linha apareceria
    * no PDF e faltaria no preview.
    */

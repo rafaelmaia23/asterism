@@ -299,8 +299,7 @@
    A §3.3 define cinco propriedades por token, e só o tamanho vira token automático.
    Repetir família, altura, peso e tracking dentro de dez templates é divergência
    garantida, então cada linha daquela tabela vira uma utility de mesmo nome: o
-   template escreve `slide-display` e a escala mora num lugar só. Decisão 19 da §16
-   do documento de contexto.
+   template escreve `slide-display` e a escala mora num lugar só. ADR-0019.
 
    Sem `@theme static` aqui, e sem contradição com o bloco acima: utility é gerada a
    partir do nome de classe lido no source, e o tree-shaking que preocupa é o de
@@ -386,7 +385,7 @@
   text-transform: uppercase;
 }
 
-/* O marcador `**forte**` da §10.2 do design system — decisão 34 da §16 do documento de
+/* O marcador `**forte**` da §10.2 do design system — ADR-0034 da §16 do documento de
    contexto.
 
    A §10.2 pede peso 600, e 600 fixo funciona sobre a Sora 400 do corpo de texto. Sobre a
@@ -407,7 +406,7 @@
    A classe vai no `<svg>` que desenha a grade, em `src/render/slide-grid.tsx`, e não
    mais na raiz do slide: desde a 1E a grade é linha de verdade, não `background-image`.
    Gradiente não sobrevive à rasterização — o exportador desenha um módulo e chapa o
-   resto da página com a primeira parada. Ver a §13 do documento de contexto, a decisão
+   resto da página com a primeira parada. Ver a §3 de `docs/architecture.md`, a decisão
    28 e o experimento 4 do `TODO.md`.
 
    Declarada aqui, e não no `:root`, de propósito. Custom property resolve os `var()` do
@@ -424,7 +423,7 @@
 /* A mesma compensação, para qualquer hairline de 1px dentro do slide — §4.3.
 
    A régua do rodapé foi a segunda linha fina do sistema, e mostrou que a compensação da
-   decisão 15 não era um detalhe da grade: `height: 1px` a k = 0,28 dá 0,28 pixel de
+   ADR-0015 não era um detalhe da grade: `height: 1px` a k = 0,28 dá 0,28 pixel de
    dispositivo, e o navegador não pinta. O sintoma é traiçoeiro porque a exportação roda a
    k = 1 — a linha aparece no PDF e falta no preview, que é o oposto do que se procura
    quando algo some.

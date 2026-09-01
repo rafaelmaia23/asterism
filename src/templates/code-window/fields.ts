@@ -1,8 +1,8 @@
 /**
  * Campos, opções e schema do `code-window`, conforme a §11.6 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto. São duas descrições da mesma coisa de propósito, e o teste é quem
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
+ * São duas descrições da mesma coisa de propósito, e o teste é quem
  * garante que não divirjam.
  *
  * As chaves são as do vocabulário canônico da §6: `heading` é o título de qualquer
@@ -43,7 +43,7 @@ export const options: Field[] = [...sharedOptions];
 /**
  * `lang` é `string`, e não um enum das nove.
  *
- * A validação existe para derrubar dado **torto**, não dado **velho** — decisão 41. Um
+ * A validação existe para derrubar dado **torto**, não dado **velho** — ADR-0041. Um
  * deck salvo antes de a lista da §11.6 mudar traria uma linguagem que o bundle não tem
  * mais, e um enum descartaria o slide inteiro, código e título junto, por causa de um
  * campo que o realçador já sabe resolver: `tokenize` cai em texto puro e o slide perde a

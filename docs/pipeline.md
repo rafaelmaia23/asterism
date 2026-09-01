@@ -57,7 +57,7 @@ porque quem desenha o grid está lá dentro e precisa enxergá-la.
 **A moldura do preview mora na camada de fora.** A borda de 1px que contorna a página
 fica no quadro externo, nunca na raiz. Dentro, ela encolheria junto com a escala e
 entraria no nó capturado pela exportação, que é exatamente o que esta seção diz não pode
-acontecer. Ver decisão 23.
+acontecer. Ver ADR-0023.
 
 ### Guard de transbordo
 
@@ -81,7 +81,7 @@ pai. A âncora `bottom` é exatamente esse caso.
 - o aviso **nomeia o elemento** que estourou — o primeiro cujo `offsetTop + offsetHeight`
   passa do `clientHeight` do container —, senão o autor caça num slide de seis.
 
-É a parte mais chata da virada e a que mais merece teste escrito antes. Decisão 65, que
+É a parte mais chata da virada e a que mais merece teste escrito antes. ADR-0065, que
 estende a 47.
 
 As duas propriedades são medidas de layout e **não enxergam o `transform: scale()`** do
@@ -91,7 +91,7 @@ haver estado de transbordo no store. `getBoundingClientRect` não serve aqui: es
 a escala.
 
 Duas condições que o guard impõe a quem o usa, as duas da mesma família da armadilha da
-§13. O container medido **não pode ser dimensionado pelo conteúdo** — `min-h` no lugar de
+§3 de `docs/architecture.md`. O container medido **não pode ser dimensionado pelo conteúdo** — `min-h` no lugar de
 `h` realimenta a medida. E a marca que o resultado desenha **não pode mexer no layout
 medido**, senão medir muda o que se mede: por isso ela é a borda do quadro externo do
 `SlideFrame`, que já tem 1px nos dois estados, vive fora do `transform` e fica fora do nó
@@ -99,7 +99,7 @@ que a exportação captura — o PDF não sai com borda vermelha.
 
 A medida se repete em `document.fonts.ready`: antes de Oxanium e Sora carregarem, o texto é
 medido com a fonte de fallback e a altura é outra. É a mesma espera que o palco de
-exportação da §10 já faz, pelo mesmo motivo.
+exportação da §2 já faz, pelo mesmo motivo.
 
 ## 2. Exportação
 
@@ -127,16 +127,16 @@ type ExportResult = { files: { name: string; blob: Blob }[] }
 `ExportResult` sempre devolve uma lista: o alvo PDF produz um arquivo, o alvo PNG
 produz N, um futuro alvo ZIP produz um. O registry é idêntico ao dos templates — e desde
 a 1E é literalmente o mesmo: os dois instanciam o `createRegistry` de `src/lib/registry.ts`,
-decisão 27. Quem registra alvo é `src/export/index.ts`, e cada alvo é um módulo em
+ADR-0027. Quem registra alvo é `src/export/index.ts`, e cada alvo é um módulo em
 `src/export/targets/`.
 
 `RenderSource` carrega o **nó e o slide**, não o bitmap pronto — assim um alvo futuro
 pode optar por ler os dados diretamente em vez de rasterizar, mantendo aberta a porta
 para saída vetorial.
 
-O `data` do `Frame` é **PNG em data URL** — decisão 26. `width` e `height` já vêm
+O `data` do `Frame` é **PNG em data URL** — ADR-0026. `width` e `height` já vêm
 multiplicados pela escala, e saem do tamanho medido no nó, nunca de `1080` escrito à mão:
-o formato é dado, §12. Os módulos moram em `src/export/`: `types.ts` para os quatro tipos
+o formato é dado, §2 de `docs/architecture.md`. Os módulos moram em `src/export/`: `types.ts` para os quatro tipos
 acima e `rasterize.ts` para o estágio 1, sobre `modern-screenshot`.
 
 ### De onde vêm os nós
@@ -145,20 +145,20 @@ acima e `rasterize.ts` para o estágio 1, sobre `modern-screenshot`.
 container `fixed` fora da tela — fora de fluxo, nunca `display: none`, que não teria
 layout para capturar —, espera `document.fonts.ready`, entrega um `RenderSource` por
 slide e desmonta, inclusive quando o uso falha. Os slides são montados **sem escala**: o
-default do `SlideFrame` é 1, o tamanho de spec. Ver a decisão 20.
+default do `SlideFrame` é 1, o tamanho de spec. Ver a ADR-0020.
 
 O nó capturado é a raiz do slide, e quem o expõe é o próprio `SlideFrame`, por um
 `canvasRef` opcional que o `SlideView` repassa. O quadro externo fica de fora junto com a
-sua borda de 1px — decisão 23.
+sua borda de 1px — ADR-0023.
 
 **As imagens têm as duas esperas, e elas cercam a montagem.** Antes de montar, o palco
-pré-carrega os `ImageId` do deck para o cache da §11: um `<img>` sem URL no primeiro quadro
+pré-carrega os `ImageId` do deck para o cache da §4 de `docs/model.md`: um `<img>` sem URL no primeiro quadro
 não é um `<img>` vazio, é o estado "Sem imagem" que o template desenha de propósito, e é ele
 que iria para o bitmap. Depois de montar, e ao lado do `document.fonts.ready`, ele espera o
 `decode()` de cada `<img>` — `complete` mentiria num `blob:` recém-atribuído, e capturar
 antes do bitmap pronto é a armadilha das fontes com outro nome. Uma imagem que falha em
 decodificar não derruba a exportação: o slide sai com o que houver, pelo mesmo critério da
-decisão 31.
+ADR-0031.
 
 Quais campos são imagem sai dos **descritores**, e nunca de um `"image"` escrito no palco:
 ele não conhece template nenhum, e é o registry quem sabe. É também por isso que a função

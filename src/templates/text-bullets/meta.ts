@@ -34,7 +34,7 @@ export const textBulletsMeta: {
       heading: "Três coisas que eu mudaria",
       items: ["Primeiro ponto", "Segundo ponto", "Terceiro ponto"],
     },
-    // O descritor dá o padrão e o slide decide daí em diante — decisão 25, agora valendo
+    // O descritor dá o padrão e o slide decide daí em diante — ADR-0025, agora valendo
     // para as oito. Nasce assinado, que é o rodapé que a §11.0 dá ao miolo do carrossel, e
     // sem chevron: a partir do slide 2 o gesto de deslizar já foi executado.
     //

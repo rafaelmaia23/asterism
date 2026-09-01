@@ -23,8 +23,7 @@ OKLCH. Ela **não** é usada aqui, por duas razões:
 - `star-400` é `oklch(62.3% 0.149 251.5)` = `#378add`, que cai entre `azure-500` e
   `azure-600`. Seria uma sexta rampa de azul quase idêntica à que o sistema já tem,
   contra o princípio "restrição sobre invenção" da §1 do design system.
-- OKLCH dentro do canvas do slide quebra a serialização na rasterização — decisão 11 do
-  documento de contexto.
+- OKLCH dentro do canvas do slide quebra a serialização na rasterização — ADR-0011.
 
 A estrela usa `azure-radiance-400` `#60a5fa`, a mesma cor que o Observatório já dá ao
 kicker, aos pontos acesos da constelação de progresso e ao marcador `[[destaque]]`. A

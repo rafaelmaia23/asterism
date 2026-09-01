@@ -10,7 +10,7 @@
  * já custaram caro no projeto. O tokenizador do shiki devolve cor como string e a põe em
  * `style` inline: uma `var()` resolveria contra o documento, e no palco de exportação —
  * fora da tela, dentro de um `foreignObject` — não há garantia nenhuma disso. E `oklch()`
- * não atravessa a rasterização, que é a primeira armadilha da §13 do documento de contexto.
+ * não atravessa a rasterização, que é a primeira armadilha da §3 de `docs/architecture.md`.
  *
  * O que impede o literal de divergir da fonte é o `theme.test.ts`: ele lê o `globals.css`
  * e exige que cada `token` daqui declare exatamente este `hex`. O tema é gerado dos tokens

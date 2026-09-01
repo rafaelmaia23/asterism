@@ -6,7 +6,7 @@
  * **O inspector não conhece template nenhum.** Ele pede o descritor ao registry e desenha
  * uma linha por `Field`, na ordem em que o template as declara. Campo novo no descritor
  * aparece aqui sem que este arquivo seja tocado — é o critério de pronto da 1.11, e é
- * também o que a decisão 4 da §16 do documento de contexto compra: o zod valida, o
+ * também o que a ADR-0004 compra: o zod valida, o
  * descritor desenha.
  *
  * ## As seções saem do descritor, e a divisão do modelo continua de pé
@@ -21,7 +21,7 @@
  * **metadado de desenho** no descritor: ela diz onde o controle aparece, nunca onde o valor
  * mora. `Conteúdo` e `Apresentação` viraram duas seções entre quatro, e é isso que torna a
  * **ordem** declarativa — sem elas na lista, a posição do Cabeçalho acima do conteúdo seria
- * uma regra escrita aqui em vez de no descritor. Decisão 44.
+ * uma regra escrita aqui em vez de no descritor. ADR-0044.
  *
  * O interruptor de uma seção continua declarado em `options` como qualquer opção, e é este
  * componente que sabe desenhá-lo no cabeçalho da seção em vez de como mais uma linha. O
@@ -198,9 +198,9 @@ function ListItem({
  * O campo de imagem — 3.16, e o sétimo tipo de `Field` a ganhar controle.
  *
  * **Só arquivo local.** Não há campo de texto onde colar um endereço, e a ausência é a
- * decisão 8: URL externa contamina o canvas e faz a exportação falhar em silêncio. O que o
+ * ADR-0008: URL externa contamina o canvas e faz a exportação falhar em silêncio. O que o
  * slide guarda é o `ImageId` que o `importImage` devolve; o binário fica no IndexedDB, e é
- * isso que mantém o `localStorage` do `persist` longe da cota — §11 do documento de contexto.
+ * isso que mantém o `localStorage` do `persist` longe da cota — §4 de `docs/model.md`.
  *
  * O `<input type="file">` é escondido e disparado por um `<button>` irmão. Não é enfeite: o
  * controle nativo traz um rótulo próprio que ninguém consegue redigir, e envolvê-lo num
@@ -303,7 +303,7 @@ function ImageField({
  * DOM viraria divergência de hidratação, que o React não remenda por ser atributo. O
  * `useId` é gerado pela posição na árvore e por isso casa dos dois lados.
  *
- * A regra vale para o projeto inteiro, não só aqui — ver a §13 do documento de contexto.
+ * A regra vale para o projeto inteiro, não só aqui — ver a §3 de `docs/architecture.md`.
  */
 function FieldRow({
   field,
@@ -358,7 +358,7 @@ function FieldRow({
         ))}
 
         {/* Sem `disabled` no teto: `maxItems` é conselho como todo limite do descritor —
-            §8 do documento de contexto. O contador acima fica âmbar, e quem reprova de
+            §3 de `docs/model.md`. O contador acima fica âmbar, e quem reprova de
             fato é o guard de transbordo, medindo altura. */}
         <Button
           type="button"

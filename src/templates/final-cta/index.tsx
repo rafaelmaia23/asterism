@@ -3,7 +3,7 @@
  *
  * O bloco de conteúdo é ancorado à base, espelhando a capa: a série abre e fecha com o
  * mesmo gesto tipográfico. A diferença é que aqui o rodapé vem completo — glyph, handle e
- * constelação —, que é a decisão 29: o último slide é onde o handle mais importa.
+ * constelação —, que é a ADR-0029: o último slide é onde o handle mais importa.
  *
  * As três regiões, em faixa vertical sobre o canvas:
  *
@@ -27,14 +27,14 @@
  * largura útil cheia, o raio 0 e a barra de 4px à esquerda: é um bloco de destaque, e a
  * régua vertical é o que o marca sem fingir affordance.
  *
- * O texto do CTA é `slide-code`, e não os 36px que a §11.3 escrevia — decisão 39. A escala
- * da §3.3 do design system não tem esse degrau, e a decisão 19 diz que o template escreve
+ * O texto do CTA é `slide-code`, e não os 36px que a §11.3 escrevia — ADR-0039. A escala
+ * da §3.3 do design system não tem esse degrau, e a ADR-0019 diz que o template escreve
  * o token em vez de recompor a escala.
  *
  * A constelação sai inteira acesa **por posição**, sem exceção aqui: como este é o último
  * slide, `index === total - 1` já acende tudo. Forçá-la no template faria o rodapé
  * discordar da lista lateral no dia em que um fechamento parasse no meio do deck — é a
- * decisão 36 aplicada à peça vizinha.
+ * ADR-0036 aplicada à peça vizinha.
  */
 
 import { Inline } from "@/markup/inline";

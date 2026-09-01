@@ -17,7 +17,7 @@ import "@/templates";
  */
 const fakeFields: Field[] = [
   // Na seção do cabeçalho: um `field` desenhado junto do interruptor que o liga, que é uma
-  // `option`. É a decisão 44 — a seção é desenho, e os dois sacos continuam separados.
+  // `option`. É a ADR-0044 — a seção é desenho, e os dois sacos continuam separados.
   { key: "kicker", type: "text", label: "Etiqueta", max: 12, section: "header" },
   { key: "heading", type: "textarea", label: "Título", max: 20, md: true, rows: 3 },
   { key: "items", type: "list", label: "Tópicos", maxItems: 4, maxPerItem: 10, md: true },
@@ -142,7 +142,7 @@ function abrirRodape() {
 }
 
 describe("Inspector", () => {
-  /** O seletor de layout da §14 do documento de contexto, no topo do formulário. */
+  /** O seletor de layout da §5 de `docs/product.md`, no topo do formulário. */
   test("o topo mostra o layout do slide ativo", () => {
     renderInspector();
 
@@ -344,7 +344,7 @@ describe("Inspector", () => {
 /**
  * O campo de imagem da 3.16 — o sétimo e último tipo de `Field` a ganhar controle.
  *
- * O escopo é o da §11 do documento de contexto e da decisão 8: **upload local e nada mais**.
+ * O escopo é o da §4 de `docs/model.md` e da ADR-0008: **upload local e nada mais**.
  * Não há campo de texto onde colar uma URL, e não é por falta de tempo — URL externa
  * contamina o canvas e faz a exportação falhar em silêncio.
  */
@@ -394,7 +394,7 @@ describe("Inspector — campo image", () => {
     const id = store.getState().deck.slides[0].fields.image as string;
 
     expect(images.blobs.has(id)).toBe(true);
-    // O que vai para o slide é o **id**, nunca o binário: é a decisão 7, e é o que mantém
+    // O que vai para o slide é o **id**, nunca o binário: é a ADR-0007, e é o que mantém
     // o `localStorage` do `persist` longe da cota.
     expect(id).not.toContain("data:");
   });
@@ -433,7 +433,7 @@ describe("Inspector — campo image", () => {
     expect(store.getState().deck.slides[0].options.image).toBeUndefined();
   });
 
-  /** Decisão 8: só arquivo local. Não há onde digitar um endereço. */
+  /** ADR-0008: só arquivo local. Não há onde digitar um endereço. */
   test("aceita arquivo de imagem, e não há campo de URL", () => {
     renderComImagens();
 
@@ -640,7 +640,7 @@ describe("Inspector — campo list", () => {
   });
 
   /**
-   * `maxItems` é conselho como todo limite do descritor — §8 do documento de contexto. O
+   * `maxItems` é conselho como todo limite do descritor — §3 de `docs/model.md`. O
    * contador fica âmbar no quinto item, o botão continua ativo, e quem reprova de fato é
    * o guard de transbordo, medindo altura real. Três itens curtos e cinco itens curtos
    * não são o mesmo problema, e só a altura sabe a diferença.

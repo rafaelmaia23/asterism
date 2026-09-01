@@ -1,8 +1,8 @@
 /**
  * Campos, opções e schema do `final-cta`, conforme a §11.3 dos templates.
  *
- * O descritor desenha o formulário, o zod valida o conteúdo — decisão 4 da §16 do
- * documento de contexto. São duas descrições da mesma coisa de propósito, e o teste é
+ * O descritor desenha o formulário, o zod valida o conteúdo — ADR-0004.
+ * São duas descrições da mesma coisa de propósito, e o teste é
  * quem garante que não divirjam.
  *
  * As três chaves são as do vocabulário canônico da §6: `heading` é o título de qualquer

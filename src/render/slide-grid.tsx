@@ -7,7 +7,7 @@
  * página com a primeira parada dele. O experimento 4 do `TODO.md` mediu as quatro
  * alternativas no PDF — gradiente repetente falha igual, `<pattern>` sai com metade da
  * espessura porque o traço na borda do ladrilho é recortado, e linha de verdade em SVG
- * atravessa intacta. Ver a armadilha na §13 do documento de contexto e a decisão 28.
+ * atravessa intacta. Ver a armadilha na §3 de `docs/architecture.md` e a ADR-0028.
  *
  * O passo sai do formato, não de constante: a grade fecha em módulos inteiros em qualquer
  * proporção, e nenhum 1080 mora aqui — §12.

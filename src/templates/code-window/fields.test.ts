@@ -35,7 +35,7 @@ describe("code-window", () => {
     );
   });
 
-  test("o kicker é o campo compartilhado, não uma cópia — decisão 14", () => {
+  test("o kicker é o campo compartilhado, não uma cópia — ADR-0014", () => {
     expect(fields.find((field) => field.key === "kicker")).toBe(kickerField);
   });
 

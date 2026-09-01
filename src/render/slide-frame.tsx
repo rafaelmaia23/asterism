@@ -1,5 +1,5 @@
 /**
- * O quadro do slide — §9 do documento de contexto.
+ * O quadro do slide — §1 de `docs/pipeline.md`.
  *
  * Duas camadas, e a divisão entre elas é o ponto do componente:
  *
@@ -24,7 +24,7 @@
  * `--slide-grid-line-render` resolva num elemento que já enxergue a escala.
  *
  * A grade é elemento, não `background-image`. Fundo em gradiente não sobrevive à
- * rasterização — ver `slide-grid.tsx`, a §13 do documento de contexto e a decisão 28.
+ * rasterização — ver `slide-grid.tsx`, a §3 de `docs/architecture.md` e a ADR-0028.
  */
 
 import type { CSSProperties, ReactNode, Ref } from "react";
@@ -50,7 +50,7 @@ export type SlideFrameProps = {
    */
   background?: TemplateBackground;
   /**
-   * O slide não cabe na região que o guard mede — §9 do documento de contexto. A borda do
+   * O slide não cabe na região que o guard mede — §1 de `docs/pipeline.md`. A borda do
    * quadro vira `crown-400`, que é o que a §8 do design system dá ao estado inválido.
    *
    * A marca mora **aqui**, na camada de fora, e não é acidente de conveniência: dentro do
@@ -84,7 +84,7 @@ export function SlideFrame({
       <div
         ref={canvasRef}
         data-testid="slide-canvas"
-        // `slide-canvas` é o nome que a §13 do documento de contexto dá à subárvore
+        // `slide-canvas` é o nome que a §3 de `docs/architecture.md` dá à subárvore
         // que precisa de cor em hex sRGB — a que a rasterização vai serializar.
         className="slide-canvas relative overflow-hidden bg-slide-bg"
         style={

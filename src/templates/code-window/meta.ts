@@ -37,7 +37,7 @@ export const codeWindowMeta: {
       lang: "ts",
       code: "const key = `user:${id}`\n\nexport function get(id: string) {\n  return cache.get(key) ?? load(id)\n}",
     },
-    // O descritor dá o padrão e o slide decide daí em diante — decisão 25. Nasce assinado,
+    // O descritor dá o padrão e o slide decide daí em diante — ADR-0025. Nasce assinado,
     // que é o rodapé que a §11.0 dá ao miolo do carrossel, e sem chevron: a partir do
     // slide 2 o gesto de deslizar já foi executado.
     options: {

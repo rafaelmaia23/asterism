@@ -1,7 +1,7 @@
 /**
  * A migração de conteúdo na troca de layout — tarefa 2.10.
  *
- * É aqui que a **decisão 13** da §16 do documento de contexto se paga. Porque o
+ * É aqui que a **ADR-0013** da `docs/adr/` se paga. Porque o
  * vocabulário de campos é único e em inglês — `heading` é o título em qualquer template,
  * `items` é a lista de tópicos em qualquer um —, migrar é uma **interseção de chaves**, e
  * não uma tabela de equivalência que precisaria de uma linha nova a cada par de templates.
@@ -11,7 +11,7 @@
  * nada mais. Nem o registry — quem resolve id em descritor é quem chama. `src/deck` está
  * fora de questão pela seta de dependência: ele não importa template nenhum.
  *
- * **O que a troca preserva é `fields`, nunca `options`** — §6 e decisão 5. As opções
+ * **O que a troca preserva é `fields`, nunca `options`** — §6 e ADR-0005. As opções
  * resetam para os defaults do template novo, e é o chamador quem faz isso: são dois
  * objetos separados no modelo justamente para que esta regra seja possível.
  */
@@ -21,7 +21,7 @@ import type { AnyTemplateDef, Field } from "@/templates/types";
 
 /**
  * A forma de valor que um tipo de campo guarda. `list` guarda array; todo o resto guarda
- * string — §6 do documento de contexto.
+ * string — §1 de `docs/model.md`.
  *
  * O vocabulário canônico promete a mesma chave para o mesmo **papel**, não para a mesma
  * forma: nada impede que um template declare `items` como lista e outro como texto. Migrar

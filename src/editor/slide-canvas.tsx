@@ -17,7 +17,7 @@
  * de fluxo não contribui para o tamanho do pai, então nada do que o canvas desenha pode
  * esticar o que o canvas mede. Sem isso, uma altura dirigida pelo conteúdo em qualquer
  * ponto da cadeia de flex acima realimenta a escala até o teto — foi o que aconteceu na
- * primeira versão. Ver a §13 do documento de contexto.
+ * primeira versão. Ver a §3 de `docs/architecture.md`.
  *
  * O `p-8` fica na área, e não no palco: `contentRect` desconta padding, então a folga
  * entra na conta do encaixe. O palco cobre a caixa de padding e centraliza dentro dela,

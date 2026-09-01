@@ -1,7 +1,7 @@
 /**
  * Opções que qualquer template expõe — as duas faixas do slide, suas partes e a grade.
  *
- * Todas seguem a mesma forma, que é a da **decisão 25** da §16 do documento de contexto:
+ * Todas seguem a mesma forma, que é a da **ADR-0025** da `docs/adr/`:
  * o descritor do template diz com o que o slide **nasce**, e a opção manda daí em diante.
  * Nada aqui é fixo por template; o que era regra virou padrão.
  *

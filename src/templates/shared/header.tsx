@@ -13,7 +13,7 @@ import { Kicker } from "@/templates/shared/kicker";
  * indicador de seção à direita, digamos —, ela chega aqui e não em dez lugares.
  *
  * **A faixa se posiciona sozinha.** `top: var(--slide-pad)` mora aqui em vez de repetido em
- * cada template — mesmo argumento da decisão 19 para a escala tipográfica: valor repetido
+ * cada template — mesmo argumento da ADR-0019 para a escala tipográfica: valor repetido
  * em dez lugares diverge no terceiro.
  *
  * ## Desligada, a faixa não existe
@@ -29,7 +29,7 @@ import { Kicker } from "@/templates/shared/kicker";
  * desliga a opção, que é para isso que ela existe.
  *
  * Recebe o `kicker` como string, e não o slide: nada aqui é derivado de `meta`, que é a
- * decisão 14, e é a mesma escolha que o `Footer` faz ao receber só o `handle`.
+ * ADR-0014, e é a mesma escolha que o `Footer` faz ao receber só o `handle`.
  */
 export function Header({ kicker, show }: { kicker: string; show: boolean }) {
   if (!show) {

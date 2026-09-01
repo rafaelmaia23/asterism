@@ -66,14 +66,14 @@ Explicitamente fora de escopo, hoje e no médio prazo:
 | Tema claro | O Observatório é escuro por decisão |
 | Geração de texto por IA | O texto é a parte que precisa ser autoral |
 | Agendamento ou publicação automática | Fora do domínio |
-| Títulos e cercas de código na marcação | Título é elemento próprio, código é elemento próprio — ver a §7 |
+| Títulos e cercas de código na marcação | Título é elemento próprio, código é elemento próprio — ver a §2 de `docs/model.md` |
 
 Quando surgir a tentação de adicionar qualquer um destes, esta tabela é a resposta.
 
 **A linha da marcação encolheu na Etapa 3½.** Ela dizia "estrutura de bloco na marcação
 (títulos, listas)", e proibia demais: parágrafo e lista são estrutura do **pensamento** e
 passaram a existir, enquanto título e cerca de código continuam fora porque cada um deles
-já é um elemento. Decisão 60.
+já é um elemento. ADR-0060.
 
 ## 5. Interface
 
@@ -161,7 +161,7 @@ Layout            grade, cabeçalho, rodapé, âncora; o preset e "salvar como"
   marcada por uma barra vertical à esquerda, com recuo pequeno.
 
 O seletor de layout do topo deixou de trocar o template do slide e passou a fazer duas
-coisas: aplicar um preset — casando conteúdo por tipo, §8 — e salvar a composição atual como
+coisas: aplicar um preset — casando conteúdo por tipo, §3 de `docs/model.md` — e salvar a composição atual como
 preset ou snapshot. Os oito interruptores de cromo continuam ali, agora numa faixa só.
 
 ## 6. Roadmap
@@ -182,7 +182,7 @@ original, e é o preço de ter especificado a biblioteca por função narrativa 
 um post de verdade: dez templates que aceitam um formato cada, quando o autor escreve o
 texto primeiro e depois procura onde ele cabe. O que ela entrega não é template novo, é o
 modelo de conteúdo que os dez estavam disfarçando — ver a Etapa 3½ do `TODO.md` e as
-decisões 60 a 74 abaixo.
+ADR-0060 a ADR-0074 abaixo.
 
 ### Critério de conclusão da v1
 

@@ -7,7 +7,7 @@ import type { MaiahubLogoProps } from "./logo-shared";
  *
  * É a única peça de marca que o asterism carrega — as outras quatro saíram na 2.4a, sem
  * uso. O rodapé do slide a usa a 32px, acima da faixa de 16–24px que a documentação da
- * marca lhe dá: desvio consciente da decisão 18 da §16 do documento de contexto, porque
+ * marca lhe dá: desvio consciente da ADR-0018, porque
  * sobre `ink-950` num slide que depois é reduzido, a peça de traço grosso é a que
  * sobrevive. Ver `docs/maiahub-logo.md`.
  *

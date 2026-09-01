@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * O guard de transbordo — §9 do documento de contexto, tarefa 3.4.
+ * O guard de transbordo — §1 de `docs/pipeline.md`, tarefa 3.4.
  *
  * Slide tem altura fixa, então texto longo transborda, e é a falha número um deste tipo
  * de ferramenta. O guard é a convenção que os dez templates declaram: cada um marca com
@@ -24,7 +24,7 @@
  *
  * ## O que a medida não pode encostar
  *
- * Vale aqui a armadilha da §13 do documento de contexto, do outro lado: a faixa medida
+ * Vale aqui a armadilha da §3 de `docs/architecture.md`, do outro lado: a faixa medida
  * **não pode ser dimensionada pelo conteúdo** — `min-h` no lugar de `h` realimenta a
  * medida. E a marca que o resultado desenha não pode mexer no layout medido, senão o guard
  * oscila: por isso ela mora na borda do quadro externo do `SlideFrame`, que já tem 1px nos
