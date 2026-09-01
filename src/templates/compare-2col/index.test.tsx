@@ -121,6 +121,15 @@ describe("compare-2col", () => {
   });
 
   /** As mesmas quatro combinações do `context`: título em cima, um bloco embaixo. */
+  test("os dois lados aceitam parágrafo seguido de bullets — C-B", () => {
+    const { container } = renderCompare({
+      fields: { ...defaults.fields, before: "antes:\n\n- um\n- dois", after: "depois:\n\n- três" },
+    });
+
+    expect(container.querySelectorAll("[data-testid=column-before] ul > li")).toHaveLength(2);
+    expect(container.querySelectorAll("[data-testid=column-after] ul > li")).toHaveLength(1);
+  });
+
   describe("as quatro geometrias das colunas", () => {
     const semTitulo = { ...defaults.fields, heading: "" };
 

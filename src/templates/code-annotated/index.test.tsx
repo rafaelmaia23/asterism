@@ -91,6 +91,16 @@ describe("code-annotated", () => {
    * é o que cada região perde ao encolher — prosa que perde duas linhas vira pensamento
    * cortado ao meio; código que perde duas linhas é um trecho mais curto.
    */
+  test("a explicação aceita parágrafo seguido de bullets — C-B", () => {
+    const { container } = renderCodeAnnotated({
+      fields: { ...defaults.fields, body: "o que muda:\n\n- um\n- dois" },
+    });
+    const region = container.querySelector("[data-testid=body-region]");
+
+    expect(region?.querySelectorAll("p")).toHaveLength(1);
+    expect(region?.querySelectorAll("ul > li")).toHaveLength(2);
+  });
+
   describe("as oito geometrias do bloco", () => {
     const comCabecalho = { ...defaults.options, showHeader: true };
 

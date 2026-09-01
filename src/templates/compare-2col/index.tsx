@@ -45,7 +45,7 @@
  * chega ao CSS final. Ver a armadilha no `CLAUDE.md`.
  */
 
-import { Inline } from "@/markup/inline";
+import { Blocks } from "@/markup/blocks";
 import { useOverflowGuard } from "@/render/overflow";
 import {
   compare2colSchema,
@@ -78,9 +78,9 @@ function Column({ side, label, children }: { side: string; label: string; childr
     <div data-testid={`column-${side}`} className="flex w-[428px] flex-col gap-[24px]">
       <span className="slide-meta text-ink-400">{label}</span>
       <div data-testid="column-rule" className="slide-hairline w-full bg-ink-700" />
-      <p className="slide-caption text-ink-100">
-        <Inline>{children}</Inline>
-      </p>
+      <div className="slide-caption text-ink-100">
+        <Blocks>{children}</Blocks>
+      </div>
     </div>
   );
 }

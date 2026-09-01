@@ -133,9 +133,25 @@ describe("context", () => {
   test("o corpo não ocupa os 920px: a linha para em 760", () => {
     const { container } = renderContext();
 
-    expect(container.querySelector("[data-testid=body-region] p")?.className).toContain(
+    // A medida vive no container da pilha de blocos, e não no `<p>`: desde a C-B o corpo
+    // pode ser vários parágrafos e uma lista, e todos herdam a largura de lá.
+    expect(container.querySelector("[data-testid=body-region] > div")?.className).toContain(
       "max-w-[760px]",
     );
+  });
+
+  /**
+   * O critério de pronto da C-B: um campo de corpo aceita parágrafo seguido de bullets, e
+   * o enter que o autor digita no inspector chega ao slide. §2 de `docs/model.md`.
+   */
+  test("o corpo aceita parágrafo seguido de bullets", () => {
+    const { container } = renderContext({
+      fields: { ...defaults.fields, body: "a razão:\n\n- primeira\n- segunda" },
+    });
+    const region = container.querySelector("[data-testid=body-region]");
+
+    expect(region?.querySelectorAll("p")).toHaveLength(1);
+    expect(region?.querySelectorAll("ul > li")).toHaveLength(2);
   });
 
   test("o rodapé inteiro some com o interruptor da faixa", () => {

@@ -69,6 +69,16 @@ describe("split-vertical", () => {
     expect(screen.getByTestId("text-region").className).toContain("h-[1080px]");
   });
 
+  test("o corpo aceita parágrafo seguido de bullets — C-B", () => {
+    const { container } = renderSplitVertical({
+      fields: { ...defaults.fields, body: "o ponto:\n\n- um\n- dois" },
+    });
+    const block = container.querySelector("[data-testid=text-block]");
+
+    expect(block?.querySelectorAll("p")).toHaveLength(1);
+    expect(block?.querySelectorAll("ul > li")).toHaveLength(2);
+  });
+
   describe("a faixa de texto, nas duas geometrias da §11.9", () => {
     test("sem cabeçalho: 80–1160", () => {
       renderSplitVertical();

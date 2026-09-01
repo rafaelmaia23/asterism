@@ -34,7 +34,7 @@
  * chega ao CSS final. Ver a armadilha no `CLAUDE.md`.
  */
 
-import { Inline } from "@/markup/inline";
+import { Blocks } from "@/markup/blocks";
 import { useOverflowGuard } from "@/render/overflow";
 import {
   codeAnnotatedSchema,
@@ -119,9 +119,9 @@ function CodeAnnotated({
           data-guarded
           className="absolute top-[890px] right-[var(--slide-pad)] left-[var(--slide-pad)] flex h-[270px] flex-col justify-start"
         >
-          <p ref={paragraph} className="slide-body text-ink-200">
-            <Inline>{body}</Inline>
-          </p>
+          <div ref={paragraph} className="slide-body text-ink-200">
+            <Blocks>{body}</Blocks>
+          </div>
         </div>
       )}
 

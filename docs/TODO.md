@@ -7,7 +7,7 @@
 > estão em dia e as ADR-0060 a ADR-0074 registradas —, e a próxima sessão abre a **C-B**, que é
 > a que faz o enter funcionar. Entre as duas entrou uma **sessão de documento fora da
 > etapa**: o `asterism-context.md` foi partido em quatro documentos, um glossário e 74
-> ADRs — ADR-0075.
+> ADRs — ADR-0075. A **C-B está escrita e testada**; falta a conferência dela no PDF.
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
 > Cada tarefa cabe num commit. As Etapas 1 a 3½ têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
@@ -1419,9 +1419,24 @@ qualquer refatoração grande. Nada do modelo de elementos entra aqui.
 
 | # | Tarefa | Critério de pronto |
 |---|---|---|
-| C.2 | `parseBlocks` em `src/markup/blocks.ts`, teste primeiro — §2 de `docs/model.md` | Linha em branco separa bloco, `- ` abre item não ordenado, `1. ` abre ordenado, linhas seguidas de marcador viram uma lista só, quebra simples dentro de parágrafo é espaço. Sem títulos e sem cercas |
-| C.3 | `<Blocks>` em `src/markup/blocks.tsx`, com `<p>`, `<ul>` e `<ol>` e os gaps da §4.2 | Cada bloco chega ao `<Inline>` cru; `parseInline` não é tocado. Marcador em travessão mono `azure-400`, gap 32px, gap entre itens e entre parágrafos de 48px |
-| C.4 | Trocar `<Inline>` por `<Blocks>` nos campos `md` de textarea dos quatro templates que os têm | `context`, `code-annotated`, `split-vertical` e `compare-2col` aceitam parágrafo e bullets. O `text-bullets` continua com o campo `list`, que só morre na C-F |
+| C.2 ✅ | `parseBlocks` em `src/markup/parse-blocks.ts`, teste primeiro — §2 de `docs/model.md` | Linha em branco separa bloco, `- ` abre item não ordenado, `1. ` abre ordenado, linhas seguidas de marcador viram uma lista só, quebra simples dentro de parágrafo é espaço. Sem títulos e sem cercas |
+| C.3 ✅ | `<Blocks>` em `src/markup/blocks.tsx`, com `<p>`, `<ul>` e `<ol>` e os gaps da §4.2 | Cada bloco chega ao `<Inline>` cru; `parseInline` não é tocado. Marcador em travessão mono `azure-400`, gap 32px, gap entre itens e entre parágrafos de 48px |
+| C.4 ✅ | Trocar `<Inline>` por `<Blocks>` nos campos `md` de textarea dos quatro templates que os têm | `context`, `code-annotated`, `split-vertical` e `compare-2col` aceitam parágrafo e bullets. O `text-bullets` continua com o campo `list`, que só morre na C-F |
+
+**O que a sessão achou.** O par de arquivos que a C.2 e a C.3 pediam — `blocks.ts` e
+`blocks.tsx` lado a lado — não resolve: `@/markup/blocks` casa com o `.ts`, e o componente
+chega `undefined` em tempo de execução. O parser ficou em `parse-blocks.ts`, seguindo o par
+que a pasta já tinha (`parse.ts` + `inline.tsx`). Registrado na §2 de `docs/model.md`.
+
+A troca da C.4 não pôde ser só `<Inline>` → `<Blocks>`: os cinco campos moravam dentro de um
+`<p>`, e `<p>` não pode conter `<p>` nem `<ul>`. O wrapper virou `<div>` com as mesmas
+classes de corpo e a mesma medida de linha — o `max-w-[760px]` do `context` continua onde
+estava, agora no container da pilha.
+
+**Falta a conferência no PDF**, que é o critério de pronto da sub-etapa e a metade simples do
+experimento 6: exportar um slide com três parágrafos e uma lista de quatro itens, rasterizar
+o mesmo nó com e sem o `onCloneNode`, e comparar os dois bitmaps. Teste unitário não pega
+isso — `happy-dom` não faz layout.
 
 **A armadilha esperada é o reset do `preflight`.** Até agora `<ul>` e `<p>` mal existiam no
 canvas; a partir da C.3 um campo sozinho desenha três parágrafos e uma lista, e cada um é um
