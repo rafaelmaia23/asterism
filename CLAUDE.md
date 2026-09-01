@@ -34,7 +34,7 @@ Ficam em `docs/`, escritos em português. Cada um tem uma autoridade:
 |---|---|
 | `asterism-context.md` | Arquitetura, modelo de dados, escopo, decisões registradas |
 | `observatorio-design-system.md` | Qualquer questão visual; é quem regenera o `theme.css` |
-| `observatorio-templates.md` | Regiões, campos, opções e comportamento de cada template |
+| `observatorio-elementos.md` | Os doze elementos, a pilha vertical e os dez presets |
 | `theme.css` | Nada — é artefato derivado do design system |
 | `TODO.md` | Estado da execução: etapas, tarefas, experimentos em aberto |
 | `maiahub-logo.md` | As peças de logo e como foram adaptadas ao Observatório |

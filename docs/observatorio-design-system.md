@@ -5,7 +5,7 @@
 > são hex sRGB no padrão de degradê do Tailwind — decisão que também resolve a
 > serialização de cor na rasterização do `asterism`.
 > A v2.1 não muda nenhuma regra visual: acrescenta o mapa da §0 e move a §11 para
-> `observatorio-templates.md`, preservando a numeração.
+> `observatorio-elementos.md`, preservando a numeração.
 
 ---
 
@@ -32,7 +32,7 @@ uso, que é o que não cabe em CSS.
 | 9         | Mapeamento shadcn e as duas armadilhas de nome          | Instalar componente shadcn novo        | `globals.css`, `@theme inline` |
 | 10.1–10.4 | Superfícies, marcadores inline, bloco de código, shiki  | Parser, `<Inline>`, bloco de código    | `inline.tsx`; `src/code/theme.ts` |
 | 10.5      | Cabeçalho, kicker, constelação, chevron, rodapé, callout | Peças recorrentes dos slides           | —                              |
-| 11        | Layout, campos e comportamento de cada template         | Implementar um template                | `observatorio-templates.md`    |
+| 11        | Os doze elementos, a pilha vertical e os dez presets    | Implementar um elemento ou um preset   | `observatorio-elementos.md`    |
 | 12–13     | Fontes, licenças, artefatos do sistema                  | Raramente                              | —                              |
 
 ---
@@ -245,13 +245,24 @@ property herda; o `<Inline>` não precisa receber nada de quem o chamou.
 A caixa alta de `slide-meta` é da escala, não do conteúdo. O kicker é guardado como
 `api/ · 04` e sai em versal na renderização; o dado no deck não muda.
 
+**`slide-title` ficou sem uso na biblioteca desde a Etapa 3½.** Ele era o degrau do fecho do
+`final-cta`, e o elemento `statement` da §11.11 do documento de elementos entrega esse papel
+a 96px — a biblioteca tem título a 96 e a 56, e não um terceiro entre os dois. O degrau fica
+na escala: tirá-lo é decisão de design system, não de etapa, e um degrau sem uso custa uma
+linha aqui enquanto um degrau que falta custa uma invenção no template seguinte.
+
 ### 3.4 Regras
 
 Medida de linha entre **45 e 75 caracteres** na web; no carrossel, entre 28 e 42, o
 que na prática significa que o texto raramente ocupa a largura total do slide.
 
 Um único nível de ênfase por bloco. Alinhamento sempre à esquerda — nada centralizado,
-com a exceção do template `text-impact`, que é uma frase isolada.
+com uma exceção: o elemento `statement`, quando a âncora vertical do slide é `centro`.
+
+A exceção era nominal ao template `text-impact` até a Etapa 3½. Ela mudou de dono e não de
+tamanho: continua valendo para uma frase isolada em `slide-display`, e continua não sendo
+escolha de quem edita — é consequência da âncora, e é o que faz a capa e o respiro serem o
+mesmo elemento com gestos opostos. Ver a §11.11 do documento de elementos.
 
 ---
 
@@ -655,6 +666,11 @@ Dois nomes aqui são apelido da rampa inteira — `azure-400` é `azure-radiance
 
 ### 10.5 Componentes recorrentes
 
+**Tudo nesta seção é cromo do layout, nunca elemento da pilha.** Cabeçalho, rodapé e as
+peças dos dois são propriedades do slide, e não entram na lista ordenada de elementos da
+§11 — quem os liga é um interruptor, não o seletor de adicionar. O kicker é a única peça de
+conteúdo que mora aqui, e a §6 do documento de contexto diz por quê.
+
 **Cabeçalho** — a faixa do topo, 80–148, dentro do padding. Simétrica ao rodapé, e opção do
 slide pela chave `showHeader`.
 
@@ -778,20 +794,24 @@ padding 24px. Variantes: `info` (azure), `atencao` (sun), `positivo` (pacifika),
 
 ---
 
-## 11. Biblioteca de templates
+## 11. Biblioteca de elementos
 
-Movida para `observatorio-templates.md`, com a numeração preservada — as referências
-`§11.x` continuam válidas, mudou só o arquivo onde a seção mora. São dez templates
-organizados por função narrativa, **os dez especificados lá** desde a 3A, com regiões,
-elementos, campos, opções e comportamento.
+Movida para `observatorio-elementos.md`, com a numeração preservada — as referências
+`§11.x` continuam válidas, mudou só o arquivo onde a seção mora.
+
+Esta seção descrevia **dez templates**. Desde a Etapa 3½ ela descreve **doze elementos**,
+uma pilha vertical que os empilha e **dez presets** — as mesmas dez composições, agora como
+dado em vez de código. Os endereços não se mexeram: §11.1 a §11.10 continuam sendo os dez de
+sempre, e os elementos entram em §11.11.
 
 O que vale para todos eles continua aqui: a grade do slide na §4.2, a escala tipográfica
 do carrossel na §3.3 e os componentes recorrentes na §10.5.
 
-Duas regras deste documento ganharam exceção nomeada quando a biblioteca fechou, e as duas
-estão na §11.0 de lá: o padding de 80px passa a valer para conteúdo, porque imagem sangra
-até a borda nos dois templates de mídia; e o alinhamento à esquerda da §3.4 abre para o
-`text-impact`, que já era a exceção que aquela seção previa.
+Três regras deste documento têm exceção nomeada, e as três estão na §11.0 de lá: o padding
+de 80px passa a valer para conteúdo, porque imagem sangra até a borda; o alinhamento à
+esquerda da §3.4 abre para o `statement` com âncora ao centro; e a proibição de quebra
+manual de linha passa a valer só para a quebra **tipográfica** — parágrafo e lista são
+quebra de **conteúdo**, e existem desde a Etapa 3½.
 
 ---
 
@@ -815,7 +835,7 @@ CDN externo não é inlinada na captura de tela e a exportação sai em Arial.
 | Artefato                        | Status             | Papel                                              |
 | ------------------------------- | ------------------ | -------------------------------------------------- |
 | `observatorio-design-system.md` | **este documento** | Fonte da verdade                                   |
-| `observatorio-templates.md`     | pronto             | A §11, especificação de cada template              |
+| `observatorio-elementos.md`     | pronto             | A §11: os doze elementos e os dez presets          |
 | `theme.css`                     | pronto             | Tema shadcn + tokens Tailwind, derivado deste doc  |
 | `showcase.html`                 | futuro             | Vitrine viva com componentes, estados e movimento  |
 
