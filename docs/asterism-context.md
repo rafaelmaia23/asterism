@@ -56,27 +56,33 @@ Explicitamente fora de escopo, hoje e no médio prazo:
 |---|---|
 | Back-end, banco, autenticação | Aplicação de usuário único, tudo local |
 | Colaboração ou multiplayer | Idem |
-| WYSIWYG livre (arrastar elementos, redimensionar) | Destruiria a consistência que os templates garantem |
+| WYSIWYG livre (arrastar elementos, redimensionar) | Destruiria a consistência que o sistema visual garante |
 | Editor de tema / troca de paleta | Existe um sistema visual; a ferramenta o aplica, não o edita |
 | Tema claro | O Observatório é escuro por decisão |
 | Geração de texto por IA | O texto é a parte que precisa ser autoral |
 | Agendamento ou publicação automática | Fora do domínio |
-| Estrutura de bloco na marcação (títulos, listas) | Estrutura é responsabilidade do template |
+| Títulos e cercas de código na marcação | Título é elemento próprio, código é elemento próprio — ver a §7 |
 
 Quando surgir a tentação de adicionar qualquer um destes, esta tabela é a resposta.
+
+**A linha da marcação encolheu na Etapa 3½.** Ela dizia "estrutura de bloco na marcação
+(títulos, listas)", e proibia demais: parágrafo e lista são estrutura do **pensamento** e
+passaram a existir, enquanto título e cerca de código continuam fora porque cada um deles
+já é um elemento. Decisão 60.
 
 ## 5. Princípios de arquitetura
 
 **Conteúdo é dado, apresentação é código.** O deck não guarda HTML, cor, tamanho ou
-posição. Guarda texto, referências de imagem e escolhas de opção. Toda decisão visual
-vive no template.
+posição. Guarda texto, referências de imagem e escolhas fechadas de geometria. Toda
+decisão visual vive no elemento, e **elemento não carrega estilo**: o autor escolhe *que*
+elemento usar, nunca *como* ele se parece.
 
-**Nenhum estágio conhece o seguinte.** O parser não sabe que existe DOM. O template
-não sabe que existe exportação. O exportador não sabe quais templates existem.
+**Nenhum estágio conhece o seguinte.** O parser não sabe que existe DOM. O elemento
+não sabe que existe exportação. O exportador não sabe quais elementos existem.
 
-**Registry em vez de switch.** Templates e alvos de exportação são descobertos por
-registro, nunca por condicional espalhada pelo código. Um `switch (slide.template)`
-fora do registry é sinal de erro de arquitetura.
+**Registry em vez de switch.** Elementos e alvos de exportação são descobertos por
+registro, nunca por condicional espalhada pelo código. Um `switch` sobre o tipo de um
+elemento fora do registry é sinal de erro de arquitetura.
 
 **Fidelidade por identidade, não por aproximação.** O preview e a exportação usam o
 mesmo DOM. Divergência entre os dois é impossível por construção, não por cuidado.
@@ -87,11 +93,9 @@ mesmo DOM. Divergência entre os dois é impossível por construção, não por 
 
 ```ts
 type SlideId = string
+type ElementId = string
 type ImageId = string
-type TemplateId = string       // opaco: o deck não conhece a biblioteca de templates
-
-type FieldValue = string | string[]   // list guarda array; o resto, string
-type OptionValue = string | boolean   // select guarda string; toggle, booleano
+type PresetId = string
 
 type Pillar = "api" | "forge" | "log"
 type DeckMeta = {
@@ -100,7 +104,7 @@ type DeckMeta = {
 }
 
 type Deck = {
-  version: 1
+  version: 2
   id: string
   title: string
   format: { w: number; h: number }  // dado, não constante — ver §12
@@ -109,124 +113,177 @@ type Deck = {
   assets: Record<ImageId, string>  // base64, apenas no arquivo exportado
 }
 
-type SlideDefaults = {
-  fields: Record<string, FieldValue>    // conteúdo
-  options: Record<string, OptionValue>  // apresentação
-}
-
 type Slide = {
   id: SlideId
-  template: TemplateId
-} & SlideDefaults
+  layout: SlideLayout
+  elements: Element[]
+}
 ```
 
-`TemplateId` é `string` e não a união dos dez ids porque a seta de dependência é
-`templates → deck`: o modelo de dados não conhece a biblioteca, e acrescentar um
-template não o edita. Id desconhecido é erro de runtime, lançado pelo registry.
+Um slide é **uma configuração de layout mais uma lista ordenada de elementos**. Foi
+`template + campos fixos` até a Etapa 3½, e a decisão 61 diz por que deixou de ser.
 
-`SlideDefaults` existe para `createSlide` receber os defaults do template **como
-argumento** — `src/deck` não importa `src/templates`. O `TemplateDef` da §8 é atribuível
-a essa forma.
+```ts
+type SlideLayout = {
+  showGrid: boolean
+  showHeader: boolean
+  kicker: string               // a única peça de conteúdo que mora no layout
+  showFooter: boolean
+  showRule: boolean
+  showLogo: boolean
+  showLogoPlate: boolean
+  showHandle: boolean
+  showChevron: boolean
+  anchor: "top" | "center" | "bottom"
+}
+```
 
-### Por que `fields` e `options` são separados
+O layout é o **cromo** — o que existe em volta do conteúdo — mais a âncora vertical da
+pilha. As oito primeiras chaves são as oito opções que todo template da v1 expunha, sem
+mudança nenhuma; a `anchor` é o antigo `anchor` do `text-bullets`, promovido a propriedade
+de qualquer slide.
 
-Ao trocar o layout de um slide, o **conteúdo migra** e as **opções resetam**. Essa
-regra é impossível de aplicar se as duas coisas estiverem no mesmo objeto. A separação
-também abre espaço para expor propriedades de estilo no futuro (alinhamento, densidade,
-overrides de CSS) sem redesenhar nada — elas entram em `options`.
+**O `kicker` é conteúdo e mora aqui**, e é a única exceção do modelo. Ele é o que a faixa do
+cabeçalho **é**, do mesmo jeito que a constelação é o que o rodapé é; promovê-lo a elemento
+traria uma cardinalidade a mais, um caminho de migração a mais e uma faixa 80–148 que
+deixaria de ser fixa, para permitir uma etiqueta no meio do slide que ninguém pediu.
+Decisão 66, que confirma a 42.
+
+```ts
+type Element =
+  | { id: ElementId; t: "statement"; heading: string }
+  | { id: ElementId; t: "heading";   heading: string }
+  | { id: ElementId; t: "lead";      lead: string }
+  | { id: ElementId; t: "text";      body: string }
+  | { id: ElementId; t: "caption";   caption: string }
+  | { id: ElementId; t: "label";     label: string }
+  | { id: ElementId; t: "quote";     body: string; cite: string }
+  | { id: ElementId; t: "code";      file: string; lang: string; code: string }
+  | { id: ElementId; t: "image";     image: ImageId; fit: Fit; bleed: Bleed }
+  | { id: ElementId; t: "cta";       cta: string; arrow: boolean }
+  | { id: ElementId; t: "divider" }
+  | { id: ElementId; t: "columns";   ratio: Ratio; align: Align; columns: [Leaf[], Leaf[]] }
+
+type Fit    = "cover" | "contain"
+type Bleed  = "none" | "top" | "edge"
+type Ratio  = "50/50" | "60/40" | "40/60"
+type Align  = "top" | "center"
+
+/** Um nível de profundidade, escrito no compilador. */
+type Leaf = Exclude<Element, { t: "columns" }>
+```
+
+Doze variantes, e o que cada uma decide está na §11.11–§11.22 do documento de elementos.
+Três coisas que a forma do tipo compra de graça:
+
+- **`columns` é uma tupla de dois**, e não uma lista: três colunas em 920px dariam sete
+  caracteres por linha, e a impossibilidade vive no tipo em vez de numa validação.
+- **Um nível de profundidade**, pelo `Leaf`: coluna dentro de coluna não compila.
+- **Campos de conteúdo e de forma convivem no mesmo objeto.** `fit`, `bleed`, `ratio`,
+  `align` e `arrow` ficam ao lado de `body` e `heading`, e é isso que a decisão 61 troca
+  pela divisão `fields`/`options` da v1 — ver abaixo.
+
+### Por que `layout` e `elements` são separados, e por que `fields` e `options` não são mais
+
+A v1 separava conteúdo de apresentação **dentro do slide**, porque trocar o template
+migrava um e resetava o outro. Essa operação não existe mais: trocar de composição é
+aplicar um preset, e o que ela preserva é conteúdo casado **por tipo de elemento**, não por
+chave. A divisão perdeu o que a sustentava, e mantê-la significaria carregar dois sacos
+por elemento para separar `fit` de `image`, que ninguém nunca vai querer separar.
+
+A divisão que restou é outra e vale a pena: **o layout é do slide, os elementos são o
+slide**. Aplicar um preset troca a lista e escreve o layout inteiro; acrescentar um
+elemento não encosta no layout. Decisão 61, que supera a 5 e a 44.
+
+### Toda operação é por id de elemento
+
+Com árvore, `elements[2]` deixa de identificar qualquer coisa: o índice 2 pode estar na
+raiz ou dentro da segunda coluna do terceiro elemento. Toda operação do store — mover,
+remover, alterar campo, adicionar ao lado — recebe o **`ElementId`**, e o store caminha a
+árvore procurando pai e posição.
+
+Numa árvore de dez nós isso é gratuito, e evita carregar caminhos do tipo
+`["el_3", "left", 1]` por todo lado — que é o tipo de coisa que fica errada num canto e
+some num outro. Decisão 64.
+
+O `ElementId` vem de `crypto.randomUUID()` como o `SlideId`, e vale para ele a mesma
+armadilha da §13: **id de dado não vira atributo do DOM**.
 
 ### Vocabulário canônico de campos
 
-Templates diferentes devem usar as **mesmas chaves** para papéis equivalentes:
+Elementos diferentes usam as **mesmas chaves** para papéis equivalentes:
 
-| Chave | Papel |
-|---|---|
-| `kicker` | Etiqueta superior (`api/ · 04`) |
-| `heading` | Título do slide — vale para capa, conteúdo e fechamento |
-| `lead` | Complemento do `heading`, um degrau abaixo na hierarquia |
-| `body` | Texto corrido principal |
-| `items` | Lista de tópicos |
-| `image` | Referência de asset |
-| `caption` | Texto auxiliar de imagem |
-| `code` / `file` / `lang` | Bloco de código |
-| `cta` | Destino ou ação, no fechamento |
-
-Assim, trocar `text-bullets` por `text-impact` preserva o que a pessoa já digitou.
-Sem isso, a troca de layout apaga trabalho — o pior momento possível de uso da ferramenta.
-
-A tabela **fechou na 3A**, com a especificação dos dez templates. Nenhuma chave nova foi
-precisa: a explicação do `code-annotated` é `body`, que é o texto corrido principal de
-qualquer template, e as chaves de imagem e de código já estavam aqui desde a v1. O que a
-3A acrescentou foi a distinção abaixo — o que é de todos, o que é de alguns e o que é de um
-só.
-
-#### Duas chaves são de todo template
-
-O título de um slide é **sempre** `heading`, em qualquer template. A tentação de chamá-lo
-de `titulo` na capa e de `heading` no miolo custa exatamente a migração que esta tabela
-existe para garantir.
-
-Mais que isso: **`kicker` e `heading` são declarados pelos dez**, mesmo onde o layout não
-os desenha por padrão. São as duas chaves que atravessam qualquer troca de layout, e é o
-que faz a etiqueta e o título nunca se perderem — nem indo de um slide de código para um
-de imagem. Onde o valor está vazio, a região some, como o `lead` vazio do `final-cta` já
-fazia.
-
-O descritor de `kicker` é compartilhado, em `src/templates/shared/fields.ts`. O de
-`heading` **não é**: o limite de caractere acompanha a região, e a região é do template —
-70 na capa em 96px, 60 num slide de tópicos em 56px. O que é comum é o **rótulo**, e ele é
-"Título" nos dez, pelo motivo que a §11.2 dos templates registra.
-
-O `kicker` ficou preso ao `cover-statement` até a 2F, e o custo apareceu no deck de doze
-slides: sair da capa **descartava** o que estava digitado, porque a migração é uma
-interseção de chaves e uma chave que só um lado declara não atravessa. O descritor mora em
-`src/templates/shared/fields.ts`, o simétrico do `shared/options.ts`, e é o mesmo objeto em
-todos — declarado à mão em cada template, o rótulo divergiria no terceiro.
-
-O mesmo caminho vale para as chaves seguintes desta tabela quando um segundo template as
-quiser: o vocabulário promete a mesma chave para o mesmo papel, e um descritor compartilhado
-é o que faz a promessa ser verdadeira em vez de disciplina.
-
-**`code`, `file` e `lang` percorreram esse caminho na 3E**, quando o `code-annotated` virou
-o segundo template a declará-los. Os três descritores moram em `src/templates/shared/fields.ts`
-e são o **mesmo objeto** nos dois, como o kicker — o teste é de identidade, não de
-propriedade. Decisão 54. O `heading` dos dois continua declarado em cada um, apesar de os
-dois usarem os mesmos 60 caracteres: o limite acompanha a região, e a região é do template.
-
-#### A promessa é de papel, não de forma — e a migração cobra as duas
-
-O vocabulário garante que `body` é texto corrido em qualquer template. Não garante que
-todos o guardem com a mesma **forma de valor**, e o `migrateFields` compara as duas coisas:
-`list` guarda array, todo o resto guarda string, e chave cuja forma não bate fica com o
-default do destino.
-
-Daí a regra que a 3A fixou ao escrever os dez de uma vez: **a mesma chave tem o mesmo tipo
-de campo na biblioteca inteira**. `code`, `file` e `lang` são idênticos no `code-window` e
-no `code-annotated`; `image` é idêntico no `split-vertical` e no `image-caption`; `items` é
-`list` onde quer que apareça. Sem isso a promessa desta tabela vale no papel e falha na
-troca de layout, que é o único lugar onde ela é cobrada.
-
-#### O que é próprio de um template
-
-Uma chave que nenhum segundo template usa não ganha linha aqui — vocabulário com um
-usuário só é vocabulário por engano. Ela é declarada no template e **justificada na §11.x
-dele**, que é o critério que a 3A fechou:
-
-| Chave | Template | Papel |
+| Chave | Papel | Elemento |
 |---|---|---|
-| `beforeLabel` / `before` | `compare-2col` | O lado esquerdo da comparação, rótulo e conteúdo |
-| `afterLabel` / `after` | `compare-2col` | O lado direito, idem |
+| `kicker` | Etiqueta superior (`api/ · 04`) | o layout |
+| `heading` | Título — vale para a declaração e para o título de slide | `statement`, `heading` |
+| `lead` | Complemento do título, um degrau abaixo | `lead` |
+| `body` | Texto corrido | `text`, `quote` |
+| `caption` | Texto auxiliar | `caption` |
+| `label` | Etiqueta de bloco ou de coluna | `label` |
+| `image` | Referência de asset | `image` |
+| `code` / `file` / `lang` | Bloco de código | `code` |
+| `cta` | Destino ou ação | `cta` |
 
-O par antes/depois foi o único caso em dez templates. Promovê-lo à tabela canônica
-reservaria à biblioteca inteira um papel que só um layout tem; se um segundo template de
-comparação aparecer, é aí que ele sobe — e não antes.
+A tabela é menor do que era, e é a mesma promessa. O que saiu:
 
-As chaves são em inglês, como todo identificador do projeto. O texto dos documentos
-continua em português.
+- **`items` sumiu.** Lista de tópicos deixou de ser um campo `list` e passou a ser texto
+  com linhas de `- ` dentro de um `text` — §7. Some com ela o tipo de campo `list` do
+  descritor, e os três botões por item que o inspector desenhava.
+- **O par próprio do `compare-2col` sumiu.** `beforeLabel`/`before` e `afterLabel`/`after`
+  eram a única exceção que a decisão 45 previa: um rótulo dentro de uma coluna agora é o
+  elemento `label` e o conteúdo é o elemento `text`, os dois lados iguais.
 
-## 7. Marcação inline
+A promessa continua sendo **de papel e de forma**: a mesma chave tem o mesmo tipo em toda
+a biblioteca, e é isso que faz a aplicação de preset casar conteúdo sem tabela de
+equivalência. As chaves são em inglês, como todo identificador do projeto.
 
-Sintaxe do Obsidian, subset fechado, **sem nenhuma construção de bloco**.
+## 7. Marcação
+
+Sintaxe do Obsidian, subset fechado, em **duas camadas**: blocos por cima, inline por
+baixo. A camada de blocos é da Etapa 3½ e a decisão 60 diz por que ela precisou existir.
+
+### Blocos
+
+```ts
+type Block =
+  | { t: "p";  v: string }        // um parágrafo, marcação inline crua
+  | { t: "ul"; items: string[] }  // lista não ordenada
+  | { t: "ol"; items: string[] }  // lista ordenada
+
+function parseBlocks(src: string): Block[]
+```
+
+| Escrita | Vira |
+|---|---|
+| Linha em branco | Fim de um bloco e começo de outro |
+| Linha começando com `- ` | Item de lista não ordenada; linhas seguidas formam uma lista |
+| Linha começando com `1. ` | Item de lista ordenada; o número é o que estiver escrito |
+| Qualquer outra linha | Parágrafo |
+
+**Sem títulos e sem cercas de código nessa camada.** Título é elemento próprio, código é
+elemento próprio, e uma cerca de código dentro de um parágrafo criaria dois caminhos para
+a mesma coisa — o segundo sem realce, sem barra de janela e sem `lang`.
+
+**Uma quebra simples dentro de um parágrafo é espaço, não quebra.** É aqui que a proibição
+de quebra manual continua valendo, e é a única metade dela que sempre esteve certa:
+
+| | O que é | Vale? |
+|---|---|---|
+| Quebra **tipográfica** | Um enter no meio da frase, para ela ficar bonita | **Não.** Congela o layout e some com a razão de os presets existirem |
+| Quebra **de conteúdo** | Uma linha em branco, ou uma linha de `- ` | **Sim.** É estrutura do pensamento, não ajuste visual |
+
+O valor continua sendo **uma `string` no elemento**. Nada de estrutura nova no dado, nada
+de migração para esta parte, e a edição continua sendo um textarea: o autor quer digitar,
+não preencher formulário nem montar blocos com o mouse.
+
+**O parser de blocos não invade o de inline.** Cada `v` e cada item saem crus, e quem os
+transforma em texto desenhado é o `<Inline>` de sempre, um por bloco. É o que mantém
+`parseInline` sendo a função pura sem dependências que ela já é, e o que faz `parseBlocks`
+ser testável sozinho — as duas camadas se compõem no `<Blocks>`, que é o único módulo que
+conhece as duas.
+
+### Inline
 
 | Sintaxe | Token | Render |
 |---|---|---|
@@ -260,7 +317,7 @@ function parseInline(src: string): Inline[]
 Devolver HTML acoplaria o conteúdo ao DOM permanentemente e mataria qualquer alvo de
 exportação futuro que não seja rasterização (SVG, PDF vetorial). Como `parseInline` é
 função pura sem dependências, é também o alvo de teste unitário mais barato do projeto —
-e o único lugar que exige cobertura séria na v1.
+e o `parseBlocks` acima dela é o segundo.
 
 Marcadores não aninham. `**texto com *itálico* dentro**` é tratado como texto literal
 no marcador externo. Simplifica o tokenizer de forma significativa e nenhum slide
@@ -286,113 +343,136 @@ digita `**forte**`, o estado intermediário `**forte` existe em toda edição.
 Nós de texto vizinhos são colapsados em um só: uma sequência de rejeições devolve um nó,
 não um por caractere.
 
-## 8. Templates
+## 8. Elementos e presets
 
-Cada template é uma pasta autocontida:
+Um elemento é uma pasta autocontida em `src/elements/`, com a mesma forma que um template
+tinha:
 
 ```
-src/templates/cover-statement/
-  index.tsx     componente; recebe props tipadas, renderiza 1080×1350
-  meta.ts       { id, label, group, background, sections, defaults }
-  fields.ts     descritores de fields e options + schema zod
+src/elements/text/
+  index.tsx     componente; recebe o elemento e o contexto de render
+  fields.ts     descritores de campo + schema zod
+  meta.ts       { t, label, max, inColumn, defaults }
 ```
 
-O que é o mesmo em todos os dez não fica em pasta nenhuma: `src/templates/shared/` guarda
-os descritores compartilhados — `fields.ts`, `options.ts`, `sections.ts` — e as peças que
-todo slide desenha, o `Header` e o `Footer`. Um template os espalha e acrescenta os
-próprios depois.
+O que é o mesmo em vários fica em `src/elements/shared/`. O cromo das duas faixas — o
+`Header` e o `Footer` — **não** é elemento: mora em `src/render/`, porque é do slide e não
+da pilha.
 
 ```ts
-type TemplateDef<
-  F extends Record<string, FieldValue> = any,
-  O extends Record<string, OptionValue> = any,
-> = {
-  id: TemplateId
-  label: string
-  group: "cover" | "content" | "code" | "media" | "final"
-  background: "plain" | "grid"
+type ElementDef<E extends Element = Element> = {
+  t: E["t"]
+  label: string                       // "Texto", "Código", "Duas colunas"
   fields: Field[]
-  options: Field[]
-  sections: FieldSection[]
-  schema: ZodType<{ fields: F; options: O }>
-  defaults: { fields: F; options: O }
-  Component: React.FC<{ fields: F; options: O; deck: DeckMeta; index: number; total: number }>
+  schema: ZodType<E>
+  defaults: Omit<E, "id">
+  max?: number                        // cardinalidade por slide; ausente = sem teto
+  inColumn: boolean                   // pode ser adicionado dentro de uma coluna
+  Component: FC<{ element: E; ctx: RenderContext }>
+}
+
+type RenderContext = {
+  inColumn: boolean                   // é o que faz `text` cair de 40px para 32px
+  deck: DeckMeta
+  index: number
+  total: number
 }
 ```
 
-Os limites em `F` e `O` são o que torna `defaults` atribuível ao `SlideDefaults` da §6 —
-o contrato pelo qual `createSlide` recebe os defaults de um template sem que `src/deck`
-importe o registry. O padrão `= any` fica: um template concreto sempre informa os dois.
+O registry é o mesmo `createRegistry` genérico de `src/lib/registry.ts` que os templates e
+os alvos de exportação já usavam — **passa a registrar elementos em vez de templates**, e
+nada mais muda. Elemento desconhecido é erro de runtime, lançado pelo registry.
 
-O registry, por sua vez, guarda `TemplateDef<any, any>`. Não dá para guardar
-`TemplateDef<Record<string, FieldValue>>`: `Component` é propriedade de tipo função, e
-sob `strictFunctionTypes` os parâmetros são contravariantes — um componente que exige
-`{ heading: string }` não é atribuível a um que promete aceitar qualquer campo.
-
-O `Field` é um descritor declarativo — não uma derivação automática do zod:
+O `Field` é o descritor declarativo da v1, sem o `section`: as seções do inspector morreram
+com o cartão por elemento, e a decisão 44 está superada.
 
 ```ts
-type Field = (
+type Field =
   | { key: string; type: "text";     label: string; max?: number; placeholder?: string; md?: boolean }
   | { key: string; type: "textarea"; label: string; max?: number; md?: boolean; rows?: number }
-  | { key: string; type: "list";     label: string; maxItems: number; maxPerItem?: number; md?: boolean }
   | { key: string; type: "image";    label: string; ratio?: string }
   | { key: string; type: "code";     label: string; maxLines: number }
   | { key: string; type: "select";   label: string; options: { value: string; label: string }[] }
   | { key: string; type: "toggle";   label: string }
-) & { section?: string }
-
-type FieldSection = { key: string; label: string; toggle?: string }
 ```
 
-`sections` e `section` são **metadado de desenho**: dizem em que faixa do inspector cada
-controle aparece e sob que interruptor. Não tocam no dado — `fields` e `options` continuam
-sendo a lista completa e plana das chaves de cada saco, e o slide continua guardando os dois
-separados. Ver a §14 e a decisão 44.
+**O tipo `list` saiu.** Ele existia para os tópicos do `text-bullets`, que agora são linhas
+de `- ` dentro de um `text` — e com ele saem os três botões por item que o inspector
+desenhava, que eram formulário onde devia haver digitação.
 
-O `section` de um controle não é o `group` do template: aquele é uma faixa do formulário,
-este é a função narrativa do template inteiro.
+**O zod valida, o descritor desenha.** Continua valendo, e pelo mesmo motivo: gerar
+formulário a partir do schema é um poço sem fundo de unions, arrays, defaults e
+refinements. Decisão 4.
 
-**O zod valida, o descritor desenha.** Gerar formulário automaticamente a partir do
-schema parece elegante e é um poço sem fundo — unions, arrays, defaults e refinements
-exigem casos especiais até o gerador ficar maior que os formulários que ele geraria.
-O descritor custa uma hora e dá controle total sobre rótulos, ajuda e limites.
+A flag `md` marca quais campos aceitam marcação. Na prática **todos aceitam menos os três
+do `code`** — a divisão campo a campo da v1 nunca teve regra, e a §11 do documento de
+elementos a substituiu por uma frase.
 
-A flag `md` marca quais campos aceitam marcação inline. Campos sem ela são literais.
+### Os presets
 
-### Os dez templates da v1
+Um preset é **dado, não código**: nome, `SlideLayout` e uma lista de elementos com o
+conteúdo vazio.
 
-Definidos previamente por **função narrativa**, não por estética:
+```ts
+type Preset = {
+  id: PresetId
+  label: string
+  layout: SlideLayout
+  elements: Element[]     // ids novos a cada aplicação
+}
+```
 
-| # | Id | Função | Fundo |
-|---|---|---|---|
-| 1 | `cover-statement` | Gancho | `grid` |
-| 2 | `context` | Segurar o leitor | `plain` |
-| 3 | `text-bullets` | Desenvolvimento | `plain` |
-| 4 | `text-impact` | Respiro | `grid` |
-| 5 | `code-window` | Código puro | `plain` |
-| 6 | `code-annotated` | Código com explicação | `plain` |
-| 7 | `compare-2col` | Antes/depois | `plain` |
-| 8 | `split-vertical` | Texto + imagem | `plain` |
-| 9 | `image-caption` | Imagem dominante | `plain` |
-| 10 | `final-cta` | Fechamento | `grid` |
+Os dez presets de seed são as dez composições que a v1 tinha como template, e estão
+escritos na §11.1–§11.10 do documento de elementos. **A função que converte os dez
+templates em listas de elementos é a definição deles** — escrever as duas coisas em
+separado é garantir que divirjam. Decisão 73.
 
-Estrutura de um deck: `capa → contexto → desenvolvimento (n) → payoff → cta`,
-alvo de 8 a 12 slides.
+Aplicar um preset a um slide com conteúdo **casa por tipo, na ordem**: o primeiro `text` do
+preset recebe o texto do primeiro `text` do slide. É a regra de interseção da decisão 13
+levantada de chaves para tipos, e é o que impede a troca de composição de apagar trabalho.
+
+Preset guarda o esqueleto; **snapshot** guarda também o texto, e uma caixa de seleção no
+momento de salvar separa os dois sem inventar dois conceitos na interface. Os dez de seed
+são fixos; preset salvo pelo autor é renomeável, substituível e apagável. Decisão 69.
+
+Presets são **transversais aos decks** e por isso não moram dentro do `Deck` da §6: ficam
+em chave própria do `localStorage`.
 
 ## 9. Renderização
 
-O template renderiza sempre em **1080×1350 px reais**. O preview aplica
+O slide renderiza sempre em **1080×1350 px reais**. O preview aplica
 `transform: scale(k)` com `transform-origin: top left` num wrapper de tamanho fixo.
 
 Consequências: nenhuma media query, nenhuma matemática responsiva, e o preview é
 literalmente o mesmo DOM que será exportado.
 
+### A região de conteúdo é uma pilha vertical
+
+O que sobra entre o cabeçalho e o rodapé é **uma região com pilha vertical e regras de
+espaçamento**, e cada elemento ocupa o que precisa. Não há faixa absoluta por composição,
+porque ninguém sabe de antemão quantos blocos existem — e era exatamente isso que as
+tabelas de oito geometrias do `code-annotated` e do `image-caption` estavam calculando à
+mão.
+
+**Essa é a mudança arquitetural da Etapa 3½**, maior que a lista de elementos em si. Ela
+tem três consequências diretas:
+
+- **A imagem é o elemento elástico.** Todo elemento de texto tem a altura do que contém; a
+  imagem toma o que os outros deixarem, com piso de 200px. É o que substitui as oito
+  geometrias escritas à mão.
+- **A âncora vertical passa a ser do slide.** `top`, `center` e `bottom` no layout, em vez
+  de `items-end` escrito dentro de um template.
+- **O guard vira o mecanismo central de validação**, e não mais uma rede de segurança: é a
+  única coisa impedindo o autor de empilhar oito elementos num slide.
+
+Os números da pilha — topo em 80 ou 212, fim em 1160, gaps de 64, 48 e 24px — estão na
+§11.0 do documento de elementos, que é quem os decide.
+
 ### O wrapper declara a escala
 
 O wrapper também declara `--slide-scale` com o mesmo `k` que passou ao `transform`.
-Detalhes que dependem de espessura de traço — o grid de fundo, hoje; bordas de 1px,
-amanhã — compensam a partir dessa variável, senão desaparecem no preview. A exportação
+Detalhes que dependem de espessura de traço — o grid de fundo, a régua do rodapé, o
+`divider` — compensam a partir dessa variável, senão desaparecem no preview. A exportação
 renderiza com `k = 1` e recebe os valores de spec sem saber que a compensação existe.
 
 É a única divergência deliberada entre preview e exportação, e ela existe para preservar
@@ -413,20 +493,26 @@ acontecer. Ver decisão 23.
 
 Slide tem altura fixa, então texto longo transborda — é a falha número um deste tipo
 de ferramenta. Um `ResizeObserver` mede a região de conteúdo e marca o slide como inválido
-no canvas e na lista lateral. O contador de caracteres por campo vem do `max` do descritor.
+no canvas e na lista lateral.
 
-Não é polimento opcional. É o que separa uma ferramenta utilizável de um brinquedo.
+**São dois nós, não um.** O container tem altura de faixa — a região da pilha, ou a altura
+do bloco `columns` — e o conteúdo dentro dele cresce; o guard compara a altura do
+**conteúdo** com a do **container**. Comparar `scrollHeight` com `clientHeight` no mesmo
+elemento, que é o teste óbvio, reprova em silêncio quando o conteúdo está ancorado à base:
+o que estoura sobe acima da borda superior, e o que sobe não entra no `scrollHeight` do
+pai. A âncora `bottom` é exatamente esse caso.
 
-**Quem declara a região medida é o template**, e a §11.x de cada um a marca com **⌐** na
-tabela de regiões. O guard é convenção compartilhada, não recurso de um template: vive em
-`src/render/overflow.tsx` e os dez o consomem pelo mesmo hook.
+**E o guard é recursivo.** Com aninhamento, a medida vale em cada nível:
 
-**São dois nós, não um.** A faixa tem altura de spec — `h-[866px]` escrita no template — e
-o bloco de conteúdo dentro dela cresce com o texto; o guard compara a altura do **conteúdo**
-com a da **faixa**. Comparar `scrollHeight` com `clientHeight` no mesmo elemento, que é o
-teste óbvio, reprova em silêncio nos templates que ancoram o conteúdo à base: o que estoura
-sobe acima da borda superior, e o que sobe não entra no `scrollHeight` do pai. O
-`cover-statement` e o `final-cta` são exatamente esse caso.
+- a região de conteúdo do slide é um container;
+- **cada coluna é um container independente**;
+- a altura de um `columns` é o **máximo** das duas colunas;
+- o slide reprova se **qualquer** container estourar;
+- o aviso **nomeia o elemento** que estourou — o primeiro cujo `offsetTop + offsetHeight`
+  passa do `clientHeight` do container —, senão o autor caça num slide de seis.
+
+É a parte mais chata da virada e a que mais merece teste escrito antes. Decisão 65, que
+estende a 47.
 
 As duas propriedades são medidas de layout e **não enxergam o `transform: scale()`** do
 `SlideFrame` — a mesma leitura vale a 1:1 no palco de exportação, a k ≈ 0,28 no canvas e a
@@ -435,11 +521,11 @@ haver estado de transbordo no store. `getBoundingClientRect` não serve aqui: es
 a escala.
 
 Duas condições que o guard impõe a quem o usa, as duas da mesma família da armadilha da
-§13. A faixa medida **não pode ser dimensionada pelo conteúdo** — `min-h` no lugar de `h`
-realimenta a medida. E a marca que o resultado desenha **não pode mexer no layout medido**,
-senão medir muda o que se mede: por isso ela é a borda do quadro externo do `SlideFrame`,
-que já tem 1px nos dois estados, vive fora do `transform` e fica fora do nó que a
-exportação captura — o PDF não sai com borda vermelha.
+§13. O container medido **não pode ser dimensionado pelo conteúdo** — `min-h` no lugar de
+`h` realimenta a medida. E a marca que o resultado desenha **não pode mexer no layout
+medido**, senão medir muda o que se mede: por isso ela é a borda do quadro externo do
+`SlideFrame`, que já tem 1px nos dois estados, vive fora do `transform` e fica fora do nó
+que a exportação captura — o PDF não sai com borda vermelha.
 
 A medida se repete em `document.fonts.ready`: antes de Oxanium e Sora carregarem, o texto é
 medido com a fonte de fallback e a altura é outra. É a mesma espera que o palco de
@@ -569,8 +655,16 @@ escala 2 do alvo PDF, que é a maior resolução que o arquivo consegue aproveit
 disso é peso puro em quatro lugares: o banco, o DOM, o `foreignObject` da captura e o base64
 do `.json` da Etapa 4. Decisão 56.
 
+**Deck da v1 não reidrata.** A virada da Etapa 3½ mudou a forma de `Slide` — de
+`template + fields + options` para `layout + elements` —, e `deck.version` foi a **2** para
+que isso seja explícito em vez de detectável por acaso. O que está salvo em v1 não é
+convertido: o editor abre no carrossel de referência. É deck de um usuário só, num
+aplicativo que ainda não tem import/export, e escrever um conversor de produção para uma
+forma que nunca mais vai existir custa mais do que rende. Decisão 68 — e é a única exceção
+à decisão 31, que continua valendo para tudo o mais.
+
 **Reidratar valida, e descarta slide a slide** — decisão 31. O que está no localStorage
-deixa de bater com o código quando um template some ou muda de chave, e a resposta é
+deixa de bater com o código quando um elemento some ou muda de chave, e a resposta é
 derrubar só os slides que não passam, nunca o deck inteiro e nunca nada. Confiar sem
 validar deixaria o `get()` do registry lançar dentro do render e abriria a ferramenta em
 tela branca; reiniciar do semente apagaria o carrossel por causa de um slide. O que se
@@ -578,9 +672,10 @@ guarda é o **deck**, não o `activeId`: recarregar volta ao primeiro slide, e u
 teria de ser validado contra o deck reidratado que a reordenação da Etapa 4 invalidaria
 de qualquer jeito.
 
-São duas perguntas por slide, e a segunda sai de graça: o template ainda existe? e o
-conteúdo passa no schema que **ele próprio** declara? Cada template carrega o seu desde a
-1B. Quem responde é o `reviveDeck` de `src/editor/rehydrate.ts`, chamado no `merge` do
+São duas perguntas por elemento, e a segunda sai de graça: o tipo ainda existe? e o
+conteúdo passa no schema que **ele próprio** declara? Cada `ElementDef` carrega o seu, como
+cada `TemplateDef` carregava desde a 1B — e a pergunta desce um nível, porque agora um
+slide tem vários. Elemento que não passa cai; o slide fica com o resto. Quem responde é o `reviveDeck` de `src/editor/rehydrate.ts`, chamado no `merge` do
 `persist`; ele mora em `src/editor` porque `src/deck/types.ts` não importa nada, nem de
 biblioteca, e porque a validação por slide precisa do registry — a seta é
 `templates → deck`. Deck de forma errada e deck sem nenhum slide sobrevivente voltam ao
@@ -591,13 +686,13 @@ Antes de validar, o slide salvo é lido **por cima dos defaults do template**, e
 separa os dois motivos de ele não bater com o código. Falta uma chave? O commit anterior
 acrescentou um campo ao descritor e o que está salvo é de antes dele — nasce com o default,
 e o slide fica. Uma chave tem valor de outra forma, `items` como string onde o descritor
-promete lista? O default não salva ninguém, o valor errado sobrescreve o certo e o slide
-cai, que é a decisão 31 intacta. Sem o degrau, acrescentar uma opção compartilhada apagaria
+promete lista? O default não salva ninguém, o valor errado sobrescreve o certo e o
+elemento cai, que é a decisão 31 intacta. Sem o degrau, acrescentar uma opção compartilhada apagaria
 o carrossel de quem já tinha um salvo: os dez slides reprovariam de uma vez e o editor
 abriria na semente — exatamente a perda de trabalho que a decisão 31 existe para impedir,
 chegando pela porta de trás. Decisão 41.
 
-O que volta é o **resultado do parse**, não o slide cru: o zod remove a chave que o template
+O que volta é o **resultado do parse**, não o slide cru: o zod remove a chave que o elemento
 não declara mais. Sem isso o dado velho ficaria pendurado para sempre, invisível no
 formulário e presente no JSON que a Etapa 4 vai exportar.
 
@@ -720,6 +815,14 @@ com **especificidade de seletor universal**: estilo em linha vence, então o `pa
 bloco declara de verdade continua valendo, e some só o que ninguém declarou. Ver a decisão
 50.
 
+**A Etapa 3½ agravou essa armadilha em vez de resolvê-la.** Até ela, `<ul>` e `<p>` mal
+existiam no canvas: os tópicos do `text-bullets` eram a única lista da biblioteca e os
+parágrafos eram um por slide. Com a camada de blocos da §7, um `text` sozinho pode desenhar
+três parágrafos e uma lista, e cada um deles é um nó que o clone deixa sem reset. O reset
+injetado pelo `onCloneNode` não é mais uma correção pontual: é o que segura o formato de
+todo texto do sistema, e **é a primeira coisa a conferir no PDF** quando o arquivo não bate
+com o preview.
+
 E a lição de método, que custou mais que a correção: **pintar um nó para medi-lo altera a
 medida**. A primeira sonda dava fundo colorido ao bloco para achá-lo no bitmap, e o atributo
 `style` que ela criava mudava o que o clone copiava — o defeito sumia justamente onde se
@@ -756,7 +859,11 @@ pré-renderização estática, no Node, e outra no navegador — e os ids saem d
 atributo: ele avisa no console e segue com o valor do cliente. Identificador de formulário
 sai de `useId`, que o React gera pela posição na árvore e por isso casa dos dois lados.
 Aconteceu na 1D, no inspector. Vale para o palco de exportação da 1E e para a lista de
-arraste da Etapa 4, que também vão querer marcar nós.
+arraste da Etapa 4, que também vão querer marcar nós — e passou a valer para o `ElementId`
+da Etapa 3½, que multiplica por dez os ids em jogo: o cartão do inspector, a chave de
+reordenação e o guard que nomeia o elemento que estourou são três lugares novos onde a
+tentação de escrever o id no DOM aparece. O guard reporta o id **para o escopo em
+JavaScript**, nunca para um atributo.
 
 **Estado que vem do navegador não pode chegar no primeiro render.** É a mesma família da
 armadilha acima, e o `persist` do zustand cai nela por padrão: ele lê o storage de forma
@@ -772,11 +879,11 @@ porque o store já nasceu assim; vale para qualquer estado que venha de `localSt
 
 Três colunas, sem invenção:
 
-- **Esquerda** — lista de slides com miniatura, índice, rótulo do template, marca de
+- **Esquerda** — lista de slides com miniatura, índice, nome da composição, marca de
   transbordo, reordenação por arraste, duplicar e remover.
 - **Centro** — canvas com o slide ativo em escala, seletor de zoom, indicador de validade.
-- **Direita** — inspector: seletor de layout no topo e, abaixo, as seções que o descritor
-  declara, com contadores de caractere.
+- **Direita** — inspector: o layout do slide no topo e, abaixo, um cartão por elemento da
+  pilha, com os campos que cada descritor declara e contadores de caractere.
 - **Topo** — nome do deck, ações de deck (novo, importar, exportar JSON) e o botão de
   exportação com escolha de alvo.
 
@@ -784,13 +891,15 @@ As quatro áreas nascem juntas, na 1C, e se preenchem por etapa. Criar o quadril
 uma vez custa nada e faz o editor ter, desde o primeiro dia, as proporções que vai ter no
 fim.
 
-Estado hoje, depois da 2F: o centro funciona; o topo tem o nome do deck e a exportação —
+Estado no fim da Etapa 3: o centro funciona; o topo tem o nome do deck e a exportação —
 um botão por alvo do registry, hoje um só, com spinner enquanto a captura acontece, e o
-menu com escolha de alvo entra quando houver mais de um; a direita tem o seletor de layout,
-que troca o template do slide preservando o conteúdo, e o formulário derivado dos
-descritores, em seções que se ligam e se encolhem, com contadores; a esquerda lista os
-slides com miniatura, número e nome, troca o ativo, rola até ele e tem, no pé, a barra que
-acrescenta e remove — sem marca de transbordo, arraste nem duplicar.
+menu com escolha de alvo entra quando houver mais de um; a direita tem o seletor de layout
+e o formulário derivado dos descritores, em seções que se ligam e se encolhem, com
+contadores; a esquerda lista os slides com miniatura, número e nome, troca o ativo, rola até
+ele, marca os que transbordam e tem, no pé, a barra que acrescenta e remove — sem arraste
+nem duplicar.
+
+A coluna da direita é a que a Etapa 3½ reescreve, e a subseção abaixo diz para quê.
 
 Acrescentar e remover ficam numa barra fixa no pé da coluna, agindo sobre o slide ativo, e
 não como um controle por miniatura: o item da lista é um `<button>` inteiro, e botão dentro
@@ -804,72 +913,56 @@ coluna que existe para mostrar onde se está mostrava outro lugar. A rolagem é 
 instantânea — não mexe em nada quando o item já está visível, e a §7 do design system não
 anima posição por mais de 8px.
 
-### As seções do inspector
+### O inspector é uma lista de cartões
 
 O formulário era duas seções fixas — Conteúdo escrevendo em `fields`, Apresentação em
-`options` —, o desenho espelhando a divisão do modelo da §6. Desde a 2F ele lê `sections`
-do descritor e desenha uma seção por entrada, na ordem declarada:
+`options` —, e na 2F passou a ler `sections` do descritor. As duas formas descreviam um
+slide com um conjunto fixo de campos, e o slide deixou de ter isso.
+
+O modelo agora é o **inspector de componentes da Unity**: cada elemento da pilha é um cartão
+com cabeçalho — nome do tipo, setas de ordem, remover — e os campos dentro.
 
 ```
-Layout            o seletor de template; não é seção do descritor
-▾ Cabeçalho  [●]  interruptor `showHeader`; dentro, o campo Kicker
-▾ Conteúdo        os campos sem `section`
-▸ Rodapé     [●]  interruptor `showFooter`; dentro, as cinco peças da faixa
-▾ Apresentação    as opções sem `section` — a grade e as próprias do template
+Layout            grade, cabeçalho, rodapé, âncora; o preset e "salvar como"
+─────────────────────────────────────────────
+▸ Título                              ↑ ↓ ✕
+▾ Texto                               ↑ ↓ ✕
+    Texto        [ textarea ]  120/320
+▾ Duas colunas                        ↑ ↓ ✕
+    Proporção    [ 50/50 ▾ ]
+    Alinhamento  [ Topo ▾ ]
+  │ Esquerda
+  │   ▸ Etiqueta                    ↑ ↓ → ✕
+  │   ▸ Texto                       ↑ ↓ → ✕
+  │   [ + Adicionar ]
+  │ Direita
+  │   [ + Adicionar ]
+─────────────────────────────────────────────
+[ + Adicionar ]
 ```
 
-A ordem é a **vertical do slide**, e é declarativa: quem edita procura o controle onde a
-coisa está no slide. Conteúdo e Apresentação entraram na lista como seções sem interruptor
-justamente para isso — fossem duas seções fixas no componente, a posição do Cabeçalho acima
-do conteúdo seria uma regra escrita em `inspector.tsx` em vez de no descritor.
+**Nada de arrastar.** O `@dnd-kit` da Etapa 4 se paga na lista lateral, que é onde o gesto
+é natural; numa coluna estreita de cartões colapsáveis, arraste custa mais do que rende.
 
-**Uma seção mistura `field` e `option` no desenho, e só no desenho.** O cabeçalho do slide é
-uma faixa com um texto e um interruptor; separá-los em duas seções distantes faria ligar a
-coisa numa e escrever nela na outra. A seção é metadado de desenho: `fields` e `options`
-continuam sendo dois sacos separados no dado, e a regra "conteúdo migra, opções resetam"
-continua inteira. Mover o kicker para `options` resolveria o desenho e quebraria isso —
-opção reseta na troca de layout, e o texto seria perdido justo onde o vocabulário
-compartilhado acabou de garantir que sobrevive. Decisão 44.
+- **Colapsado quando não está em edição**, expandido quando está: senão um slide de cinco
+  elementos não cabe na coluna.
+- **Adicionar** é um seletor no fim da lista, e cada coluna tem o seu. É ele que aplica a
+  cardinalidade da §11.23 do documento de elementos, **escondendo** a opção que atingiu o
+  teto — bloqueio antes do erro, não validação depois.
+- **Reordenar** é seta para cima e para baixo no cabeçalho do cartão. Nas pontas a seta
+  fica desabilitada, para não haver clique morto.
+- **As setas nunca atravessam fronteira de container.** Um elemento que saltasse de dentro
+  de uma coluna para fora dela é o tipo de coisa que faz o autor apertar Ctrl+Z. Elemento
+  dentro de coluna ganha, em vez disso, uma **seta lateral** que o move entre esquerda e
+  direita, apontando para o destino e não para a origem.
+- **O aninhamento é horizontal no slide e vertical no inspector.** As duas colunas aparecem
+  empilhadas, cada uma com rótulo, sua lista de cartões e seu próprio seletor. Em painel
+  estreito, indentar de verdade come a largura que os campos precisam — a contenção é
+  marcada por uma barra vertical à esquerda, com recuo pequeno.
 
-Faixa desligada não mostra as sub-opções: não há o que ajustar numa coisa que sumiu do
-slide. O valor delas continua guardado, então ligar de volta traz o que estava.
-
-Encolher é estado do painel, não do slide: mora em `useState` no `Inspector`, sobrevive à
-troca de slide porque o componente não desmonta, e não entra no `persist`, que guarda só o
-deck. O Rodapé nasce encolhido — cinco interruptores que se mexe uma vez —, o resto aberto.
-
-O cabeçalho de uma seção é um `<div>` com dois controles **irmãos**: o gatilho que encolhe e
-o interruptor da faixa. Switch dentro de button é HTML inválido, a mesma armadilha que a
-lista lateral já documenta, e é por isso que não há um `Collapsible` do Base UI aqui — o
-`Trigger` dele envolveria o interruptor junto.
-
-O formulário desenha os sete tipos de `Field`: `text`, `textarea` e `toggle` desde a 1D,
-`list` e `select` desde a 2C, `code` desde a 3D e `image` desde a 3F. A linha inerte com o
-rótulo continua no componente mesmo sem nenhum tipo caindo nela — pular um tipo sem controle
-em silêncio faria um campo novo sumir do formulário sem aviso, e é por isso que a condição é
-a **negação dos tipos desenhados** e não o nome do tipo que falta: escrita pelo positivo, o
-tipo que a Etapa 4 acrescentar sumiria sem uma linha sequer.
-
-O `image` é **upload local e nada mais** — decisão 8, e a ausência de um campo de endereço é
-a decisão, não uma pendência. Um `<input type="file">` escondido, disparado por um `<button>`
-irmão: o controle nativo traz um rótulo que ninguém consegue redigir, e envolvê-lo no botão
-seria controle dentro de controle, a mesma armadilha de HTML inválido que a lista lateral já
-documenta. Acima dele, a moldura com a **proporção do `ratio`** do descritor — 5:16 no
-`split-vertical`, 108:91 no `image-caption` —, que mostra o formato do buraco que a imagem
-vai preencher e é tudo o que o `ratio` faz na 3F; recorte de verdade não é desta etapa. A
-altura da moldura é fixa e a largura sai da proporção, e não o contrário: 5:16 em largura de
-coluna daria novecentos pixels de moldura. Sem imagem, ou com um id órfão, ela mostra "Sem
-imagem" — os dois são o mesmo estado, aqui e no slide.
-
-O `code` é uma textarea monoespaçada, e o que ele tem de próprio é o contador: onde os
-outros contam caractere contra `max`, ele conta **linha** contra `maxLines`. É em linha que
-o limite do bloco de código é escrito — as 14 da §10.3 do design system —, e continua sendo
-conselho: fica âmbar e não trava. No `list`, acrescentar, remover e reordenar são botões: o arraste é
-da Etapa 4, com `@dnd-kit`, e a lista lateral é onde ele se paga.
-
-A miniatura é o mesmo `SlideView` do canvas numa escala fixa, e não uma representação
-própria: um segundo desenho do slide para a lista lateral divergiria do primeiro no
-terceiro template.
+O seletor de layout do topo deixou de trocar o template do slide e passou a fazer duas
+coisas: aplicar um preset — casando conteúdo por tipo, §8 — e salvar a composição atual como
+preset ou snapshot. Os oito interruptores de cromo continuam ali, agora numa faixa só.
 
 ## 15. Roadmap
 
@@ -877,11 +970,19 @@ terceiro template.
 |---|---|---|
 | **1 — Fatia vertical** | Tipos, registry, parser inline, canvas escalado, inspector, **3 templates** (`cover-statement`, `text-bullets`, `final-cta`), alvo PDF | 6–8 h |
 | **2 — Biblioteca** | Os outros 7 templates, shiki com tema próprio, guard de transbordo, imagens no IndexedDB | 4–6 h |
+| **2½ — Composição** | Camada de blocos, o modelo de elementos com colunas, guard recursivo, inspector por cartões, os dez presets | 20–26 h |
 | **3 — Editor** | dnd-kit, duplicar/remover, undo/redo, múltiplos decks, import/export JSON | 4–5 h |
 | **4 — Produto** | Atalhos de teclado, estados vazios, README com GIF, deploy | 3 h |
 
 Total aproximado: **20 horas**, dois fins de semana. A fase 1 já permite publicar um
 carrossel real — a ferramenta é útil antes de estar pronta.
+
+**A fase 2½ não estava no roadmap, e o primeiro uso real a impôs.** Ela dobra a estimativa
+original, e é o preço de ter especificado a biblioteca por função narrativa antes de compor
+um post de verdade: dez templates que aceitam um formato cada, quando o autor escreve o
+texto primeiro e depois procura onde ele cabe. O que ela entrega não é template novo, é o
+modelo de conteúdo que os dez estavam disfarçando — ver a Etapa 3½ do `TODO.md` e as
+decisões 60 a 74 abaixo.
 
 ### Critério de conclusão da v1
 
@@ -896,11 +997,11 @@ sem retoque em nenhum outro programa.
 | 2 | Rasterizar o DOM | PDF vetorial via `@react-pdf/renderer` | Preservar Tailwind e o design system; o LinkedIn rasteriza de qualquer jeito |
 | 3 | Parser devolve AST | Devolver HTML | Não acoplar conteúdo ao DOM; manter aberta a saída vetorial |
 | 4 | Descritor de campos declarativo | Formulário derivado do zod | Custo e complexidade desproporcionais ao ganho |
-| 5 | `fields` separado de `options` | Objeto único de props | Permitir migração de conteúdo na troca de layout e abrir espaço para overrides de estilo |
+| 5 | ~~`fields` separado de `options`~~ · **superada pela 61** | Objeto único de props | Permitir migração de conteúdo na troca de layout e abrir espaço para overrides de estilo |
 | 6 | Exportação em dois estágios | Um plugin por formato | Evitar triplicar a rasterização entre PDF, PNG e JPG |
 | 7 | Imagens no IndexedDB | base64 no localStorage | Cota de ~5 MB estoura com uma única imagem |
 | 8 | Apenas upload local de imagem | Aceitar URL externa | CORS contamina o canvas e quebra a exportação em silêncio |
-| 9 | Marcação sem construções de bloco | Markdown completo | Estrutura é responsabilidade do template; caso contrário o design system perde o controle da tipografia |
+| 9 | ~~Marcação sem construções de bloco~~ · **superada em parte pela 60** | Markdown completo | Estrutura é responsabilidade do template; caso contrário o design system perde o controle da tipografia |
 | 10 | Marcadores não aninham | Parser recursivo | Simplifica o tokenizer; nenhum slide precisa |
 | 11 | Tokens em hex sRGB no canvas | OKLCH em todo lugar | Suporte irregular a `oklch()` na serialização de captura |
 | 12 | `format` como dado desde a v1 | `1080×1350` hardcoded | Meia hora agora contra reescrever dez templates depois |
@@ -935,7 +1036,7 @@ sem retoque em nenhum outro programa.
 | 41 | Ao reidratar, o slide salvo é lido **por cima dos defaults do template** antes de ser validado | Manter a validação crua da decisão 31, descartando todo slide a que falte uma chave; ou escrever uma tabela de migração por versão do descritor | Um slide salvo deixa de bater com o código por dois motivos que a decisão 31 tratava como um só. Falta uma chave? O commit anterior acrescentou um campo ao descritor e o que está salvo é de antes dele — dado velho, não dado torto. Uma chave tem valor de outra forma? Aí sim é dado que o template não sabe desenhar. Sem a distinção, **acrescentar uma opção compartilhada apaga o carrossel de quem já tinha um salvo**: os dez slides reprovam de uma vez e o editor abre na semente, que é exatamente a perda de trabalho que a decisão 31 existe para impedir, chegando pela porta de trás. O `showHeader` da 2F foi o primeiro caso real, e o custo do degrau são dois espalhamentos de objeto antes do `safeParse`. Uma tabela de migração por versão é o que a decisão 31 já tinha descartado, e continua descartada pelo mesmo motivo: o schema por template já sabe o que o template quer, e os defaults por template já sabem com o que ele nasce. Guardar o **resultado do parse** em vez do slide cru fecha o outro lado — chave que o template perdeu sai do dado em vez de ficar pendurada até o import/export da Etapa 4 |
 | 42 | O **cabeçalho é faixa compartilhada** de todo template, ligável por `showHeader`, e o `kicker` virou campo compartilhado | Manter o kicker como campo do `cover-statement`; ou dar a cada template um campo de etiqueta próprio, com chave própria | A §10.5 do design system prendia o kicker à capa, e o rodapé já tinha feito o caminho contrário na 2B: virou peça compartilhada com seis opções, e o que era regra virou padrão. O topo do slide ficou como a assimetria óbvia da arquitetura — uma faixa desenhada à mão dentro de um template, e nenhum outro slide podia ter etiqueta superior. Compartilhar tem dois retornos além do óbvio: a **migração passa a preservar o kicker** de graça, pela interseção de chaves da decisão 13, e a segunda peça que a faixa ganhar chega num lugar em vez de dez. O par com `showFooter` fecha o desenho: as duas faixas do slide são opção, as peças dentro delas são sub-opção, e a constelação continua sem opção própria porque quem a tira é quem tira a faixa toda |
 | 43 | Ligar o cabeçalho **empurra** o conteúdo do `text-bullets`, em vez de a faixa ser reservada sempre | Reservar 80–148 em todo template, com o conteúdo começando em 212 com a faixa ligada ou não — a regra "ligar uma peça não move as outras" que o rodapé segue desde a 2B | Reservar sempre custaria **132px do topo do template mais usado do sistema**, permanentemente, por uma faixa que ali nasce desligada: a região de itens cairia de 866 para 734px em todo slide de tópicos do carrossel, inclusive nos que nunca vão ter kicker. Empurrar custa um ternário numa string de classe, do mesmo formato que o `anchor` já usa no mesmo componente. A regra do rodapé não é contrariada onde foi escrita: ela fala das peças **dentro** de uma faixa, e vale porque o rodapé nunca disputou espaço com nada — mover o que está embaixo dele seria mover o nada. A capa e o `final-cta` não pagam nada de qualquer forma, porque os dois já têm a faixa 80–148 livre |
-| 44 | A seção do inspector é **metadado de desenho no descritor**, e uma delas mistura `field` e `option` | Duas seções fixas no componente, com o kicker aparecendo em "Conteúdo" e o interruptor em "Apresentação"; ou mover o texto do kicker para `options`, unificando o saco | O painel precisava de "Cabeçalho" e "Rodapé" como categorias que se ligam e se encolhem, e o cabeçalho é uma faixa com **um texto e um interruptor** — separá-los em duas seções distantes faria ligar a coisa numa e escrever nela em outra. A saída é a seção ser desenho e não dado: `fields` e `options` continuam sendo dois sacos separados no modelo, a §6 continua inteira, e o que a seção diz é onde o controle **aparece**. Mover o kicker para `options` resolveria o desenho e quebraria o modelo: opção reseta na troca de layout, e o texto digitado seria perdido justamente onde a decisão 13 acabou de garantir que sobrevive. Conteúdo e Apresentação viraram seções como as outras para que a **ordem** também fosse declarativa — sem isso, a posição do Cabeçalho acima do conteúdo seria uma regra escrita no componente em vez de no descritor. O interruptor continua declarado em `options`, e não na seção, para que `options` siga sendo a lista completa das chaves de opção, que é o invariante que os testes de paridade de cada template conferem |
+| 44 | ~~A seção do inspector é **metadado de desenho no descritor**~~ · **superada pela 61**, e uma delas mistura `field` e `option` | Duas seções fixas no componente, com o kicker aparecendo em "Conteúdo" e o interruptor em "Apresentação"; ou mover o texto do kicker para `options`, unificando o saco | O painel precisava de "Cabeçalho" e "Rodapé" como categorias que se ligam e se encolhem, e o cabeçalho é uma faixa com **um texto e um interruptor** — separá-los em duas seções distantes faria ligar a coisa numa e escrever nela em outra. A saída é a seção ser desenho e não dado: `fields` e `options` continuam sendo dois sacos separados no modelo, a §6 continua inteira, e o que a seção diz é onde o controle **aparece**. Mover o kicker para `options` resolveria o desenho e quebraria o modelo: opção reseta na troca de layout, e o texto digitado seria perdido justamente onde a decisão 13 acabou de garantir que sobrevive. Conteúdo e Apresentação viraram seções como as outras para que a **ordem** também fosse declarativa — sem isso, a posição do Cabeçalho acima do conteúdo seria uma regra escrita no componente em vez de no descritor. O interruptor continua declarado em `options`, e não na seção, para que `options` siga sendo a lista completa das chaves de opção, que é o invariante que os testes de paridade de cada template conferem |
 | 45 | A biblioteca inteira foi especificada **como conjunto**, numa sub-etapa de documento, e o vocabulário canônico fechou sem nenhuma chave nova | Escrever cada §11.x no commit que implementa o template, que é como as três primeiras nasceram; ou abrir o vocabulário a uma chave por papel novo, incluindo o par antes/depois e uma chave própria de anotação para o `code-annotated` | A migração é uma **interseção de chave e de forma**, então a biblioteca se decide junta ou não se decide: uma chave escolhida no sétimo template obriga a voltar no terceiro, e o custo dessa volta é reescrever descritor, schema, defaults e teste de paridade de um template já entregue. Especificados os dez de uma vez, três coisas que não apareciam olhando um por um ficaram óbvias. A explicação do `code-annotated` é `body`, o mesmo texto corrido do `context` — chave própria daria ao par a incompatibilidade de graça, e o papel é o mesmo. `kicker` e `heading` passam a ser declarados pelos dez, não só pelos que os desenham: são as duas chaves que atravessam qualquer troca de layout, e é o argumento da decisão 42 aplicado ao campo mais digitado do sistema, ao preço de uma região que some quando o valor está vazio — o que o `lead` do `final-cta` já fazia. E o par antes/depois do `compare-2col` fica **próprio do template**: vocabulário com um usuário só reserva à biblioteca inteira um papel que um layout tem, e a §6 passou a registrar a chave própria numa tabela à parte em vez de promovê-la |
 | 46 | **Imagem pode sangrar até a borda do canvas; conteúdo, não.** O padding de 80px da §11.0 dos templates passa a valer para conteúdo, e a imagem do `split-vertical` para em y 1174 | Manter os 80px nos quatro lados para tudo, com a imagem contida e raio de 12px como o bloco de código; ou deixar a imagem sangrar nos quatro lados, com legenda e rodapé por cima dela | Contida, a imagem vira figura ilustrando um slide de texto, e os dois templates de mídia perdem a razão de existir separados do `context`. Sangrar nos quatro lados é o oposto: põe texto sobre foto arbitrária, que só se sustenta com overlay escuro — a única exceção de gradiente que a §2.5 do design system permite, e justamente a que a decisão 28 mostrou não sobreviver à rasterização. O meio-termo é a regra acima, e o limite dela não é estético: **o rodapé precisa dos 920px**. Com a imagem do `split-vertical` descendo até a base, o rodapé caberia só na coluna de texto de 480px, e ali a placa da logo mais o handle mais doze pontos de constelação passam de 500px — não cabe, e num deck maior a constelação ainda cresce. A imagem para em y 1174, que é a linha da régua da §10.5, e a faixa de baixo continua inteira |
 | 47 | O guard de transbordo mede **dois nós** — a faixa, que tem altura de spec, e o bloco de conteúdo dentro dela — e o resultado **não vai para o store** | Comparar `scrollHeight` com `clientHeight` no mesmo elemento, que é como a §9 descrevia e como o teste óbvio faria; e guardar um mapa de transbordo por slide no store, alimentado por quem estivesse exibindo o slide | Medir um nó só **reprova em silêncio nos templates que ancoram o conteúdo à base**: o que não cabe sobe acima da borda superior, e o que sobe não entra no `scrollHeight` do pai. O `cover-statement` alinha o título à base desde a 1.7 e o `final-cta` faz o mesmo com o bloco de fecho — dois dos três templates existentes, e nada no papel avisava. Comparar a altura do conteúdo com a da faixa funciona nas duas âncoras, e cobra do template só o que ele já tinha: uma faixa com altura escrita e um bloco dentro dela. O `final-cta` ganhou o bloco, que era o único dos três em que os três elementos eram filhos diretos da faixa. Sobre o store: `scrollHeight` e `clientHeight` são medidas de layout e **não enxergam o `transform: scale()`**, então a mesma leitura vale a 1:1 na exportação, a k ≈ 0,28 no canvas e a k = 0,2 na miniatura — e como a lista lateral desenha todos os slides pelo mesmo `SlideView`, cada slide desenhado mede a si mesmo. O critério da 3.5, "a lista mostra o slide inválido sem que o canvas esteja nele", sai de graça, sem estado global para manter em dia, sem sincronizar dois caminhos de medida e sem um mapa que precisaria ser limpo ao remover slide |
@@ -949,5 +1050,31 @@ sem retoque em nenhum outro programa.
 | 55 | O `ImageId` vira URL num **cache de módulo** em `src/images/cache.ts`, fora do store, e a pasta `src/images` é **folha** — não importa nada do sistema | Uma fatia do store zustand com as URLs, ao lado do deck; ou um contexto React com o cache, com provider no shell e outro no palco de exportação | O store persiste o deck e **só o deck**, e um object URL não é estado a guardar: é um handle do documento vivo, que morre no reload e nasce de novo. Numa fatia do store ele obrigaria o `partialize` a excluí-lo e o `reviveDeck` a ignorá-lo, para guardar uma coisa que nunca deve ser guardada. O contexto resolveria o preview e não o segundo consumidor: o palco de exportação monta uma **raiz React própria** e precisa das URLs antes de renderizar, porque um `<img>` cujo `src` chega no quadro seguinte não está no bitmap — e o que o template desenha nesse quadro é o estado "Sem imagem", que é honesto e vai para o arquivo. O cache de módulo serve os dois caminhos com uma cópia só, e a folha é o que impede o ciclo: o `ImageBand` dos templates importa `src/images`, então `src/images` não pode importar o registry. Daí o `collectImageIds` morar no palco, onde as chaves de imagem saem dos **descritores** e nunca de um `"image"` escrito à mão |
 | 56 | A imagem é **reduzida a 2160px no maior lado** na importação, com o original descartado | Guardar o arquivo como veio, que é o caminho mínimo estrito que a 3F escreveu; ou reduzir e reencodar em JPEG 0.92, que é o plano B que a §10 já reserva | 2160 é o 1080 do formato vezes a escala 2 do alvo PDF: **é a maior resolução que o arquivo consegue aproveitar**, e o que passa dela é peso puro em quatro lugares de uma vez — o IndexedDB, o DOM, o `foreignObject` da captura e o base64 do `.json` autocontido da Etapa 4. Uma foto de celular de 4000×3000 pagaria os quatro por nada. O custo é uma função pura de dimensões e um desenho em canvas, e a redução é **oportunista**: ambiente que não decodifica o blob devolve o original, porque numa ferramenta de um usuário só guardar a foto grande é melhor que recusar a foto. O PNG na saída é o que preserva a transparência do screenshot de diagrama, que é justamente o caso que o `contain` da §11.9 existe para servir — o JPEG 0.92 continua sendo escolha do alvo, e não do armazenamento |
 | 57 | **Blob órfão não é coletado na 3F.** Trocar a imagem ou remover o slide deixa o binário no banco | Apagar o blob anterior quando o campo `image` recebe outro valor, que cobre o caso comum e não custa nada hoje; ou varrer o banco na reidratação, comparando as chaves com os `ImageId` do deck | Apagar cedo cria uma armadilha para o `zundo` da Etapa 4: o undo devolve o `ImageId` e o blob não volta com ele, então desfazer a troca traria o slide de volta **sem a imagem** — a perda de trabalho que a decisão 31 existe para impedir, chegando pela porta de trás. A varredura na reidratação é pior: na tela de múltiplos decks da Etapa 4 o deck aberto não conhece as imagens dos outros, e a limpeza apagaria o que está em uso. O lugar certo é o import/export da Etapa 4, que é quem terá o deck inteiro à mão. Vazar binário num banco local de um usuário só é o lado barato da troca, e o caso inverso — id no deck, blob ausente — já é estado **desenhado**: a §11.9 dos templates o descreve, o schema o aceita porque um id órfão é uma string válida, e a faixa mostra "Sem imagem" |
-| 58 | `image` e `imageFit` são declarados nos **dois** templates de mídia, e não em `shared/` | Subi-los para `shared/fields.ts` e `shared/options.ts` como a decisão 54 fez com `code`, `file` e `lang`, com o teste de identidade de objeto | A regra da §6 é que a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, e ela está cumprida: os dois declaram `type: "image"`, e é isso que faz a troca entre os dois preservar a imagem escolhida — há teste de migração para o caso, que é o mais provável da dupla. O que difere é o `ratio`, 5:16 contra 108:91, e ele acompanha a **região**: um descritor compartilhado teria de escolher um dos dois e mentir para o outro. É exatamente o precedente do `heading`, que ficou fora do `shared/` na 3E apesar de os dois templates de código o declararem com os mesmos 60 caracteres. O `imageFit` tem o argumento que a própria §11.9 escreve: compartilhada, na §11.0, é o que os **dez** expõem, e dois de dez é opção própria declarada duas vezes com o mesmo nome — se um terceiro template de mídia aparecer, ela sobe, e não antes |
+| 58 | ~~`image` e `imageFit` são declarados nos **dois** templates de mídia~~ · **superada pela 61**, e não em `shared/` | Subi-los para `shared/fields.ts` e `shared/options.ts` como a decisão 54 fez com `code`, `file` e `lang`, com o teste de identidade de objeto | A regra da §6 é que a mesma chave tenha o mesmo **tipo de campo** na biblioteca inteira, e ela está cumprida: os dois declaram `type: "image"`, e é isso que faz a troca entre os dois preservar a imagem escolhida — há teste de migração para o caso, que é o mais provável da dupla. O que difere é o `ratio`, 5:16 contra 108:91, e ele acompanha a **região**: um descritor compartilhado teria de escolher um dos dois e mentir para o outro. É exatamente o precedente do `heading`, que ficou fora do `shared/` na 3E apesar de os dois templates de código o declararem com os mesmos 60 caracteres. O `imageFit` tem o argumento que a própria §11.9 escreve: compartilhada, na §11.0, é o que os **dez** expõem, e dois de dez é opção própria declarada duas vezes com o mesmo nome — se um terceiro template de mídia aparecer, ela sobe, e não antes |
 | 59 | O carrossel de referência usa os **dez templates em doze slides** e nasce **sem imagem** | Semear um PNG do repositório no IndexedDB na primeira execução, para a ferramenta abrir completa; ou manter as duas capas de comprimento oposto que a semente tinha desde a 2E, deixando um template de fora | Dez templates em doze slides deixam **duas repetições**, e elas foram para a lista e o respiro — os dois papéis que um carrossel de verdade exerce mais de uma vez. O que se perdeu foi a segunda capa, e com ela a conferência da âncora de base da §11.1 feita com um título de uma linha ao lado de um de quatro; o contraste que fica é o de gesto oposto, entre a capa ancorada à base e o `text-impact` centralizado, que é comparável na mesma coluna. Deixar um template de fora era o caminho pior: a semente é o **único** lugar onde a biblioteca inteira se exercita de uma vez, e o teste que a amarra ao `list()` do registry deixa de ter sentido no dia em que ela escolhe nove dos dez. Sobre a imagem: um binário no repositório resolveria a primeira tela e cobraria uma máquina nova — `putImage` aceitando id dado, um bootstrap assíncrono fora da hidratação, e algumas centenas de KB versionadas — para semear um estado que **o próprio sistema já desenha**. Id ausente é estado válido desde a decisão 57, a faixa mostra "Sem imagem", e o slide de mídia vazio é o convite para a primeira imagem da pessoa em vez de a foto de outra. A imagem do critério de pronto da Etapa 3 entra pelo inspector, que é o caminho que a 3F entregou, e foi assim que a 3G a mediu no PDF |
+| 60 | A marcação ganha uma **camada de blocos** acima do parser inline: linha em branco separa parágrafo, `- ` e `1. ` abrem lista | Manter a proibição da decisão 9 inteira; ou aceitar markdown de bloco completo, com títulos e cercas | A decisão 9 tratou quebra **tipográfica** e quebra **de conteúdo** como a mesma coisa. Parágrafo é estrutura do pensamento, não ajuste visual, e o custo apareceu no primeiro uso real: um enter no inspector não chegava ao slide. Título e cerca ficam de fora porque cada um já é um elemento |
+| 61 | Slide é **`layout` mais uma lista ordenada de elementos**; os dez templates viram dado | Acrescentar campos e opções aos dez templates até cobrirem os formatos que faltam | Cada template aceitava exatamente um formato, e o autor escreve o post primeiro e procura onde ele cabe depois. Trinta e poucos arquivos descrevendo variações de uma mesma ideia viram doze elementos mais dez objetos de seed. Supera a 5 e a 44 |
+| 62 | **Elemento não carrega estilo**; a restrição migra para a cardinalidade no menu de adicionar | Expor tamanho, cor ou peso por elemento, já que a composição ficou livre | Sem contenção o Observatório vira sugestão. O autor escolhe *que* elemento usar, nunca *como* ele se parece, e o que sobrou de escolha é geometria fechada de dois ou três valores — nunca um slider |
+| 63 | `columns` é **tupla de dois**, com um nível de profundidade, proporção e alinhamento fechados | Uma lista de N colunas, com largura livre e aninhamento arbitrário | Três colunas em 920px dão sete caracteres por linha. Tupla e `Exclude<Element, { t: "columns" }>` põem as duas impossibilidades no compilador, e não numa validação que alguém precisa lembrar de rodar |
+| 64 | Toda operação do store é por **`ElementId`**, não por caminho | Carregar caminhos do tipo `["el_3", "left", 1]` da árvore até a ação | Com árvore, `elements[2]` não identifica nada. Numa árvore de dez nós, caminhar procurando pai e posição é gratuito, e um caminho carregado erra num canto e some em outro |
+| 65 | O guard de transbordo é **recursivo** e **nomeia o elemento** que estourou | Medir só a região do slide, como na v1 | Cada coluna é candidata independente, e a altura de um `columns` é o máximo das duas. Sem o nome do elemento, o autor caça num slide de seis. Estende a 47 |
+| 66 | O `kicker` continua **cromo do layout**, e é a única peça de conteúdo que mora lá | Promovê-lo a elemento, posicionável em qualquer lugar da pilha | Ele é o que a faixa do cabeçalho **é**, como a constelação é o que o rodapé é. Elemento traria cardinalidade a mais, migração a mais e uma faixa 80–148 que deixaria de ser fixa, para permitir uma etiqueta no meio do slide que ninguém pediu. Confirma a 42 |
+| 67 | **Não existe elemento de espaçamento**; a âncora vertical do layout resolve o caso legítimo | Um `spacer` com alturas fechadas — 48, 96, 160 | Espaçador é estilo livre pela porta dos fundos: o autor passa a ajustar altura em vez de escrever, e o guard não sabe julgar um vazio de 200px. O que ele resolveria — empurrar o fecho para a base — a âncora `bottom` já fazia |
+| 68 | **Deck da v1 é descartado** na virada, e `deck.version` vai a 2 | Converter na reidratação, reusando a função que define os presets | Deck de um usuário só, num aplicativo sem import/export: um conversor de produção para uma forma que nunca mais vai existir custa mais do que rende. O `version: 2` deixa a recusa explícita em vez de detectável por acaso |
+| 69 | **Preset** guarda o esqueleto e **snapshot** guarda o texto, separados por uma caixa de seleção ao salvar; os dez de seed são fixos | Dois conceitos na interface; ou um só, sempre com o texto | Uma caixa resolve os dois usos sem inventar vocabulário. Os dez de seed são o vínculo entre a §11 do documento de elementos e o código — editáveis, divergiriam do documento no primeiro ajuste e a Regra 2 ficaria sem chão |
+| 70 | **Slide novo herda a composição do anterior**, com o conteúdo limpo | Slide novo sempre vazio; ou sempre num preset fixo, como o `text-bullets` da v1 | Trocamos rigidez por liberdade, e o custo da liberdade é decisão. Um carrossel tem três ou quatro slides de miolo com a mesma forma, então o padrão acerta na maioria das vezes e limpar fica a um clique. Estende a 30 |
+| 71 | O sangramento de imagem vira **opção fechada do elemento `image`** — `none`, `top`, `edge` | Faixa de sangramento declarada no layout do slide; ou acabar com o sangramento e conter toda imagem nos 920px | Mantém a decisão 46 viva sem recriar o molde fixo que a 61 dissolveu. Um valor `edge` em vez de uma lista de bordas, porque a borda que faz sentido sangrar é sempre a que o container encosta — escolher lado a lado seria devolver a folha de estilo |
+| 72 | Os doze elementos incluem **`quote` e `divider`**, dois papéis que nenhum dos dez templates tinha | Só os dez papéis que a biblioteca da v1 já desenhava | Os dois saem de graça do modelo novo — a régua já existia dentro do `compare-2col` e a citação é o callout da §10.5 sem o tingimento —, e são o que separa uma biblioteca de elementos de dez templates redesenhados |
+| 73 | A função que converte os dez templates da v1 **é** a definição dos dez presets de seed | Escrever a migração e os presets em separado | Duas descrições da mesma coisa divergem no primeiro ajuste. Escrita uma vez, ela é conferível contra a §11.1–§11.10 do documento de elementos antes de existir código |
+| 74 | A etapa nova usa **numeração intermediária** — Etapa 3½, tarefas `C.n` | Renumerar Editor para 5 e Produto para 6 | São 51 referências a "Etapa 4" e "Etapa 5" no repositório, 24 delas em comentários de código. Uma referência esquecida aponta para a etapa errada em silêncio, e "Etapa 3.5" ainda colidiria com a tarefa 3.5, que existe |
+
+As decisões riscadas continuam na tabela de propósito: uma decisão revertida sem registro do
+porquê é armadilha para quem ler depois, e o motivo de cada reversão está na decisão que a
+superou. **Nenhuma delas foi errada quando foi tomada** — as quatro descrevem um modelo em
+que o slide tinha um conjunto fixo de campos, e foi esse modelo que caiu, não o raciocínio
+que as escolheu dentro dele.
+
+Três que **não** caíram, e que a Etapa 3½ confirma em vez de reverter: a **13**, cujo
+vocabulário de chaves passou a valer dentro do elemento e cuja regra de interseção subiu de
+chaves para tipos; a **42**, que a 66 repete com outras palavras; e a **46**, que a 71
+carrega para dentro do elemento sem mudar uma linha do que ela decide.

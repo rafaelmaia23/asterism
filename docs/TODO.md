@@ -1,13 +1,13 @@
 # asterism — plano de execução
 
-> **Status** bootstrap concluído · decisões resolvidas · **Etapas 1, 2 e 3 concluídas — a
-> ferramenta publica um carrossel real com a biblioteca inteira. A 3A fechou a especificação
-> dos dez templates, a 3B entregou o guard de transbordo e o alinhamento dos controles, a 3C
-> acrescentou os dois de texto, a 3D trouxe o shiki e o `code-window`, a 3E fechou os dois
-> mais densos, a 3F trouxe as imagens com os dois de mídia e a 3G recompôs o carrossel de
-> referência com os dez, conferido no navegador e no PDF; a próxima sessão abre a Etapa 4**
+> **Status** bootstrap concluído · Etapas 1, 2 e 3 concluídas — a ferramenta publica um
+> carrossel real com a biblioteca inteira. **O primeiro uso real dela abriu a Etapa 3½**,
+> que troca o modelo de conteúdo: um slide deixa de ser `template + campos fixos` e passa a
+> ser layout mais uma lista ordenada de elementos. A **C-A está concluída** — os documentos
+> estão em dia e as decisões 60 a 74 registradas —, e a próxima sessão abre a **C-B**, que é
+> a que faz o enter funcionar.
 > Estrutura em três níveis: **etapa** → **tarefa atômica** → **critério de pronto**.
-> Cada tarefa cabe num commit. As Etapas 1 a 3 têm um nível a mais — **sub-etapa**, uma
+> Cada tarefa cabe num commit. As Etapas 1 a 3½ têm um nível a mais — **sub-etapa**, uma
 > por sessão de trabalho. As Etapas 4 e 5 têm apenas objetivo e entrega, e são quebradas
 > em tarefas quando chegarem.
 
@@ -21,8 +21,13 @@ caminho funciona da construção da biblioteca:
 |---|---|
 | 1 — MVP + 2 — Templates | Fase 1 — fatia vertical |
 | 3 — Biblioteca | Fase 2 |
+| 3½ — Composição | Fase 2½ |
 | 4 — Editor | Fase 3 |
 | 5 — Produto | Fase 4 |
+
+A **Fase 2½ não existia no roadmap**. Ela entrou depois que a ferramenta foi usada de
+verdade pela primeira vez, e a numeração é intermediária de propósito — a Etapa 3½ explica
+por quê. As Etapas 4 e 5 não se mexeram.
 
 ---
 
@@ -783,7 +788,8 @@ disputar espaço com a do outro.
 
 Três coisas que a divisão tornou visíveis, e que ela teve de resolver antes de existir:
 
-- **Os sete templates não estavam especificados.** O `observatorio-templates.md` tinha
+- **Os sete templates não estavam especificados.** O `observatorio-templates.md` — hoje
+  `observatorio-elementos.md` — tinha
   §11.0–§11.3 e a tabela de status da §11 marcava os outros sete como "a especificar".
   Escrever §11.4–§11.10 é trabalho desta etapa, e é trabalho de decisão de produto — pela
   Regra 2 o documento vem antes do código. Virou a **3A**, uma sub-etapa inteira de
@@ -1263,6 +1269,208 @@ Resolvido na sessão:
 
 ---
 
+## Etapa 3½ — Composição
+
+**Objetivo.** Trocar o modelo de conteúdo: um slide deixa de ser `template + campos fixos` e
+passa a ser **uma configuração de layout mais uma lista ordenada de elementos**. Corresponde
+à Fase 2½ do §15 do documento de contexto — uma fase que não estava no roadmap, e que o
+primeiro uso real impôs.
+
+**Por que ela existe.** O produto foi usado para montar um post e a experiência foi ruim, em
+três sintomas: os templates são engessados demais, o `context` expõe o corpo corrido num
+bloco só, e um enter no campo de texto do inspector não vira quebra de linha no slide.
+Nenhum dos três é bug — o código faz exatamente o que a especificação mandou, e a
+especificação errou em dois pontos:
+
+- **A marcação não tinha onde guardar um parágrafo.** `parseInline` devolve uma lista plana,
+  e não existia camada nenhuma acima dela; um `\n` dentro de um `<p>` é espaço em branco por
+  regra do HTML. A §11.0 dos templates proibiu quebra manual de linha e a §7 do contexto
+  restringiu a marcação a inline, e as duas trataram quebra **tipográfica** e quebra **de
+  conteúdo** como a mesma coisa.
+- **Cada template aceitava exatamente um formato.** As oito opções de
+  `src/templates/shared/options.ts` eram booleanas e as oito controlavam cromo: controle fino
+  sobre o que esconder, zero sobre o que dizer. A biblioteca foi especificada por função
+  narrativa assumindo que o texto se moldaria ao template disponível; na prática o autor
+  escreve o post primeiro e depois procura onde ele cabe.
+
+**Entrega.** A camada de blocos sobre o parser inline; os doze elementos da §11.11–§11.22 do
+documento de elementos, com `columns` e o guard de transbordo recursivo; o renderizador
+genérico de pilha vertical; o inspector por cartões; e os dez presets, com a deleção das dez
+pastas de `src/templates/`.
+
+**Não é reescrita.** Sobrevivem intactos o padrão de registry — que passa a registrar
+elementos em vez de templates —, o `SlideFrame` e a regra de que ele é o dono único de
+`--slide-scale`, o `rasterize`, o registry de alvos, o alvo `pdf`, o download, as fontes
+locais, o tema do Observatório, o shiki, as imagens no IndexedDB, o formulário derivado de
+descritor e a suíte de testes. O estrangulamento é o modelo de conteúdo, que é uma camada
+fina e localizada.
+
+**Fora desta etapa.**
+
+- **Colar o post inteiro separado por `---` e fatiar por heurística.** Com o `parseBlocks`
+  existindo fica barato — parte em pedaços, roda o parser de blocos em cada um, escolhe o
+  preset por heurística e o autor ajusta o que ficou torto. Isso muda o que o `asterism` é:
+  de preenchedor de formulário para compilador de texto em carrossel. **Não construir agora,
+  não fechar portas.**
+- **Encolher os oito interruptores de cromo.** Oito opções booleanas por slide é
+  configuração demais para decisão de pouca consequência; depois que o conteúdo destravar,
+  isso deve virar duas ou três, com o resto pertencendo ao **deck** e não ao slide. Fica
+  registrada a intenção, não o trabalho.
+- Tudo que já era das Etapas 4 e 5: arraste, duplicar, undo/redo, múltiplos decks,
+  import/export `.json`, coleta de blob órfão, atalhos, estados vazios e deploy.
+
+**Pronto quando** um carrossel de 8 a 12 slides é composto elemento a elemento, um slide
+aceita parágrafo seguido de bullets, o guard aponta qual elemento estourou, os dez presets
+reproduzem as dez composições da v1 e o PDF sai sem retoque externo.
+
+### A numeração é intermediária, e por quê
+
+**Etapa 3½**, com tarefas `C.1`–`C.19`. As Etapas 4 e 5 **não** são renumeradas.
+
+- São **51 referências** a "Etapa 4" e "Etapa 5" no repositório — 16 no
+  `asterism-context.md`, 11 aqui e **24 em comentários de código**. Renumerar obriga a editar
+  `src/` numa etapa que começa por documento, e uma referência esquecida passa a apontar para
+  a etapa errada em silêncio.
+- "Etapa 3.5" colidiria com a **tarefa 3.5**, que existe, está na 3B e é citada na 3G.
+- O meio passo diz o que a etapa é: não estava no plano, e o primeiro uso real a impôs.
+
+As tarefas usam prefixo `C` em vez de número justamente para não disputar com `3.x` nem com
+`4.x`.
+
+### As sete sub-etapas
+
+Dezenove tarefas são grandes demais para uma sessão só, e a divisão é a de sempre: uma
+sub-etapa por sessão, uma branch por sub-etapa, cada uma com dependências resolvidas e um
+estado do repositório que compila, passa nos testes e pode ser abandonado sem deixar meio
+caminho.
+
+A ordem tem motivo. A **C-B** é pequena, independente do resto e conserta o uso **hoje** — o
+enter passa a funcionar antes de qualquer refatoração grande. Só depois vem o modelo, e os
+presets por último, porque eles são a conferência de que o modelo cobre o que a v1 fazia.
+
+### C-A — especificação ✅
+
+Sessão de documento, sem uma linha de código, no mesmo formato da 3A. É onde moram todas as
+decisões de produto da etapa.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| C.1 | Reescrever a §11 como biblioteca de elementos e presets; atualizar as §6, §7, §8, §9, §11, §13, §14, §15 e §16 do contexto; corrigir o design system | `observatorio-elementos.md` no lugar de `observatorio-templates.md`, com a numeração preservada; decisões 60 a 74 registradas e as superadas marcadas com o motivo |
+
+Decidido na sessão, antes de escrever qualquer coisa:
+
+| Questão | Decisão |
+|---|---|
+| A lista final de tipos de elemento | **Doze**: `statement`, `heading`, `lead`, `text`, `caption`, `label`, `quote`, `code`, `image`, `cta`, `divider`, `columns`. Os dois últimos papéis — citação e régua — nenhum dos dez templates tinha, e saem de graça do modelo novo |
+| O `kicker` | **Continua cromo do layout.** Decisão 66 |
+| Elemento de espaçamento explícito | **Não existe.** A âncora vertical resolve o caso legítimo. Decisão 67 |
+| Decks salvos em `localStorage` | **Descartados**, com `deck.version` indo a 2. Decisão 68 |
+| Presets editáveis | **Os dez de seed são fixos**; preset do autor é renomeável, substituível e apagável. Decisão 69 |
+| Sangramento de imagem | **Opção fechada do elemento `image`** — `none`, `top`, `edge`. Decisão 71 |
+| Onde a biblioteca é documentada | **Reescrever no lugar**, com a numeração `§11.x` preservada |
+
+Resolvido na sessão:
+
+- **Os endereços `§11.1`–`§11.10` não se mexeram, e isso decidiu a estrutura do documento.**
+  São 255 referências `§11.x` em `src/` e nos outros documentos; renumerá-las para os
+  elementos invalidaria todas em silêncio — um comentário dizendo `§11.9` passaria a apontar
+  para `image` em vez de `split-vertical`. Os dez continuam onde estavam, agora como presets,
+  e os doze elementos entram em `§11.11`.
+- **A §7 do design system não tinha o que corrigir.** O prompt da sessão pedia a correção
+  sobre quebra de linha nas §7 e §11.0; a §7 de lá é "Movimento". A proibição morava na
+  §11.0 dos templates e na §7 do **contexto**, e é lá que a correção entrou. No design
+  system o que mudou foi a §3.4, cuja exceção de centralização deixou de pertencer ao
+  template `text-impact` e passou a pertencer ao elemento `statement` com âncora ao centro.
+- **`split-vertical` não vira "colunas com imagem de um lado" sem mais.** A imagem dele
+  sangra pelo topo e pela direita, e sangramento não cabe num fluxo com padding de 80px.
+  Daí a decisão 71 — e daí a regra da §11.22 de que o gap entre colunas sobe de 64 para 80px
+  quando uma delas sangra. A geometria muda um pouco no caminho: 480 + 80 + 440 vira
+  504 + 80 + 336 com a imagem estendida a 416, e a conta que importava — 31 caracteres por
+  linha, dentro da faixa de 28 a 42 da §3.4 — continua de pé.
+- **O fecho do `final-cta` sobe de 72px para 96px**, e é a única mudança visual que a virada
+  impõe a um preset. `slide-title` era o degrau de um template só; a biblioteca tem
+  `statement` a 96 e `heading` a 56, e um terceiro título entre os dois seria um elemento
+  para um uso. Subir e não descer é o argumento que a §11.5 já fazia. **O degrau
+  `slide-title` fica sem uso na biblioteca** — se ele deve sair da escala da §3.3 é decisão
+  de design system, e não desta etapa.
+- **O tipo de campo `list` do descritor morre junto com o `items`.** Os tópicos viram linhas
+  de `- ` dentro de um `text`, e com eles somem os três botões por item que o inspector
+  desenhava — formulário onde devia haver digitação.
+- **O par próprio do `compare-2col` se dissolve.** `beforeLabel`/`before` e
+  `afterLabel`/`after` eram a única exceção que a decisão 45 previa ao vocabulário canônico:
+  agora rótulo é `label`, régua é `divider` e conteúdo é `text`, os dois lados iguais.
+
+### C-B — blocos de texto
+
+Pequena, independente do resto, e **conserta o uso hoje**: o enter passa a funcionar antes de
+qualquer refatoração grande. Nada do modelo de elementos entra aqui.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| C.2 | `parseBlocks` em `src/markup/blocks.ts`, teste primeiro — §7 do documento de contexto | Linha em branco separa bloco, `- ` abre item não ordenado, `1. ` abre ordenado, linhas seguidas de marcador viram uma lista só, quebra simples dentro de parágrafo é espaço. Sem títulos e sem cercas |
+| C.3 | `<Blocks>` em `src/markup/blocks.tsx`, com `<p>`, `<ul>` e `<ol>` e os gaps da §4.2 | Cada bloco chega ao `<Inline>` cru; `parseInline` não é tocado. Marcador em travessão mono `azure-400`, gap 32px, gap entre itens e entre parágrafos de 48px |
+| C.4 | Trocar `<Inline>` por `<Blocks>` nos campos `md` de textarea dos quatro templates que os têm | `context`, `code-annotated`, `split-vertical` e `compare-2col` aceitam parágrafo e bullets. O `text-bullets` continua com o campo `list`, que só morre na C-F |
+
+**A armadilha esperada é o reset do `preflight`.** Até agora `<ul>` e `<p>` mal existiam no
+canvas; a partir da C.3 um campo sozinho desenha três parágrafos e uma lista, e cada um é um
+nó que o clone da captura deixa sem reset — `1em` de margem medido a 40px são 40px de espaço
+que ninguém pediu. A folha injetada pelo `onCloneNode` da decisão 50 deve cobrir o caso; **o
+critério de pronto da sub-etapa é conferir no PDF**, não no preview, porque é no arquivo que
+o defeito aparece.
+
+### C-C — o modelo de elementos
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| C.5 | Tipos e factories: `Element`, `Leaf`, `SlideLayout`, `Slide`, `deck.version: 2` — §6 do contexto | `Leaf` recusa `columns` dentro de `columns` em tempo de compilação; a tupla de dois recusa uma terceira coluna |
+| C.6 | Registry de elementos e os doze `ElementDef`, sobre o `createRegistry` que já existe | Um elemento novo aparece no seletor, no renderizador e no inspector sem que nenhum dos três seja editado — o mesmo critério que a 1.11 cobrava dos templates |
+| C.7 | Store com operações por id: `addElement`, `removeElement`, `moveElement`, `setElementField` | Toda operação recebe `ElementId` e caminha a árvore; nenhuma assinatura carrega caminho. Decisão 64 |
+| C.8 | Renderizador genérico de pilha em `src/render/stack.tsx` | Topo em 80 ou 212, fim em 1160, gaps da §11.0; elemento vazio não desenha e não consome gap; a imagem toma a sobra com piso de 200px; a âncora do layout posiciona a pilha |
+
+**Nenhum dos dez templates é apagado aqui.** Eles continuam funcionando pelo caminho antigo
+até a C-F, e é isso que deixa a etapa ser abandonada no meio sem quebrar a ferramenta.
+
+### C-D — colunas e o guard recursivo
+
+A parte mais chata da virada, e a que mais merece teste escrito antes.
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| C.9 | O elemento `columns` — §11.22 do documento de elementos | Tupla de dois; três proporções fechadas; dois alinhamentos; gap 64, ou 80 quando uma coluna sangra; coluna vazia endereçável no editor e invisível no arquivo |
+| C.10 | Guard recursivo, com o elemento nomeado — §9 do contexto | Cada coluna é candidata independente; a altura de `columns` é o máximo das duas; qualquer container estourando reprova o slide; o aviso diz **qual elemento** — o primeiro cujo `offsetTop + offsetHeight` passa do `clientHeight` do container. O id vai para o escopo em JavaScript, nunca para um atributo |
+
+### C-E — o inspector por cartões
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| C.11 | Um cartão por elemento: cabeçalho com tipo, setas e remover; campos dentro; colapsa | Um slide de cinco elementos cabe na coluna. Nada anima — a §7 do design system não anima posição por mais de 8px |
+| C.12 | Seletor de adicionar no fim de cada lista, com a cardinalidade da §11.23 | A opção **some** do seletor ao atingir o teto; `columns` não é oferecido dentro de uma coluna; a cardinalidade é por slide, não por container |
+| C.13 | Setas de ordem que não atravessam fronteira, mais a seta lateral entre colunas | Nas pontas a seta fica desabilitada, para não haver clique morto; a lateral aponta para o destino, não para a origem |
+| C.14 | Remoção avisada de `columns` | Remover apaga os dois lados de uma vez, e isso é avisado antes. Enquanto o `zundo` da Etapa 4 não chegar, o aviso é obrigatório |
+
+### C-F — os presets, e a deleção
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| C.15 | Os dez presets de seed, escritos como a função de conversão dos dez templates | Uma função só, e a §11.1–§11.10 do documento de elementos é o gabarito conferível. Decisão 73 |
+| C.16 | Aplicar preset casando conteúdo por tipo, na ordem; slide novo herda a composição do anterior | Aplicar um preset a um slide com texto não apaga o texto que tem par; slide novo nasce com os mesmos tipos e o conteúdo limpo. Decisões 69 e 70 |
+| C.17 | Salvar a composição atual como preset, com a caixa "incluir o texto" | Marcada, é snapshot; desmarcada, é preset. Presets do autor em chave própria do `localStorage`, transversais aos decks; os dez de seed recusam edição |
+| C.18 | Apagar `src/templates/` inteiro e o que ficou órfão | Trinta e poucos arquivos saem. `npm test`, `npx tsc --noEmit` e `npm run lint` passam sem nenhuma referência a `TemplateDef`, `migrateFields` ou `slide.template` |
+
+**É a maior deleção que o projeto vai ter, e ela é ganho.** Dez pastas com `index.tsx`,
+`fields.ts`, `meta.ts` e testes descreviam variações de uma mesma ideia.
+
+### C-G — fecho da etapa
+
+| # | Tarefa | Critério de pronto |
+|---|---|---|
+| C.19 | Recompor o carrossel de referência com presets e conferir | O critério de pronto da etapa, conferido no navegador **e** no PDF, como a 3G: doze páginas de 2160×2700, o realce atravessando a rasterização, nenhum slide marcado pelo guard — e o guard marcando, com o nome do elemento, quando o texto passa |
+
+É a sessão que acha o que teste unitário não acha, como a 1E achou a grade, a 2B achou a
+régua camuflada e a 3G achou os 41 caracteres da janela de código.
+
+---
+
 ## Etapa 4 — Editor
 
 **Objetivo.** Transformar o protótipo funcional em algo que aguenta uso semanal.
@@ -1306,12 +1514,29 @@ LinkedIn, sem sair da ferramenta e sem retoque em nenhum outro programa.
 
 As decisões que estavam pendentes foram respondidas e registradas na §16 do documento de
 contexto, decisões 13 a 18; a divisão da Etapa 2 rendeu as decisões 29 a 32, a 2A as
-33 e 34, a 2B as 35 a 38, a 2C a 39, a 2E a 40, a 2F as 41 a 44, a 3A as 45 e 46 e a 3B as
-47 a 49. **Nenhum ponto continua aberto**: o experimento 3, que era o último, foi resolvido
-na 3B.
+33 e 34, a 2B as 35 a 38, a 2C a 39, a 2E a 40, a 2F as 41 a 44, a 3A as 45 e 46, a 3B as
+47 a 49 e a C-A as 60 a 74. Os experimentos 1 a 5 estão todos resolvidos — o 3, que era o
+último, saiu na 3B —, e a Etapa 3½ abriu **um novo**.
 
 O padrão é sempre o mesmo: o que não se decide no papel se decide montando os candidatos
 lado a lado e comparando o resultado — de preferência medido, como nos experimentos 4 e 5.
+
+### Experimento 6 — a pilha vertical sob rasterização · **aberto**
+
+**A pergunta.** Uma pilha de cinco ou seis elementos, com listas e colunas aninhadas,
+atravessa a captura com o mesmo desenho que tem no preview?
+
+É onde duas coisas conhecidas se encontram pela primeira vez. A margem de `1em` que o
+agente de usuário devolve dentro do `foreignObject` — decisão 50 — quase não tinha nós para
+morder até agora: `<ul>` era coisa de um template e `<p>` era um por slide. Com a camada de
+blocos e a pilha livre, um slide pode ter dez desses nós, cada um herdando o corpo
+tipográfico da região onde caiu. E o guard recursivo mede containers aninhados cuja altura
+depende de o reset ter valido ou não.
+
+**Como se resolve.** Como os experimentos 4 e 5: medindo o arquivo, não lendo a tela. Um
+slide sintético com a pilha mais densa que a cardinalidade permite, exportado pelo alvo PDF
+de verdade, com as alturas dos blocos comparadas entre o bitmap e o DOM. A conferência é
+critério de pronto da **C-B** para o caso simples e da **C-G** para o caso aninhado.
 
 ### ~~Experimento 1 — a peça de logo do rodapé~~ · resolvido
 
