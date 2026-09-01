@@ -44,10 +44,10 @@
  * título separa os dois sem precisar de peso nem de cor.
  *
  * A região do corpo é a que o guard de transbordo mede — o **⌐** da §11.4. A faixa é quem
- * tem altura; o `<p>` é quem cresce.
+ * tem altura; a pilha de blocos dentro dela é quem cresce.
  */
 
-import { Inline } from "@/markup/inline";
+import { Blocks } from "@/markup/blocks";
 import { useOverflowGuard } from "@/render/overflow";
 import {
   contextSchema,
@@ -109,9 +109,12 @@ function Context({
           BODY_BAND[`${settings.showHeader}-${heading !== ""}`],
         ].join(" ")}
       >
-        <p ref={block} className="slide-body max-w-[760px] text-ink-200">
-          <Inline>{content.body}</Inline>
-        </p>
+        {/* A pilha de blocos entra no lugar do parágrafo único: `<Blocks>` desenha
+            `<p>`, `<ul>` e `<ol>`, e nenhum deles pode morar dentro de um `<p>`. As
+            classes de corpo e a medida de linha ficam onde estavam, no container. */}
+        <div ref={block} className="slide-body max-w-[760px] text-ink-200">
+          <Blocks>{content.body}</Blocks>
+        </div>
       </div>
 
       <Footer

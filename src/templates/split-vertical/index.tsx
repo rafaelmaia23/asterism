@@ -48,7 +48,7 @@
  * chega ao CSS final. Ver a armadilha no `CLAUDE.md`.
  */
 
-import { Inline } from "@/markup/inline";
+import { Blocks } from "@/markup/blocks";
 import { useOverflowGuard } from "@/render/overflow";
 import { Footer } from "@/templates/shared/footer";
 import { Header } from "@/templates/shared/header";
@@ -107,9 +107,9 @@ function SplitVertical({
             </h2>
           )}
 
-          <p className="slide-caption text-ink-200">
-            <Inline>{content.body}</Inline>
-          </p>
+          <div className="slide-caption text-ink-200">
+            <Blocks>{content.body}</Blocks>
+          </div>
         </div>
       </div>
 

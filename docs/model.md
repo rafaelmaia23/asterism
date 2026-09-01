@@ -177,8 +177,28 @@ function parseBlocks(src: string): Block[]
 |---|---|
 | Linha em branco | Fim de um bloco e começo de outro |
 | Linha começando com `- ` | Item de lista não ordenada; linhas seguidas formam uma lista |
-| Linha começando com `1. ` | Item de lista ordenada; o número é o que estiver escrito |
+| Linha começando com `1. ` | Item de lista ordenada; a numeração desenhada é sequencial a partir de 1, e o número escrito é ignorado — ADR-0076. **Até dois dígitos**: `2024. ` é parágrafo, senão o ano sumiria do slide |
 | Qualquer outra linha | Parágrafo |
+
+As quatro fronteiras que a tabela não diz, e que o teste fixa:
+
+| Caso | Resultado |
+|---|---|
+| `- ` numa linha logo abaixo de um parágrafo, sem linha em branco | Fecha o parágrafo e abre a lista. É o que o autor espera de quem escreve em Obsidian |
+| `- ` e `1. ` em linhas seguidas | Duas listas: trocar de marcador é trocar de bloco |
+| Linha indentada, `  - sub` | A linha é aparada antes de ser classificada. **Não há lista aninhada nesta camada**, e `  - sub` é item normal |
+| `- ` sem texto, e string vazia | Item vazio é descartado; lista sem item nenhum não vira bloco; `parseBlocks("")` devolve `[]` |
+
+A camada de blocos vale nos **campos de corpo**: `context.body`, `code-annotated.body`,
+`split-vertical.body` e os dois lados do `compare-2col`. Fora dela ficam, de propósito, os
+títulos — onde a quebra continua natural e o enter não faz nada — e o `image-caption.caption`,
+que é apoio de uma linha ou duas e vira o elemento `caption` da §11.15 do documento de
+elementos, sem parágrafo.
+
+O módulo é `src/markup/parse-blocks.ts`, e não `blocks.ts`: o componente ao lado é
+`blocks.tsx`, e dois arquivos com o mesmo nome fazem `@/markup/blocks` resolver para o
+`.ts` — o componente sairia `undefined` em tempo de execução. O par segue o que a pasta já
+tinha, `parse.ts` para o parser e `inline.tsx` para o componente.
 
 **Sem títulos e sem cercas de código nessa camada.** Título é elemento próprio, código é
 elemento próprio, e uma cerca de código dentro de um parágrafo criaria dois caminhos para
@@ -197,7 +217,12 @@ de migração para esta parte, e a edição continua sendo um textarea: o autor 
 não preencher formulário nem montar blocos com o mouse.
 
 **O parser de blocos não invade o de inline.** Cada `v` e cada item saem crus, e quem os
-transforma em texto desenhado é o `<Inline>` de sempre, um por bloco. É o que mantém
+transforma em texto desenhado é o `<Inline>` de sempre, um por bloco — dentro do `<Blocks>`,
+que é quem desenha `<p>`, `<ul>` e `<ol>` com os gaps da §4.2 do design system. **Ali o
+espaçamento é `gap` e nunca margem**: margem de `<p>` não sobrevive à captura, porque a
+clonagem não emite valor inicial e a folha do agente de usuário devolve `1em` do outro lado
+— ADR-0050. O marcador é nó de verdade, travessão em mono `azure-400` a 32px do texto, e
+não `::marker`. É o que mantém
 `parseInline` sendo a função pura sem dependências que ela já é, e o que faz `parseBlocks`
 ser testável sozinho — as duas camadas se compõem no `<Blocks>`, que é o único módulo que
 conhece as duas.
