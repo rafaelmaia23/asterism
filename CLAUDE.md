@@ -143,3 +143,25 @@ ou `data-*` é divergência de hidratação. Identificador de formulário sai de
 O que se mede fica preso a algo de fora — altura de viewport, não altura mínima — e o que
 a medida desenha fica fora do fluxo. Caso contrário a escala se realimenta e o slide
 cresce sozinho. Ver a §13 do documento de contexto.
+
+## Agent skills
+
+Os contratos que as skills de engenharia leem ficam em `docs/agents/`. São os únicos
+arquivos de `docs/` escritos em inglês: não são documentação do projeto, e sim o texto que
+as skills consomem — mantê-los idênticos ao original as deixa comparáveis quando a skill
+for atualizada.
+
+### Issue tracker
+
+Issues e specs vivem como markdown em `.scratch/<feature>/`, versionados junto com o
+código. Sem `gh`, sem tracker remoto. Ver `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+O vocabulário canônico dos cinco papéis, sem renomear: `needs-triage`, `needs-info`,
+`ready-for-agent`, `ready-for-human`, `wontfix`. Ver `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Contexto único: um `CONTEXT.md` e um `docs/adr/` na raiz, ambos criados sob demanda pelo
+`/domain-modeling`. Ver `docs/agents/domain.md`.
