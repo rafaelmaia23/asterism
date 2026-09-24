@@ -157,6 +157,12 @@ arquivos de `docs/` escritos em inglês: não são documentação do projeto, e 
 as skills consomem — mantê-los idênticos ao original as deixa comparáveis quando a skill
 for atualizada.
 
+As skills em si são as do Matt Pocock (`mattpocock/skills`), instaladas como plugin pelo
+`.claude/settings.json` versionado — marketplace `mattpocock`, plugin `mattpocock-skills`.
+É o que as faz existir também nas sessões na nuvem, onde o container nasce de um clone
+novo e nada instalado à mão sobrevive. Por serem de plugin, se invocam com prefixo:
+`/mattpocock-skills:tdd`.
+
 ### Issue tracker
 
 Issues e specs vivem como markdown em `.scratch/<feature>/`, versionados junto com o
